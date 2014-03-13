@@ -8,8 +8,11 @@ if(!isset($rootpath)){
 	$rootpath = "";
 }
 
+require __DIR__.'/../vendor/autoload.php';
+
+
 //override the include path, so we pick up the contrib directory first
-ini_set('include_path',$rootpath.'contrib/includes:'.ini_get('include_path')); 
+//ini_set('include_path',$rootpath.'contrib/includes:'.ini_get('include_path')); 
 
  
 

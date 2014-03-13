@@ -18,8 +18,7 @@ $req->setEntityTranslation('Apikey')
 	->add('apikey', sha1(uniqid().microtime()), 'post', array('type' => 'text', 'label' => 'Apikey', 'size' => 50, 'maxlength' => 40), array('not_empty' => true, 'min_length' => 30))
 	->add('comment', '', 'post', array('type' => 'text', 'label' => 'commentaar', 'size' => 50, 'maxlength' => 60), array('not_empty' => true))
 	->add('type', 'interlets', 'post', array('type' => 'hidden'))
-	->addSubmitButtons()
-	
+	->addSubmitButtons()	
 	->cancel()
 	->query();
 

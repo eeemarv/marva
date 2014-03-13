@@ -130,6 +130,15 @@ if ($req->isSuccess()){
 	
 include('./includes/inc_header.php');
 
+
+
+
+
+
+
+
+
+
 if ($req->isAdmin() && !$req->get('mode')){
 			
 	echo '<ul class="hormenu"><li><a class="admin" href="./users.php?mode=new")>Toevoegen</a></li></ul>';
@@ -166,12 +175,6 @@ if (($new && $req->isAdmin()) || (($edit && $req->isOwnerOrAdmin()) || ($delete 
 	$req->set_output('nolabel')->render(array($submit, $create_plus, 'cancel', 'id', 'mode'));
 	echo '</td></tr></table></form>';		
 }
-
-
-
-
-
-
 
 
 
@@ -255,6 +258,27 @@ if (!$req->get('id') && !($new || $edit || $delete)){
 }
 	
 if ($req->get('id') && !($edit || $delete || $new)){
+
+
+	$id = $req->get('id');
+	
+	echo <<<EOF
+	<link rel="stylesheet" type="text/css" href="vendor/jqplot/jqplot/jquery.jqplot.min.css" />
+	<script type="text/javascript">var user_id = {$id};</script>	
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+	<script src="vendor/jqplot/jqplot/jquery.jqplot.min.js"></script>
+	<script src="vendor/jqplot/jqplot/plugins/jqplot.donutRenderer.js"></script>
+	<script src="vendor/jqplot/jqplot/plugins/jqplot.cursor.min.js"></script>
+	<script src="vendor/jqplot/jqplot/plugins/jqplot.dateAxisRenderer.min.js"></script>
+	<script src="vendor/jqplot/jqplot/plugins/jqplot.canvasTextRenderer.min.js"></script>
+	<script src="vendor/jqplot/jqplot/plugins/jqplot.canvasAxisTickRenderer.min.js"></script>
+	<script src="vendor/jqplot/jqplot/plugins/jqplot.highlighter.min.js"></script>	
+	<script src="js/graph_user_transactions.js"></script>
+EOF;
+
+
+
+
 	
 	$query = 'SELECT * FROM users ';
 	$query .= 'WHERE id='.$req->get('id').' ';
@@ -293,7 +317,16 @@ if ($req->get('id') && !($edit || $delete || $new)){
 	echo '<tr><td width="50%" valign="top">Postcode: </td><td width="50%" valign="top">'.$user['postcode'].'</td></tr>';
 	echo ($user['birthday']) ? '<tr><td width="50%" valign="top">Geboortedatum:  </td><td width="50%" valign="top">'.$user['birthday'].'</td></tr>' : '';
 	echo '</table></td></table>';
-	
+
+
+	echo "<table  cellpadding='0' cellspacing='0' border='0'  width='99%'>";
+	echo "<tr class='even_row'>";
+	echo "<td><strong>{$currency}stand</strong></td><td></td><td><strong>Transactie-Interacties</strong></td></tr>";
+	echo "<tr><td>";
+	echo "<strong>".$balance."</strong>";
+	echo "</td><td><div id='chartdiv1' style='height:200px;width:300px;'></div></td>";
+	echo "<td><div id='chartdiv2' style='height:200px;width:200px;'></div></td></tr></table>";
+
 	$query = "SELECT *, ";
 	$query .= " contact.id AS cid, users.id AS uid, type_contact.id AS tcid, ";
 	$query .= " type_contact.name AS tcname, users.name AS uname ";

@@ -1,7 +1,14 @@
 <?php
 
-require_once('adodb/adodb-errorpear.inc.php');
-require_once("adodb/adodb.inc.php");
+
+
+
+//require_once('../vendor/adodb/adodb-php/adodb-errorpear.inc.php');
+//require_once('../vendor/adodb/adodb-php/adodb.inc.php');
+
+
+//require_once('adodb/adodb-errorpear.inc.php');
+//require_once('adodb/adodb.inc.php');
 
 
 if (isset($configuration["db"]["dsn"])) {
@@ -16,7 +23,7 @@ if (isset($configuration["db"]["dsn"])) {
 function getadoerror(){
 	$e = ADODB_Pear_Error();
         if(is_object($e)){
-                        return $e->message;
+            return $e->message;
         }
 	return FALSE;
 }

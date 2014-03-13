@@ -1,6 +1,7 @@
 <?php
 // Pull in the NuSOAP code
-require_once('lib/nusoap.php');
+require_once '../vendor/nusoap/nusoap/lib/nusoap.php';
+
 // Create the client instance
 $client = new soapclient('http://elasdev.vsbnet.be/soap/wsdlelas.php?wsdl', true);
 // Check for an error
