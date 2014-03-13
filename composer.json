@@ -1,0 +1,22 @@
+{
+
+    "require": {
+
+        "swiftmailer/swiftmailer": ">=4.1.2,<4.2-dev",  
+        "adodb/adodb-php": "dev-master",
+        "dbrisinajumi/yii-jqplot": "dev-master",
+    }
+    "repositories": [
+        {
+            "type": "package",
+            "version": "0.9.5",
+            "dist": {
+				"url": "http://downloads.sourceforge.net/project/nusoap/nusoap/0.9.5/nusoap-0.9.5.zip",
+				"type": "zip"            
+            }
+        }   
+    ]  
+  
+  
+  
+}

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<elasconfig>
+        <dbdsn>mysql://user:password@localhost/database</dbdsn>
+        <sessionname>elas</sessionname>
+        <timezone>Europe/Brussels</timezone>
+        <hosting>0</hosting>
+</elasconfig>
+
