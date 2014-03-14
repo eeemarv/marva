@@ -7,3 +7,10 @@ ErrorDocument 500 /500.shtml
 
 Options -Indexes
 
+<Files "parameters.php">
+Order Allow,Deny
+Deny from All
+</Files>
+
+
+

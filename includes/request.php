@@ -2,6 +2,8 @@
 
 //  (copyleft) 2013 martti info@martti.be
 
+
+
 class request {  
 	private $s_id;
 	private $s_name;

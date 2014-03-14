@@ -1,7 +1,7 @@
-  </div>
-  <div class="clearer"></div>
- </div>
- <div id="footer">
+</div>
+	<div class="clearer"></div>
+</div>
+<div id="footer">
 	<div id="footerleft">
 	<?php
 	if(isset($s_id)){
@@ -10,7 +10,7 @@
 	}
 	?>
 	</div>
-	<div id="footerright"><a href="#">Marva 
+	<div id="footerright"><a href="https://github.com/marttii/marva">marva 
 	<?php
 	echo exec('git describe --long --abbrev=10 --tags');
 	?>

@@ -276,10 +276,6 @@ if ($req->get('id') && !($edit || $delete || $new)){
 	<script src="js/graph_user_transactions.js"></script>
 EOF;
 
-
-
-
-	
 	$query = 'SELECT * FROM users ';
 	$query .= 'WHERE id='.$req->get('id').' ';
 	$query .= 'AND ( status = 1 OR status = 2 OR status = 3 )';

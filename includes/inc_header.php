@@ -92,7 +92,7 @@ header('Content-Type:text/html;charset=utf-8');
 			<ul class='vertmenu'>
 			<?php
 				if($s_accountrole == "user" || $s_accountrole == "admin"){
-					echo '<li><a href="help.php"\>Probleem melden</a></li>';
+					echo '<li><a href="contact_admin.php"\>Contact beheer</a></li>';
 				}
 			?>
 			</ul>
@@ -124,7 +124,7 @@ header('Content-Type:text/html;charset=utf-8');
 		echo "<ul class='vertmenu'>";
 		echo '<li><a href="'.$rootpath.'login.php">Login</a></li>';
 		echo '<li><a href="'.$rootpath.'passwordlost.php">Passwoord vergeten</a></li>';
-		echo '<li><a href="'.$rootpath.'help.php">Help</a></li>';
+		echo '<li><a href="'.$rootpath.'contact_beheer.php">Contact Beheer</a></li>';
 		echo "</ul>";
 	}
 	?>

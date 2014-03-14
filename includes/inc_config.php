@@ -23,7 +23,7 @@ if(file_exists($xml_config)){
 	$xmlconfig = simplexml_load_file("$xml_config");
 	$configuration["db"]["dsn"] = $xmlconfig->dbdsn;
 	$configuration["system"]["timezone"] = $xmlconfig->timezone;
-	$configuration["hosting"]["enabled"] = $xmlconfig->hosting;
+	$configuration["hosting"]["enabled"] = false;
 } 
 
 

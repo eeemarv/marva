@@ -5,7 +5,8 @@
         "swiftmailer/swiftmailer": ">=4.1.2,<4.2-dev",  
         "adodb/adodb-php": "dev-master",
         "nusoap/nusoap": "0.9.5",
-        "jqplot/jqplot": "1.0.8"
+        "jqplot/jqplot": "1.0.8",
+        "recaptcha/recaptcha": "1.11"
     },
     "repositories": [
         {
@@ -25,14 +26,17 @@
         {
             "type": "package",
             "package": {
-				"name": "jqplot/jqplot",
-				"version": "1.0.8",
+				"name": "recaptcha/recaptcha",
+				"version": "1.11",
 				"dist": {
-					"url": "https://bitbucket.org/cleonello/jqplot/downloads/jquery.jqplot.1.0.8r1250.zip",
+					"url": "http://recaptcha.googlecode.com/files/recaptcha-php-1.11.zip",
 					"type": "zip"            
-				}
+				},
+			    "autoload": {
+					"files": ["recaptchalib.php"]
+				}			
 			}
-		}            
+        }           
     ]  
 
 }

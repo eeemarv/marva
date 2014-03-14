@@ -7,16 +7,21 @@ require_once($rootpath."includes/inc_userinfo.php");
 require_once($rootpath."includes/inc_passwords.php");
 require_once($rootpath."includes/inc_mailfunctions.php");
 require_once($rootpath."includes/inc_eventlog.php");
+//require_once 'vendor/recaptcha/recaptcha/recaptchalib.php';
+//require_once $rootpah.'vendor/recaptcha/recaptcha/recaptchalib.php';
+
+require_once($rootpath.'includes/request.php');
 
 
-require_once($rootpath."includes/request.php");
+
+$req = new request('anonymous', true);
 
 
-$req = new request('anonymous');
 $req->add('email', '', 'post', array('type' => 'text', 'label' => 'Email adres', 'size' => 30), array('not_empty' => true, 'match' => 'email_active_user'))
-	->add('zend', '', 'post', array('type' => 'submit', 'label' => 'Reset Paswoord'));
+	->add('recaptcha', '', 'post', array('type' => 'recaptcha'))
+	->add('send', '', 'post', array('type' => 'submit', 'label' => 'Reset Paswoord'));
 
-if ($req->get('zend') && !$req->errors()){
+if ($req->get('send') && !$req->errors()){
 	$email = $req->get('email');
 	log_event($s_id, "System", "Activation request for ".$email);
 	
@@ -46,11 +51,11 @@ require_once($rootpath."includes/inc_header.php");
 
 echo '<form method="post" class="trans">';
 echo '<table cellspacing="5" cellpadding="0" border="0">';
-$req->set_output('tr')->render(array('email', 'zend'));
+$req->set_output('tr')->render(array('email', 'recaptcha', 'send'));
 echo '</table></form>';
 
         
-require_once($rootpath."includes/inc_footer.php");
+require_once($rootpath.'includes/inc_footer.php');
 
 ?>
 

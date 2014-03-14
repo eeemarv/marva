@@ -2,17 +2,14 @@
 ob_start();
 // $ptitle="login";
 $rootpath = "./";
-require_once($rootpath."includes/inc_default.php");
-require_once($rootpath."includes/inc_adoconnection.php");
-require_once($rootpath."includes/inc_header.php");
-require_once($rootpath."includes/inc_content.php");
+require_once($rootpath.'includes/inc_default.php');
+require_once($rootpath.'includes/inc_adoconnection.php');
+require_once($rootpath.'includes/inc_header.php');
+require_once($rootpath.'includes/inc_content.php');
+require_once($rootpath.'includes/request.php');
 
-session_start();
-global $_SESSION;
-$s_id = $_SESSION["id"];
-$s_name = $_SESSION["name"];
-$s_letscode = $_SESSION["letscode"];
-$s_accountrole = $_SESSION["accountrole"];
+$req = new request('anonymous', true);
+
 
 
 echo "<table border='0' width='100%'><tr><td><h1>Help</h1>";
