@@ -517,8 +517,16 @@ class request {
 	public function getInputString($name){
 		$parameter = $this->parameters[$name];
 		$out = '';
-		$parameter['checked'] = ($parameter['type'] == 'checkbox' && $parameter['value']) ? 'checked' : null;	
-		if ($parameter['type'] == 'select'){
+		$parameter['checked'] = ($parameter['type'] == 'checkbox' && $parameter['value']) ? 'checked' : null;
+		if ($parameter['type'] == 'recaptcha'){
+			
+			
+
+			$out = recaptcha_get_html('6Le2CfASAAAAAEOG6zEZwGNNVOaT8mbRU7EHlsH0');
+
+		
+			
+		} elseif ($parameter['type'] == 'select'){
 			$out .= '<select name="'.$name.'">';
 			$out .= $this->getSelectOptionsString($name);
 			$out .=  '</select>';
@@ -721,6 +729,7 @@ class request {
 	}
 	
 	private function email_active_user($value){
+		global $db;
 		$query = 'select * from users, type_contact, contact
 			where contact.id_type_contact = type_contact.id 
 			and type_contact.abbrev =\'mail\' 

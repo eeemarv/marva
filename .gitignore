@@ -2,9 +2,14 @@
 
 
 parameters.php
-site/parameters.php
+parameters.yml
+
+site/parameters.yml
 site/index_content.html
 site/login_content.html
+site/images/*
+site/backup/*
+
 
 
 info.php

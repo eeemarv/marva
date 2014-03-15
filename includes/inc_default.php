@@ -1,22 +1,32 @@
 <?php
-//
-error_reporting(0); 
+error_reporting(0);
 
 
-# Get rid of missing rootpath errors
-if(!isset($rootpath)){
-	$rootpath = "";
+require_once __DIR__.'/../vendor/autoload.php';
+require_once __DIR__.'/../parameters.php';
+
+use Symfony\Component\Yaml\Yaml;
+
+$parameters = array_merge(Yaml::parse(__DIR__.'/../site/parameters.yml'), $parameters); 
+
+if ($parameters['debug']){
+	error_reporting(E_ERROR);
+} else {
+	error_reporting(0);
 }
 
-require __DIR__.'/../vendor/autoload.php';
-
-
-//override the include path, so we pick up the contrib directory first
-//ini_set('include_path',$rootpath.'contrib/includes:'.ini_get('include_path')); 
-
+if ($parameters['redirect']){
+	header('HTTP/1.1 301 Moved Permanently'); 
+	header('Location: '.$parameters['redirect']); 
+	exit();
+}	 
  
 
-require_once('inc_config.php');
+
+
+
+
+require_once $dir.'/inc_config.php';
 
 
 // removed release.xml version was eLAS 2.5.16
@@ -26,8 +36,8 @@ $soapversion = 1200;
 $restversion = 1;
 
 
-// Set the timezeone to value in configuration
-date_default_timezone_set($configuration["system"]["timezone"]);
+date_default_timezone_set($site['timezone']);
+
 
 // flash-messages
 function setstatus($status, $type = "info"){

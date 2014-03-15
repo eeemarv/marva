@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "9be755222c9f989c9e168b20c2d57a8d",
+    "hash": "46e9b30c2d50591cc79dd6bd1994c8fa",
     "packages": [
         {
             "name": "adodb/adodb-php",
@@ -61,7 +61,12 @@
                 "reference": null,
                 "shasum": null
             },
-            "type": "library"
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "lib/"
+                ]
+            }
         },
         {
             "name": "recaptcha/recaptcha",
@@ -72,7 +77,12 @@
                 "reference": null,
                 "shasum": null
             },
-            "type": "library"
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "recaptchalib.php"
+                ]
+            }
         },
         {
             "name": "swiftmailer/swiftmailer",
@@ -124,6 +134,55 @@
                 "mailer"
             ],
             "time": "2012-06-17 20:55:34"
+        },
+        {
+            "name": "symfony/yaml",
+            "version": "v2.4.1",
+            "target-dir": "Symfony/Component/Yaml",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/Yaml.git",
+                "reference": "4e1a237fc48145fae114b96458d799746ad89aa0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/Yaml/zipball/4e1a237fc48145fae114b96458d799746ad89aa0",
+                "reference": "4e1a237fc48145fae114b96458d799746ad89aa0",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.3"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.4-dev"
+                }
+            },
+            "autoload": {
+                "psr-0": {
+                    "Symfony\\Component\\Yaml\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com",
+                    "homepage": "http://fabien.potencier.org",
+                    "role": "Lead Developer"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "http://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony Yaml Component",
+            "homepage": "http://symfony.com",
+            "time": "2013-12-28 08:12:03"
         }
     ],
     "packages-dev": [

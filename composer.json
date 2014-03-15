@@ -1,7 +1,11 @@
 {
+	"name": "marttii/marva",
+	"description": "open source web software for lets groups.",
+	"license": "AGPL-3.0",
+
 
     "require": {
-
+		"symfony/yaml": "v2.4.1",
         "swiftmailer/swiftmailer": ">=4.1.2,<4.2-dev",  
         "adodb/adodb-php": "dev-master",
         "nusoap/nusoap": "0.9.5",
@@ -36,7 +40,18 @@
 					"files": ["recaptchalib.php"]
 				}			
 			}
-        }           
+        },
+        {
+            "type": "package",
+            "package": {
+				"name": "jqplot/jqplot",
+				"version": "1.0.8",
+				"dist": {
+					"url": "https://bitbucket.org/cleonello/jqplot/downloads/jquery.jqplot.1.0.8r1250.zip",
+					"type": "zip"            
+				}			
+			}
+        }                  
     ]  
 
 }

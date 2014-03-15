@@ -137,7 +137,8 @@ if(!$req->get('token')){
 	$req->set_output('tr')->render(array('letscode', 'password'));
 	echo '<tr><td colspan="2">';
 	$req->set_output('nolabel')->render(array('submit_login', 'location'));
-	echo '</td></tr></table></form>';			
+	echo '</td></tr></table></form>';
+	echo '<ul><li><a href="'.$rootpath.'passwordlost.php">Passwoord vergeten</a></li></ul>';			
 }
 
 

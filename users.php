@@ -265,7 +265,6 @@ if ($req->get('id') && !($edit || $delete || $new)){
 	echo <<<EOF
 	<link rel="stylesheet" type="text/css" href="vendor/jqplot/jqplot/jquery.jqplot.min.css" />
 	<script type="text/javascript">var user_id = {$id};</script>	
-	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
 	<script src="vendor/jqplot/jqplot/jquery.jqplot.min.js"></script>
 	<script src="vendor/jqplot/jqplot/plugins/jqplot.donutRenderer.js"></script>
 	<script src="vendor/jqplot/jqplot/plugins/jqplot.cursor.min.js"></script>

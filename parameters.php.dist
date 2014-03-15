@@ -1,0 +1,49 @@
+<?php
+
+$parameters = array(
+
+	'db' => array(
+//		'driver'	=> 'pdo_mysql',   //  pdo not yet implemented
+		'dbname'	=> '',
+		'host'		=> 'localhost',
+		'user'		=> 'root',
+		'password'	=> '',
+		'charset'	=> 'utf8',
+//		'path'		=> '../app/app.db',     	// for pdo_sqlite // not yet implemented 
+		'port'		=> '',
+		),
+
+	'mail' => array(
+		'host'		=> '',
+		'port'		=> '',
+		'username'	=> '',
+		'password'	=> '',
+		'encryption'=> null,
+		'auth_mode' => null,
+		),
+
+
+
+	'locales'	=> array ('nl'),		
+	'locale'	=> 'nl',
+
+
+		
+	'timezone'	=> 'Europe/Brussels',
+	
+	'debug'		=> false,			
+			
+	'debug_mail' => array(
+		'transport'	=> 'gmail',
+		'username'	=> '',
+		'password'	=> '',
+		'delivery_address' => '', 				
+		),
+
+
+
+	
+	);
+		
+
+

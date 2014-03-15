@@ -10,6 +10,28 @@ require_once($rootpath.'includes/request.php');
 
 $req = new request('anonymous', true);
 
+$req->add('email', '', 'post', array('type' => 'text', 'label' => 'Email adres', 'size' => 50, 'maxlength' => 50), array('not_empty' => true, 'email' => true))
+	->add('subject', '', 'post', array('type' => 'text', 'label' => 'Onderwerp'), array('not_empty' => true))
+	->add('content', '', 'post', array('type' => 'textarea', 'label' => 'Bericht'), array('not_empty' => true))
+	->add('recaptcha', '', 'post', array('type' => 'recaptcha', 'label' => 'Recaptcha'), array('recaptcha' => true))
+	->add('send', '', 'post', array('type' => 'submit', 'label' => 'Verzend'));
+
+
+if ($req->get('send') && !$req->errors()){
+	
+	
+	
+	
+}	
+
+
+
+
+
+
+
+
+
 
 
 echo "<table border='0' width='100%'><tr><td><h1>Help</h1>";
@@ -182,7 +204,7 @@ function helpmail($posted_list,$rootpath){
 
 	$mailsubject = $configuration["system"]["systemtag"] ." - " .$posted_list['subject'];
 
-        $mailcontent  = "-- via de Marva website werd hetvolgende probleem gemeld --\r\n";
+        $mailcontent  = "-- via de Marva website werd het volgende bericht ingegeven --\r\n";
 	$mailcontent .= "E-mail: {$posted_list['email']}\r\n";
 	$mailcontent .= "Login:  {$posted_list['login']}\r\n";
 	$mailcontent .= "Omschrijving:\r\n";
@@ -191,13 +213,9 @@ function helpmail($posted_list,$rootpath){
 	$mailcontent .= "User Agent:\r\n";
         $mailcontent .= "{$posted_list['browser']}\r\n";
 	$mailcontent .= "\r\n";
+    mail($mailto,$mailsubject,$mailcontent,$mailfrom);
+	setstatus("bericht verstuurd", 'success');
 
-
-	echo "Bezig met het verzenden naar $mailto ...\n";
-        mail($mailto,$mailsubject,$mailcontent,$mailfrom);
-	echo "OK\n";
-	setstatus("Support mail verstuurd", 'success');
-	echo "<script type=\"text/javascript\">self.close();</script>";
 }
 
 ?>

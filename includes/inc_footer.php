@@ -1,4 +1,4 @@
-</div>
+ </div>
 	<div class="clearer"></div>
 </div>
 <div id="footer">
@@ -10,12 +10,18 @@
 	}
 	?>
 	</div>
-	<div id="footerright"><a href="https://github.com/marttii/marva">marva 
-	<?php
-	echo exec('git describe --long --abbrev=10 --tags');
-	?>
-	</a>
-	</div>
+
 </div>
+
+
+
+<footer class="footer">
+  <div class="container">
+	<p><a href="https://github.com/marttii/marva"><i class="fa fa-github fa-lg"></i>marva
+	<?php echo exec('git describe --long --abbrev=10 --tags'); ?>			
+	</a></p>
+  </div>
+</footer>
+    
 </body>
 </html>
