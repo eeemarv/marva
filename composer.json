@@ -10,7 +10,10 @@
         "adodb/adodb-php": "dev-master",
         "nusoap/nusoap": "0.9.5",
         "jqplot/jqplot": "1.0.8",
-        "recaptcha/recaptcha": "1.11"
+        "recaptcha/recaptcha": "1.11",
+        "twbs/bootstrap": "3.1.1",
+        "components/jquery": "1.11.*",
+        "twitter/typeahead.js": "0.10.*"
     },
     "repositories": [
         {

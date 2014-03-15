@@ -1,5 +1,9 @@
 <?php
-error_reporting(0);
+//error_reporting(0);
+
+if(!isset($rootpath)){
+	$rootpath = "";
+}
 
 
 require_once __DIR__.'/../vendor/autoload.php';
@@ -26,7 +30,7 @@ if ($parameters['redirect']){
 
 
 
-require_once $dir.'/inc_config.php';
+//require_once $dir.'/inc_config.php';
 
 
 // removed release.xml version was eLAS 2.5.16
@@ -36,7 +40,7 @@ $soapversion = 1200;
 $restversion = 1;
 
 
-date_default_timezone_set($site['timezone']);
+//date_default_timezone_set($parameters['timezone']);
 
 
 // flash-messages

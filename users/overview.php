@@ -362,7 +362,7 @@ function get_inactive_users($user_orderby){
 		$query .= " ORDER BY users.".$user_orderby. " ";
 	}
 	$inactive_userrows = $db->GetArray($query);
-	echo getadoerror();
+//	echo getadoerror();
 	return $inactive_userrows;
 }
 

@@ -31,6 +31,7 @@ $req = new request('anonymous');
 require('includes/inc_header.php');
 
 
+var_dump($parameters, $con);
 
 require('./includes/inc_footer.php');
 

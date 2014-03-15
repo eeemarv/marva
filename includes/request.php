@@ -523,7 +523,7 @@ class request {
 			
 
 			$out = recaptcha_get_html('6Le2CfASAAAAAEOG6zEZwGNNVOaT8mbRU7EHlsH0');
-
+								// make new key! 
 		
 			
 		} elseif ($parameter['type'] == 'select'){

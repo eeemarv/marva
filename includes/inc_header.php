@@ -1,7 +1,7 @@
 <?php 
 echo <<<EOF
 <!DOCTYPE html>
-<html lang="{$site['locale']}">
+<html lang="{$parameters['locale']}">
 <head>
 	<meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
