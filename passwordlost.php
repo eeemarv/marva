@@ -1,15 +1,15 @@
 <?php
 ob_start();
 $rootpath = "./";
-require_once($rootpath."includes/inc_default.php");
-require_once($rootpath."includes/inc_adoconnection.php");
+require_once('./includes/default.php');
+
 require_once($rootpath."includes/inc_userinfo.php");
 require_once($rootpath."includes/inc_passwords.php");
 require_once($rootpath."includes/inc_mailfunctions.php");
 require_once($rootpath."includes/inc_eventlog.php");
 
 
-require_once($rootpath.'includes/request.php');
+require_once('./includes/request.php');
 
 
 
@@ -46,7 +46,7 @@ if ($req->get('send') && !$req->errors()){
 }
 
 	
-require_once($rootpath."includes/inc_header.php");
+require_once('./includes/header.php');
 
 echo '<h1><a href="passwordlost.php">Nieuw paswoord aanvragen</a></h1>';
 
@@ -56,7 +56,7 @@ $req->set_output('tr')->render(array('email', 'recaptcha', 'send'));
 echo '</table></form>';
 
         
-require_once($rootpath.'includes/inc_footer.php');
+require_once('./includes/footer.php');
 
 ?>
 

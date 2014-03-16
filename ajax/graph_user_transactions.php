@@ -2,8 +2,8 @@
 ob_start();
 
 $rootpath = '../';
-require_once($rootpath.'includes/inc_default.php');
-require_once($rootpath.'includes/inc_adoconnection.php');
+require_once($rootpath.'includes/default.php');
+
 require_once($rootpath.'includes/request.php');
 
 $req = new request('guest');

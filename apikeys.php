@@ -1,9 +1,7 @@
 <?php
 ob_start();
 $rootpath = './';
-require_once($rootpath.'includes/inc_default.php');
-require_once($rootpath.'includes/inc_adoconnection.php');
-require_once($rootpath.'includes/inc_apikeys.php');
+require_once($rootpath.'includes/default.php');
 require_once($rootpath.'includes/request.php');
 require_once($rootpath.'includes/data_table.php');
 
@@ -35,7 +33,7 @@ if ($req->isSuccess()){
 	exit;	
 }	
 
-include($rootpath.'includes/inc_header.php');
+include($rootpath.'includes/header.php');
 
 echo '<h1><a href="apikeys.php">Apikeys</a></h1>';
 
@@ -74,6 +72,6 @@ if ($req->get('mode') == 'delete' && $req->get('id')){
 	echo '</table></form>';
 }
 
-include($rootpath.'includes/inc_footer.php');
+include($rootpath.'includes/footer.php');
 
 ?>

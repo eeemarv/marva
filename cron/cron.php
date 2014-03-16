@@ -1,13 +1,13 @@
 <?php
 ob_start();
 $rootpath = "../";
-require_once($rootpath."includes/inc_default.php");
-require_once($rootpath."includes/inc_adoconnection.php");
+require_once($rootpath."includes/default.php");
+
 require_once($rootpath."includes/inc_amq.php");
 require_once($rootpath."cron/inc_cron.php");
 require_once($rootpath."cron/inc_upgrade.php");
 require_once($rootpath."cron/inc_stats.php");
-require_once($rootpath."includes/inc_dbconfig.php");
+
 require_once($rootpath."includes/inc_mailfunctions.php");
 require_once($rootpath."includes/inc_userinfo.php");
 require_once($rootpath."includes/inc_saldofunctions.php");

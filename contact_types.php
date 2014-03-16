@@ -1,22 +1,22 @@
 <?php
 ob_start();
 $rootpath = "./";
-require_once($rootpath."includes/inc_default.php");
-require_once($rootpath."includes/inc_adoconnection.php");
+require_once($rootpath."includes/default.php");
+
 require_once($rootpath."includes/request.php");
 
 $req = new request('admin');
 
 $req->setUrl('contact_types.php');
 
-include($rootpath."includes/inc_header.php");
+include($rootpath."includes/header.php");
 
 echo "<h1>Contact-Types</h1>";
 
 $contacttypes = get_all_contacttypes();
 show_all_contacttypes($contacttypes);
 
-include($rootpath."includes/inc_footer.php");
+include($rootpath."includes/footer.php");
 
 //functions
 

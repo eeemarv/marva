@@ -2,8 +2,8 @@
 
 ob_start();
 
-require_once('./includes/inc_default.php');
-require_once('./includes/inc_adoconnection.php');
+require_once('./includes/default.php');
+
 
 require_once('./includes/inc_userinfo.php'); 
 require_once('./includes/inc_mailfunctions.php'); 
@@ -117,7 +117,7 @@ if ($req->isSuccess()){
 	exit;	
 }		
 
-include('./includes/inc_header.php');
+include('./includes/header.php');
 
 if($req->isUser() && !$req->get('mode')){	
 	echo '<ul class="hormenu"><li><a href="./messages.php?mode=new")>Toevoegen</a></li></ul>';
@@ -370,7 +370,7 @@ if ($req->get('id') && !($edit || $delete || $new)){
 	
 }
 
-include('./includes/inc_footer.php');
+include('./includes/footer.php');
 
 ?>
 

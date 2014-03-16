@@ -20,8 +20,8 @@
  
 ob_start();
 // get the initial includes
-require_once($rootpath."includes/inc_default.php");
-require_once($rootpath."includes/inc_adoconnection.php");
+require_once($rootpath."includes/default.php");
+
 require_once($rootpath."includes/inc_userinfo.php");
 require_once($rootpath."includes/inc_eventlog.php");
 session_start(); 
@@ -73,14 +73,14 @@ global $_SESSION;
         }
         
      // Check if the install is locked
-    if(readparameter("lockout") == 1){
+  /*  if(readparameter("lockout") == 1){
 		$statuscode = 1;
                 if(!empty($statusline)) {
                         $statusline .= ", ";
                 }
 
                 $statusline .= "Site is locked by ESM";
-    }
+    }*/
 
 
 	switch($statuscode){	

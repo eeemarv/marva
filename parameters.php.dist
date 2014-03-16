@@ -3,14 +3,14 @@
 $parameters = array(
 
 	'db' => array(
-//		'driver'	=> 'pdo_mysql',   //  pdo not yet implemented
+		'driver'	=> 'mysql',
 		'dbname'	=> '',
 		'host'		=> 'localhost',
 		'user'		=> 'root',
 		'password'	=> '',
-		'charset'	=> 'utf8',
+//		'charset'	=> 'utf8',
 //		'path'		=> '../app/app.db',     	// for pdo_sqlite // not yet implemented 
-		'port'		=> '',
+//		'port'		=> '',
 		),
 
 	'mail' => array(
@@ -30,6 +30,8 @@ $parameters = array(
 
 		
 	'timezone'	=> 'Europe/Brussels',
+	
+	'load_from_cdn' => true,	
 	
 	'debug'		=> false,			
 			

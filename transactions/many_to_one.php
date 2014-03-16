@@ -2,8 +2,7 @@
 ob_start();
 
 $rootpath = '../';
-require_once($rootpath.'includes/inc_default.php');
-require_once($rootpath.'includes/inc_adoconnection.php');
+require_once($rootpath.'includes/default.php');
 
 require_once($rootpath.'includes/inc_transactions.php');
 require_once($rootpath.'includes/request.php');
@@ -127,7 +126,7 @@ $data_table->set_data($active_users)->set_input($req)
 	->add_column('amount', array('title' => 'Bedrag', 'input' => 'id', 'footer' => 'sum'))
 	->add_column('minlimit', array('title' => 'Min.Limiet'));
 
-include($rootpath.'includes/inc_header.php');
+include($rootpath.'includes/header.php');
 
 if ($notice) {
 	echo '<div style="background-color: #DDDDFF;padding: 10px;">'.$notice.'</div>';
@@ -153,7 +152,7 @@ echo '<table cellspacing="0" cellpadding="5" border="0">';
 $req->set_output('tr')->render(array('letscode_to', 'description', 'confirm_password', 'create', 'transid'));
 echo '</table></div></form>';	
 
-include($rootpath.'includes/inc_footer.php');
+include($rootpath.'includes/footer.php');
 
 	
 // functions

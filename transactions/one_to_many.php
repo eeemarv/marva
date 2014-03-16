@@ -1,8 +1,7 @@
 <?php
 ob_start();
 $rootpath = '../';
-require_once($rootpath.'includes/inc_default.php');
-require_once($rootpath.'includes/inc_adoconnection.php');
+require_once($rootpath.'includes/default.php');
 
 require_once($rootpath.'includes/inc_transactions.php');
 require_once($rootpath.'includes/request.php');
@@ -152,7 +151,7 @@ echo '<p>Bedrag = Vast Bedrag + ((Percentage / 100 x (Saldo - Percentage Saldo B
 echo '<p><strong><i>Van LETSCode</i></strong> wordt altijd automatisch overgeslagen. Alle bedragen blijven individueel aanpasbaar alvorens de massa-transactie uitgevoerd wordt.</p>';	
 echo '</div><br/></form>';	
 
-include($rootpath.'includes/inc_footer.php');
+include($rootpath.'includes/footer.php');
 
 	
 // functions

@@ -16,8 +16,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
 */
-//require_once($rootpath."includes/inc_default.php");
-//require_once($rootpath."includes/inc_adoconnection.php");
+
 
 /** Provided functions:
 */

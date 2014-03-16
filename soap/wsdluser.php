@@ -1,10 +1,10 @@
 <?php
 $rootpath="../";
 // Pull in the NuSOAP code
-require_once '../vendor/nusoap/nusoap/lib/nusoap.php';
+//require_once '../vendor/nusoap/nusoap/lib/nusoap.php';
 
-require_once($rootpath."includes/inc_default.php");
-require_once($rootpath."includes/inc_adoconnection.php");
+require_once($rootpath.'includes/default.php');
+
 require_once($rootpath."includes/inc_elassoap.php");
 require_once($rootpath."includes/inc_userinfo.php");
 

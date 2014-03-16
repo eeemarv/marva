@@ -1,8 +1,7 @@
 <?php
 
 ob_start();
-require('./includes/inc_default.php');
-require('./includes/inc_adoconnection.php');
+require('./includes/default.php');
 
 require('./includes/request.php');
 require('./includes/data_table.php');
@@ -65,7 +64,7 @@ if ($req->isSuccess()){
 
 
 	
-include('./includes/inc_header.php');
+include('./includes/header.php');
 
 if($req->isUser() && !$req->get('mode')){	
 	echo '<ul class="hormenu"><li><a href="./news.php?mode=new")>Toevoegen</a></li></ul>';
@@ -179,7 +178,7 @@ if ($req->get('id') && !($edit || $delete || $new)){
 	echo ($news['sticky']) ? 'Dit bericht blijft behouden na de agenda datum.' : 'Dit bericht wordt automatisch verwijderd na de agenda datum.';
 	echo '</p><p><strong>'.nl2br(htmlspecialchars($news["newsitem"],ENT_QUOTES)).'</strong></p>';
 }
-include('./includes/inc_footer.php');
+include('./includes/footer.php');
 
 ?>
 

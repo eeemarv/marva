@@ -1,8 +1,8 @@
 <?php
 
 ob_start();
-require('./includes/inc_default.php');
-require('./includes/inc_adoconnection.php');
+require('./includes/default.php');
+
 
 require_once($rootpath.'includes/inc_transactions.php');
 require_once($rootpath.'includes/inc_userinfo.php'); 
@@ -53,7 +53,7 @@ if ($req->isSuccess()){
 }	
 
 	
-include('./includes/inc_header.php');
+include('./includes/header.php');
 
 
 echo '<ul class="hormenu">';
@@ -145,7 +145,7 @@ if ($new && $req->isUser())
 	$table_column_ary[$req->get('orderby')]['title_suffix'] = ($req->get('asc')) ? '&nbsp;&#9650;' : '&nbsp;&#9660;';
 
 	foreach ($table_column_ary as $key => $data){
-	//	$data['title_href'] = '?orderby='.$key.'&asc='.$data['asc'];
+	
 		$data['title_params'] = array_merge($req->get(array('userid')), array(
 						'orderby' => $key,
 						'asc' => $data['asc'],
@@ -159,7 +159,7 @@ if ($new && $req->isUser())
 
 }
 
-include('./includes/inc_footer.php');
+include('./includes/footer.php');
 
 
 ?>

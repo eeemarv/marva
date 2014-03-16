@@ -1,8 +1,7 @@
 <?php
 ob_start();
 $rootpath = "./";
-require_once($rootpath."includes/inc_default.php");
-require_once($rootpath."includes/inc_adoconnection.php");
+require_once('./includes/default.php');
 
 require_once('./includes/request.php');
 require_once('./includes/data_table.php');
@@ -25,8 +24,7 @@ if ($req->get('create')){
 }
 
 
-include($rootpath."includes/inc_header.php");
-
+include('./includes/header.php');
 echo '<h1><a href="config.php">Instellingen</a></h1>';
 
 
@@ -92,5 +90,5 @@ function show_prefs($prefs){
 
 	
 
-include($rootpath.'includes/inc_footer.php');
+include('./includes/footer.php');
 ?>

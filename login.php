@@ -6,8 +6,8 @@ $rootpath = './';
 
 
 
-require_once($rootpath.'includes/inc_default.php');
-require_once($rootpath.'includes/inc_adoconnection.php');
+require_once($rootpath.'includes/default.php');
+
 require_once($rootpath.'includes/inc_eventlog.php');
 require_once($rootpath.'includes/inc_userinfo.php');
 require_once($rootpath.'includes/inc_auth.php');
@@ -127,7 +127,7 @@ if(readconfigfromdb("maintenance") == 1){
 	setstatus('Marva is niet beschikbaar wegens onderhoud.  Enkel admin gebruikers kunnen inloggen', 'warning');
 }
 
-require_once($rootpath.'includes/inc_header.php');
+require_once($rootpath.'includes/header.php');
 
 echo '<h1><a href="login.php">Login</a></h1>';
 
@@ -142,7 +142,7 @@ if(!$req->get('token')){
 }
 
 
-include($rootpath.'includes/inc_footer.php');
+include($rootpath.'includes/footer.php');
 
 
 

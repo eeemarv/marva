@@ -2,10 +2,10 @@
 ob_start();
 // $ptitle="login";
 $rootpath = "./";
-require_once($rootpath.'includes/inc_default.php');
-require_once($rootpath.'includes/inc_adoconnection.php');
-require_once($rootpath.'includes/inc_header.php');
+require_once($rootpath.'includes/default.php');
+
 require_once($rootpath.'includes/inc_content.php');
+
 require_once($rootpath.'includes/request.php');
 
 $req = new request('anonymous', true);
@@ -25,13 +25,7 @@ if ($req->get('send') && !$req->errors()){
 }	
 
 
-
-
-
-
-
-
-
+require_once('./includes/header.php');
 
 
 echo "<table border='0' width='100%'><tr><td><h1>Help</h1>";
@@ -70,7 +64,7 @@ if(isset($_POST["zend"])){
 echo "<small><i>Opgelet: je kan vanuit het loginscherm zelf een nieuw password aanvragen met je e-mail adres!</i></small>";
 
 
-require_once($rootpath."includes/inc_footer.php");
+require_once('./includes/inc_footer.php');
 
 
 function show_form($id,$email,$error_list,$posted_list){

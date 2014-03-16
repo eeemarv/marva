@@ -1,4 +1,9 @@
 <?php 
+
+$bootstrap = ($parameters['load_from_cdn']) ? '//netdna.bootstrapcdn.com/bootstrap/3.1.1' : $rootpath.'vendor/twbs/bootstrap/dist';
+$jquery = ($parameters['load_from_cdn']) ? 'http://code.jquery.com/jquery-1.11.0.min.js' : $rootpath.'vendor/components/jquery/jquery.min.js';
+
+
 echo <<<EOF
 <!DOCTYPE html>
 <html lang="{$parameters['locale']}">
@@ -11,7 +16,7 @@ echo <<<EOF
 
 	<title>{$parameters['site_name']}</title>
 	
-	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+	<link rel="stylesheet" href="{$bootstrap}/css/bootstrap.min.css">
 	<link type="text/css" rel="stylesheet" href="{$rootpath}css/main.css">	
 	<link type="text/css" rel="stylesheet" href="{$rootpath}tinybox/tinybox.css">
 			
@@ -24,8 +29,8 @@ echo <<<EOF
 	<script type="text/javascript" src="{$rootpath}/js/menu_current.js"></script>
 	<script type="text/javascript" src="{$rootpath}/tinybox/tinybox.js"></script>
 			
-	<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
-	<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+	<script src="{$jquery}"></script>
+	<script src="{$bootstrap}/js/bootstrap.min.js"></script>
 
 	
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -49,7 +54,17 @@ echo <<<EOF
 	<a class="navbar-brand" href="{$rootpath}">{$parameters['site_name']}</a>
 </div>
 <div class="collapse navbar-collapse navbar-ex1-collapse">
-	{% if is_granted('ROLE_USER') %}
+  <ul class="nav navbar-nav">
+	<li class="active"><a href="#">Vraag & Aanbod</a></li>
+	<li><a href="">Gebruikers</a></li>
+	<li><a href="">Transacties</a></li>
+	</ul></div>
+
+
+
+
+
+<!--	{% if is_granted('ROLE_USER') %}
 		{{ knp_menu_render('eeemarv_user_menu', { 'style': 'navbar' }) }}
 	{% endif %}	
 	
@@ -65,7 +80,7 @@ echo <<<EOF
 			{% render(controller('FOSUserBundle:Security:inlineLogin')) %}
 		{% endblock %}
 		{{ knp_menu_render('eeemarv_public_menu', {'style': 'navbar-right'}) }}		
-	{% endif %}
+	{% endif %}  -->
 			
 </div>
 </nav>

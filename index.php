@@ -20,20 +20,17 @@
  
 ob_start();
 
-require_once('includes/inc_default.php');
-require_once('includes/inc_adoconnection.php');
-
-
+require_once('includes/default.php');
 require_once('includes/request.php');
 
 $req = new request('anonymous');
 	
-require('includes/inc_header.php');
+require('includes/header.php');
 
 
 var_dump($parameters, $con);
 
-require('./includes/inc_footer.php');
+require('./includes/footer.php');
 
 
 ?>

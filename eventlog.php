@@ -1,21 +1,14 @@
 <?php
 ob_start();
 $rootpath = "./";
-require_once($rootpath."includes/inc_default.php");
-require_once($rootpath."includes/inc_adoconnection.php");
+require_once('./includes/default.php');
 
 require_once('./includes/request.php');
 
 
 $req = new request('admin');
 
-
-
-
-include($rootpath."includes/inc_header.php");
-
-
-
+include('./includes/header.php');
 
 if(isset($_GET["user_userid"])){
 	$user_userid = $_GET["user_userid"];
@@ -47,7 +40,7 @@ if(isset($s_id) && ($s_accountrole == "admin")){
 	header('location : .');
 }
 
-include($rootpath."includes/inc_footer.php");
+include('./includes/footer.php');
 
 // functions
 
