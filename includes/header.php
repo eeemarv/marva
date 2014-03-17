@@ -55,6 +55,21 @@ echo <<<EOF
 </div>
 <div class="collapse navbar-collapse navbar-ex1-collapse">
   <ul class="nav navbar-nav">
+EOF;
+if ($req->isGuest()){
+	$menu = array(
+		'messages' => 'Vraag & Aanbod',
+		'users'	=> 'Gebruikers',
+		'transactions' => 'Transacties',
+		);
+
+	foreach($menu as $entity => $label){
+		$active = ($req->getEntity() == $entity) ? ' class="active"' : '';	
+		echo '<li'.$active.'><a href="'.__DIR__.'/../'.$entity.'.php">'.$label.'</a></li>';
+		
+	}
+}
+echo <<<EOF
 	<li class="active"><a href="#">Vraag & Aanbod</a></li>
 	<li><a href="">Gebruikers</a></li>
 	<li><a href="">Transacties</a></li>

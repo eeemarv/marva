@@ -1,23 +1,21 @@
 <?php
 ob_start();
 $rootpath = "../";
-require_once($rootpath."includes/inc_default.php");
-require_once($rootpath."includes/inc_adoconnection.php");
-require_once($rootpath."includes/inc_userinfo.php");   
-session_start();
-$s_id = $_SESSION["id"];
-$s_name = $_SESSION["name"];
-$s_letscode = $_SESSION["letscode"];
-$s_accountrole = $_SESSION["accountrole"];
+require_once($rootpath."includes/default.php");
 
-if(isset($s_id)){
-	$id = $_GET["id"];
-	$contact = get_contact($id);
-	$mailuser = get_user_maildetails($message["id_user"]);
-	$usermail = $mailuser["emailaddress"];
-	$balance = $user["saldo"];
-	show_contact($contact);
-}
+require_once($rootpath."includes/inc_userinfo.php");   
+require_once($rootpath.'includes/request.php');
+
+$req = new request('guest');
+$req->add('id', 0, 'get');
+
+
+$contact = get_contact($req->get('id'));
+$mailuser = get_user_maildetails($message["id_user"]);
+$usermail = $mailuser["emailaddress"];
+$balance = $user["saldo"];
+show_contact($contact);
+
 
 ////////////////////////////////////////////////////////////////////////////
 //////////////////////////////F U N C T I E S //////////////////////////////

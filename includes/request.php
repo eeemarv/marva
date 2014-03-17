@@ -1,6 +1,6 @@
 <?php
 
-//  (copyleft) 2013 martti info@martti.be
+//  (copyleft) 2014 martti info@martti.be
 
 
 
