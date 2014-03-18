@@ -1,4 +1,7 @@
 <?php
+
+// copyleft 2014 martti <info@martti.be>
+
 ob_start();
 $rootpath = '../';
 require_once($rootpath.'includes/default.php');

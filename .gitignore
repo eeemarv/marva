@@ -1,23 +1,19 @@
 
-
+!**/.htaccess
 
 parameters.php
 parameters.yml
 
-site/parameters.yml
-site/index_content.html
-site/login_content.html
-site/images/*
-site/backup/*
-
+site/*
+!site/*.dist
 
 
 info.php
 javapop.txt
 update-rsync.sh
 sites/default/config/elas.xml
-sites/default/msgpictures/
-sites/default/userpictures/
+sites/default/msgpictures/*
+sites/default/userpictures/*
 testdeploy.sh
 
 contrib/*
@@ -29,6 +25,7 @@ web/config.php
 web/images/*
 web/cache/*
 
+components/*
 vendor/*
 composer.phar
 web/bundles/

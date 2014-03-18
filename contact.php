@@ -10,10 +10,11 @@ require_once($rootpath.'includes/request.php');
 
 $req = new request('anonymous', true);
 
-$req->add('email', '', 'post', array('type' => 'text', 'label' => 'Email adres', 'size' => 50, 'maxlength' => 50), array('not_empty' => true, 'email' => true))
+$req->setEntity('contact')
+	->add('email', '', 'post', array('type' => 'text', 'label' => 'Email adres', 'size' => 50, 'maxlength' => 50), array('not_empty' => true, 'email' => true))
 	->add('subject', '', 'post', array('type' => 'text', 'label' => 'Onderwerp'), array('not_empty' => true))
 	->add('content', '', 'post', array('type' => 'textarea', 'label' => 'Bericht'), array('not_empty' => true))
-	->add('recaptcha', '', 'post', array('type' => 'recaptcha', 'label' => 'Recaptcha'), array('recaptcha' => true))
+	->add('recaptcha', '', 'post', array('type' => 'recaptcha', 'label' => 'Recaptcha'), array('match' => 'recaptcha'))
 	->add('send', '', 'post', array('type' => 'submit', 'label' => 'Verzend'));
 
 
@@ -64,7 +65,7 @@ if(isset($_POST["zend"])){
 echo "<small><i>Opgelet: je kan vanuit het loginscherm zelf een nieuw password aanvragen met je e-mail adres!</i></small>";
 
 
-require_once('./includes/inc_footer.php');
+require_once('./includes/footer.php');
 
 
 function show_form($id,$email,$error_list,$posted_list){

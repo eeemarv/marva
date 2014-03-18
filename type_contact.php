@@ -7,11 +7,12 @@ require_once($rootpath."includes/request.php");
 
 $req = new request('admin');
 
-$req->setUrl('contact_types.php');
+$req->setUrl('contact_types.php')
+	->setEntity('type_contact');
 
 include($rootpath."includes/header.php");
 
-echo "<h1>Contact-Types</h1>";
+echo '<h1><a href="type_contact.php.php">Contact-Types</a></h1>';
 
 $contacttypes = get_all_contacttypes();
 show_all_contacttypes($contacttypes);

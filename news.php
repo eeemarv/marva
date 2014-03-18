@@ -67,7 +67,7 @@ if ($req->isSuccess()){
 include('./includes/header.php');
 
 if($req->isUser() && !$req->get('mode')){	
-	echo '<ul class="hormenu"><li><a href="./news.php?mode=new")>Toevoegen</a></li></ul>';
+	echo '<a href="./news.php?mode=new" class="btn btn-success pull-right">Toevoegen</a>';
 } 
 
 echo '<h1><a href="news.php">Nieuwsberichten / Agendapunten</a></h1>';	
@@ -159,13 +159,13 @@ if ($req->get('id') && !($edit || $delete || $new)){
 	$news = $req->getItem();
 	$owner = $req->getOwner();
 	
-	echo '<ul class="hormenu">';
+
 	if($req->isOwnerOrAdmin()){
-		$class = ($req->isAdmin()) ? ' class="admin"' : '';
-		echo '<li><a href="news.php?mode=delete&id='.$req->get('id').'"'.$class.'>Verwijderen</a></li>';
-		echo '<li><a href="news.php?mode=edit&id='.$req->get('id').'"'.$class.'>Aanpassen</a></li>';
+		$admin = ($req->isAdmin()) ? '[admin] ' : '';
+		echo '<a href="news.php?mode=delete&id='.$req->get('id').'" class="btn btn-danger pull-right">'.$admin.'Verwijderen</a></li>';
+		echo '<a href="news.php?mode=edit&id='.$req->get('id').'" class="btn btn-primary pull-right">'.$admin.'Aanpassen</a></li>';
 	}
-	echo '</ul>';
+
 		
 	echo '<h1>'.$news['headline'].'</h1>';
 	echo '<p>Agenda datum: '.$news['itemdate'].'</p>';

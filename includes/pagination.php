@@ -1,6 +1,6 @@
 <?php
 
-// (c) 2013 martti info@martti.be
+// (copyleft) 2013 martti info@martti.be
 
 
 
@@ -64,7 +64,7 @@ class pagination{
 			echo $this->page_num;
 			return;
 		}*/
-
+		echo '<div class="row"><div class="col-md-12">';
 		echo '<ul class="pagination">';
 		echo '<li class="details">Pagina ' . ($this->page + 1).' van ' . $this->page_num.'</li>';
 
@@ -102,7 +102,7 @@ class pagination{
 			echo $this->add_link($this->page + 1, '&#9658;');
 		}
 		
-		echo '</li><div class="clearer"></div>';
+		echo '</li></div></div>';
 	}
 	
 	public function add_link($page, $text = ''){

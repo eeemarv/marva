@@ -24,9 +24,9 @@ class request {
 	private $parameters = array();
 	private $render_keys = array('type', 'value', 'size', 'maxlength', 'style', 
 		'label', 'checked', 'onchange', 'onkeyup', 'autocomplete', 'options', 'option_set', 
-		'disabled', 'cols', 'rows', 'admin', 'placeholder');
+		'disabled', 'cols', 'rows', 'admin', 'placeholder', 'class');
 	private $validation_keys = array('not_empty', 'match', 'min_length', 'max_length', 
-		'unique', 'email', 'url', 'date');
+		'unique', 'email', 'url', 'date', 'recaptcha');
 	
 	private $output = 'tr';
 	
@@ -39,6 +39,7 @@ class request {
 		'no_email' => 'Geen geldig email-adres.',
 		'no_url' => 'Geen geldige url.',
 		'no_date' => 'Geen geldige datum',
+		'wrong_recaptcha' => 'recaptcha fout ingevuld.',
 		);
 		
 	private $status_messages = array(
@@ -264,6 +265,10 @@ class request {
 		return ($this->s_accountrole == 'admin' || $this->accountrole == 'user') ? true : false;
 	}
 	
+	public function isGuest(){
+		return (in_array($this->s_accountrole, array('guest', 'user', 'admin'))); 
+	}	
+	
 	public function isAdminPage(){
 		return ($this->security_level == 'admin') ? true : false;
 	}
@@ -306,7 +311,15 @@ class request {
 	
 	public function getSid(){
 		return $this->s_id;
-	}		
+	}
+	
+	public function getSName(){
+		return $this->s_name;
+	}
+	
+	public function getSCode(){
+		return $this->s_letscode;
+	}				
 
 	public function get_label($name){
 		return ($this->parameters[$name]['label']) ? $this->parameters[$name]['label'] : null;
@@ -354,12 +367,13 @@ class request {
 
 	
 	public function addSubmitButtons(){
-		$this->add('create', '', 'post', array('type' => 'submit', 'label' => 'Toevoegen'))
-			->add('create_plus', '', 'post', array('type' => 'submit', 'label' => 'Toevoegen en nog Eén'))
-			->add('edit', '', 'post', array('type' => 'submit', 'label' => 'Aanpassen'))
-			->add('cancel', '', 'post', array('type' => 'submit', 'label' => 'Annuleren'))
-			->add('delete', '', 'post', array('type' => 'submit', 'label' => 'Verwijderen'))
-			->add('filter', '', 'get', array('type' => 'submit', 'label' => 'Toon'));
+		$this->add('create', '', 'post', array('type' => 'submit', 'label' => 'Toevoegen', 'class' => 'btn btn-success'))
+			->add('create_plus', '', 'post', array('type' => 'submit', 'label' => 'Toevoegen en nog Eén', 'class' => 'btn btn-success'))
+			->add('edit', '', 'post', array('type' => 'submit', 'label' => 'Aanpassen', 'class' => 'btn btn-primary'))
+			->add('cancel', '', 'post', array('type' => 'submit', 'label' => 'Annuleren', 'class' => 'btn btn-default'))
+			->add('delete', '', 'post', array('type' => 'submit', 'label' => 'Verwijderen', 'class' => 'btn btn-danger'))
+			->add('send', '', 'post', array('type' => 'submit', 'label' => 'Verzend', 'class' => 'btn btn-primary'))
+			->add('filter', '', 'get', array('type' => 'submit', 'label' => 'Toon', 'class' => 'btn btn-default'));
 		return $this;
 	}	
 	
@@ -409,7 +423,8 @@ class request {
 	public function setUrl($url){
 		$this->url = $url;
 		return $this;
-	}	
+	}
+		
 	
 	public function get_link($overwrite_params = array()){
 		$param_string = '';
@@ -515,17 +530,12 @@ class request {
 
 
 	public function getInputString($name){
+		global $parameters;
 		$parameter = $this->parameters[$name];
 		$out = '';
 		$parameter['checked'] = ($parameter['type'] == 'checkbox' && $parameter['value']) ? 'checked' : null;
 		if ($parameter['type'] == 'recaptcha'){
-			
-			
-
-			$out = recaptcha_get_html('6Le2CfASAAAAAEOG6zEZwGNNVOaT8mbRU7EHlsH0');
-								// make new key! 
-		
-			
+			$out .= recaptcha_get_html($parameters['recaptcha_public']);
 		} elseif ($parameter['type'] == 'select'){
 			$out .= '<select name="'.$name.'">';
 			$out .= $this->getSelectOptionsString($name);
@@ -565,7 +575,7 @@ class request {
 				break;
 			case 'categories':
 				$ary = $this->get_categories();
-				$options[0] = '';
+				$options[0]['text'] = '';
 				foreach ($ary as $val){
 					$suffix = ($val['msg_num']) ? ' ('.$val['msg_num'].')' : '';
 					$options[$val['id']]['disabled'] = ($val['msg_num']) ? false : true;
@@ -575,13 +585,22 @@ class request {
 				break;
 			case 'subcategories':
 				$ary = $this->get_categories();
-				$options[0] = '';
+				$options[0]['text'] = '';
 				foreach ($ary as $val){
 					$options[$val['id']]['disabled'] = ($val['id_parent']) ? false : true;
 					$prefix = ($val['id_parent']) ? '&nbsp;&nbsp;&nbsp;&nbsp;' : '';			
 					$options[$val['id']]['text'] = $prefix.$val['name'];
 				}
 				break;
+			case 'maincategories':
+				$ary = $this->get_categories();
+				$options[0]['text'] = '';
+				foreach ($ary as $val){
+					if (!$val['id_parent']){			
+						$options[$val['id']]['text'] = $prefix.$val['name'];
+					}
+				}
+				break;				
 			default :
 				break;
 		} 
@@ -663,6 +682,11 @@ class request {
 				}
 				if ($mismatch){								
 					$parameter['error'] = $this->error_messages['mismatch'];					
+				}
+			} else if ($parameter['recaptcha']){
+				$resp = recaptcha_check_answer ($privatekey, $_SERVER['REMOTE_ADDR'], $_POST['recaptcha_challenge_field'], $_POST['recaptcha_response_field']);
+				if (!$resp->is_valid){
+					$parameter['error'] = $this->error_messages['wrong_recaptcha'];						
 				}
 			}
 			$error = (isset($parameter['error'])) ? true : $error;

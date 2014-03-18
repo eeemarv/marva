@@ -42,7 +42,8 @@ $parameters = array(
 		'delivery_address' => '', 				
 		),
 
-
+	'recaptcha_public' => '',
+	'recaptcha_private' => '', 
 
 	
 	);

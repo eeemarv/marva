@@ -1,14 +1,16 @@
 <?php
 ob_start();
 $rootpath = "./";
-require_once('./includes/default.php');
+require_once 'includes/default.php';
 
-require_once('./includes/request.php');
+require_once 'includes/request.php';
 
 
 $req = new request('admin');
 
-include('./includes/header.php');
+$req->setEntity('eventlog');
+
+include 'includes/header.php';
 
 if(isset($_GET["user_userid"])){
 	$user_userid = $_GET["user_userid"];
@@ -18,7 +20,7 @@ if(isset($_GET["user_userid"])){
 if(isset($_GET["user_show"])){
 	$user_show = $_GET["user_show"];
 } else {
-	$user_show = 1000;
+	$user_show = 20;
 }
 if(isset($_GET["user_type"])){
 	$user_type = $_GET["user_type"];
@@ -27,28 +29,19 @@ if(isset($_GET["user_type"])){
 }
 
 
-if(!isset($user_show)){
-	$user_show = 100;
-}
+echo '<h1><a href="eventlog.php">Event log</a></h1>';
 
-if(isset($s_id) && ($s_accountrole == "admin")){
-	show_ptitle();
+$logrows = get_logs($user_userid,$user_type);
+show_logs($logrows,$user_show);
 
-	$logrows = get_logs($user_userid,$user_type);
-	show_logs($logrows,$user_show);
-}else{
-	header('location : .');
-}
 
-include('./includes/footer.php');
+include 'includes/footer.php';
 
 // functions
 
 
 
-function show_ptitle(){
-	echo "<h1>Event log</h1>";
-}
+
 
 function get_logs($user_userid,$user_type){;
         global $db;

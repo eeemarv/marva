@@ -131,13 +131,12 @@ include('./includes/header.php');
 
 
 
-if ($req->isAdmin() && !$req->get('mode')){
-			
-	echo '<ul class="hormenu"><li><a class="admin" href="./users.php?mode=new")>Toevoegen</a></li></ul>';
+if ($req->isAdmin() && !$req->get('mode')){			
+	echo '<a href="./users.php?mode=new" class="btn btn-success pull-right">[admin] Toevoegen</a>';
 }
 
 
-echo '<h1><a href="users.php">Leden</a></h1>';
+echo '<h1><a href="users.php">Gebruikers</a></h1>';
 
 $new = ($req->get('mode') == 'new') ? true : $new;
 $edit = ($req->get('mode') == 'edit') ? true : $edit;
@@ -272,18 +271,18 @@ EOF;
 	$query .= 'AND ( status = 1 OR status = 2 OR status = 3 )';
 	$user = $db->GetRow($query);	
 
-    echo '<ul class="hormenu">';
-    $class = ($req->isAdmin()) ? ' class="admin"' : '';		
+
+    $admin = ($req->isAdmin()) ? '[admin] ' : '';		
 	if ($req->isAdmin()){	
-		echo '<li><a href="users.php?mode=delete&id='.$req->get('id').'"'.$class.'>Verwijderen</a></li>';
+		echo '<a href="users.php?mode=delete&id='.$req->get('id').'" class="btn btn-danger pull-right">'.$admin.'Verwijderen</a>';
 	}
 	if ($req->isOwnerOrAdmin()){			
-		echo '<li><a href="users.php?mode=edit&id='.$req->get('id').'"'.$class.'>Aanpassen</a></li>';
+		echo '<a href="users.php?mode=edit&id='.$req->get('id').'" class="btn btn-primary pull-right">'.$admin.'Aanpassen</a>';
 	}	
 		
 //		$myurl='messages/upload_picture.php?msgid='.$req->get('id');
 //		echo "<li><a href='#' onclick=window.open('$myurl','upload_picture','width=640,height=480,scrollbars=yes,toolbar=no,location=no,menubar=no')>Foto toevoegen</a></li>";	
-	echo '</ul>';
+
 
 
 

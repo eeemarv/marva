@@ -55,18 +55,17 @@ if ($req->isSuccess()){
 	
 include('./includes/header.php');
 
+echo '<div class="row"><div class="col-md-12">';
 
-echo '<ul class="hormenu">';
-if ($req->isUser() && !$req->get('mode')){	
-	echo '<li><a href="./transactions.php?mode=new")>Toevoegen</a></li>';
-}
 if ($req->isAdmin() && !$req->get('mode')){
-	echo '<li><a class="admin" href="./transactions/many_to_one.php")>Massa-Transactie</a></li>';	
-}		
-echo '</ul>';
-
-
+	echo '<a href="transactions/many_to_one.php" class="btn btn-success pull-right">[admin] Massa-Transactie</a>';	
+}
+if ($req->isUser() && !$req->get('mode')){	
+	echo '<a href="transactions.php?mode=new"  class="btn btn-success pull-right">Toevoegen</a>';
+}
+		
 echo '<h1><a href="transactions.php">Transacties</a></h1>';
+echo '</div></div>';
 
 $new = ($req->get('mode') == 'new') ? true : $new;
 

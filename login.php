@@ -17,7 +17,8 @@ require_once($rootpath.'includes/request.php');
 
 $req = new request('anonymous', true);
 
-$req->add('letscode', '', 'post', array('type' => 'text', 'size' => 50, 'maxlength' => 50, 'label' => 'Letscode'), array('not_empty' => true, 'active_letscode' => true))
+$req->setEntity('login')
+	->add('letscode', '', 'post', array('type' => 'text', 'size' => 50, 'maxlength' => 50, 'label' => 'Letscode'), array('not_empty' => true, 'active_letscode' => true))
 	->add('password', '', 'post', array('type' => 'password', 'size' => 50, 'maxlength' => 50, 'label' => 'Paswoord'), array('not_empty' => true))
 	->add('submit_login', '', 'post', array('type' => 'submit', 'label' => 'Login'))
 	->add('token', '', 'get')
@@ -129,7 +130,7 @@ if(readconfigfromdb("maintenance") == 1){
 
 require_once($rootpath.'includes/header.php');
 
-echo '<h1><a href="login.php">Login</a></h1>';
+echo '<h1><a href="login.php">Inloggen</a></h1>';
 
 if(!$req->get('token')){
 	echo '<form method="post" class="trans" action="login.php">';

@@ -36,10 +36,10 @@ class data_table{
 	}
 
 	public function render(){
-		echo '<table class="data" cellpadding="0" cellspacing="0" border="1" width="99%">';
+		echo '<div class="row"><div class="col-md-12"><table class="table table-striped table-bordered table-condensed">';
 		$this->render_header()->render_rows()->render_footer();
-		echo '</table>';
-		$this->render_status_legend();		
+		echo '</table></div></div>';
+		//$this->render_status_legend();		
 		echo '<script type="text/javascript" src="'.$this->rootpath.'js/table_sum.js"></script>';		
 		return $this;
 	}
@@ -103,14 +103,14 @@ class data_table{
 	
 	private function render_rows(){
 		if (!sizeof($this->data) && $this->no_results_message){
-			echo '<tr class="uneven"><td colspan="'.sizeof($this->columns).'">Er zijn geen resultaten</td></tr>';
+			echo '<tr><td colspan="'.sizeof($this->columns).'">Er zijn geen resultaten</td></tr>';
 			return $this;
 		}
 		foreach ($this->data as $key => $row){
-			$un = ($key % 2) ? '' : 'un'; 
-			echo '<tr class="'.$un.'even_row">';
+			echo '<tr>';
 			foreach ($this->columns as &$td){
 				$text = ($td['text']) ? $td['text'] : (($td['replace_by']) ? $row[$td['replace_by']] : $row[$td['key']]);
+				$show = ((!$row[$td['show_when']] && $td['show_when']) || $row[$td['not_show_when']]) ? false : true;
 				if ($td['input']){
 					$this->req->set_output('td')->render($td['key'].'-'.$row[$td['input']]);
 					$td['count'] += ($td['footer'] == 'sum') ? $this->req->get($td['key'].'-'.$row[$td['input']]) : 0;					
@@ -149,10 +149,10 @@ class data_table{
 							break;
 						case 'admin':
 							$bgcolor = ($row['accountrole'] == 'admin') ? ' bgcolor="yellow"' : '';						
-							echo '<td valign="top"'.$bgcolor.$td_class.'>'.$td_1.$text.$td_2.'</td>';					
+							echo '<td valign="top"'.$bgcolor.$td_class.'>'.(($show) ? $td_1.$text.$td_2 : '&nbsp;').'</td>';					
 							break;
 						default: 
-							echo '<td'.$td_class.'>'.$td_1.htmlspecialchars($text,ENT_QUOTES).$td_2.'</td>';						
+							echo '<td'.$td_class.'>'.(($show) ? $td_1.htmlspecialchars($text,ENT_QUOTES).$td_2 : '&nbsp;').'</td>';						
 							break;
 					}
 					$td['count'] += ($td['footer'] == 'sum') ? $row[$td['key']] : 0;					

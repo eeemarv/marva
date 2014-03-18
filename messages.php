@@ -63,7 +63,7 @@ $new = $edit = $delete = false;
 
 if ($req->get('delete') && $req->get('id') && $req->isOwnerOrAdmin()){
 	$req->delete();
-	$column = ($req->get('msg_type') == 'w') ? 'stat_msgs_wanted' : 'stat_msgs_offers'; // todo error check before update count
+	$column = ($req->get('msg_type') == 'w') ? 'stat_msgs_wanted' : 'stat_msgs_offers'; 
 	$db->Execute('update categories set '.$column.' = '.$column.' - 1 where id = '.$req->get('id_category'));
 	
 } else if (($req->get('create') || $req->get('create_plus')) && $req->isUser()){
@@ -120,7 +120,7 @@ if ($req->isSuccess()){
 include('./includes/header.php');
 
 if($req->isUser() && !$req->get('mode')){	
-	echo '<ul class="hormenu"><li><a href="./messages.php?mode=new")>Toevoegen</a></li></ul>';
+	echo '<a href="./messages.php?mode=new" class="btn btn-success pull-right">Toevoegen</a>';
 } 
 
 echo '<h1><a href="messages.php">Vraag & Aanbod</a></h1>';
@@ -136,7 +136,7 @@ if (($req->get('mode') == 'edit') || $delete){
 if (($new && $req->isUser()) || (($edit || $delete) && $req->isOwnerOrAdmin()))
 {
 	echo '<h1>'.(($new) ? 'Toevoegen' : (($edit) ? 'Aanpassen' : 'Verwijderen?')).'</h1>';
-	echo '<form method="post" class="trans" action="messages.php">';
+	echo '<form method="post" class="trans">';
 	echo '<table cellspacing="5" cellpadding="0" border="0">';
 	if ($delete){
 		echo '<tr><td colspan="2"><h2><a href="messages.php?id='.$req->get('id').'">';
@@ -254,19 +254,16 @@ if ($req->get('id') && !($edit || $delete || $new)){
 	$message = $req->getItem();
 	$owner = $req->getOwner();
 	$msgpictures = $db->GetArray('SELECT * FROM msgpictures WHERE msgid = ' .$req->get('id'));	
-
-
-    echo '<ul class="hormenu">';		
+		
 	if ($req->isOwnerOrAdmin()){
-		$class = ($req->isAdmin()) ? ' class="admin"' : '';
-		echo '<li><a href="messages.php?mode=delete&id='.$req->get('id').'"'.$class.'>Verwijderen</a></li>';
-		echo '<li><a href="messages.php?mode=edit&id='.$req->get('id').'"'.$class.'>Aanpassen</a></li>';
+		$admin = ($req->isAdmin()) ? '[admin] ' : '';
+		echo '<a href="messages.php?mode=delete&id='.$req->get('id').'" class="btn btn-danger pull-right">'.$admin.'Verwijderen</a>';
+		echo '<a href="messages.php?mode=edit&id='.$req->get('id').'" class="btn btn-primary pull-right">'.$admin.'Aanpassen</a>';
 		$myurl='messages/upload_picture.php?msgid='.$req->get('id');
-		echo "<li><a href='#' onclick=window.open('$myurl','upload_picture','width=640,height=480,scrollbars=yes,toolbar=no,location=no,menubar=no')>Foto toevoegen</a></li>";	
+		echo '<a href="#" class="btn btn-default pull-right">'.$admin.'Foto toevoegen</a>';	
 	}
-	echo '</ul>';	
-
-
+	
+	
 	$title = $message["content"];
 	
 	$contact = get_contact($owner['id']);
