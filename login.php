@@ -20,11 +20,16 @@ $req = new request('anonymous', true);
 $req->setEntity('login')
 	->add('letscode', '', 'post', array('type' => 'text', 'size' => 50, 'maxlength' => 50, 'label' => 'Letscode'), array('not_empty' => true, 'active_letscode' => true))
 	->add('password', '', 'post', array('type' => 'password', 'size' => 50, 'maxlength' => 50, 'label' => 'Paswoord'), array('not_empty' => true))
-	->add('submit_login', '', 'post', array('type' => 'submit', 'label' => 'Login'))
+	->add('submit_login', '', 'post', array('type' => 'submit', 'label' => 'Login', 'class' => 'btn btn-primary'))
+	->add('cancel', '', 'post', array('type' => 'submit', 'label' => 'Annuleren', 'class' => 'btn btn-default'))
 	->add('token', '', 'get')
 	->add('location', 'messages.php', 'get|post', array('type' => 'hidden'));
 
 
+if ($req->get('cancel')){
+	header('location: .');
+	exit;
+}
 
 
 $location = ltrim($req->get('location'), '/');
@@ -133,12 +138,11 @@ require_once($rootpath.'includes/header.php');
 echo '<h1><a href="login.php">Inloggen</a></h1>';
 
 if(!$req->get('token')){
-	echo '<form method="post" class="trans" action="login.php">';
-	echo '<table cellspacing="5" cellpadding="0" border="0">';
-	$req->set_output('tr')->render(array('letscode', 'password'));
-	echo '<tr><td colspan="2">';
-	$req->set_output('nolabel')->render(array('submit_login', 'location'));
-	echo '</td></tr></table></form>';
+	echo '<form method="post" class="trans form-horizontal" role="form">';
+	$req->set_output('formgroup')->render(array('letscode', 'password'));
+	echo '<div>';
+	$req->set_output('nolabel')->render(array('submit_login', 'cancel', 'location'));
+	echo '</div></form>';
 	echo '<ul><li><a href="'.$rootpath.'passwordlost.php">Passwoord vergeten</a></li></ul>';			
 }
 

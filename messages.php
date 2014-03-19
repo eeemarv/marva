@@ -32,21 +32,20 @@ $req->setEntityTranslation('Bericht')
 	->add('start', 0, 'get')	
 	->add('q', '', 'get', array('type' => 'text', 'label' => 'Trefwoord', 'size' => 25, 'maxlength' => 25))
 	->add('ow', 'ow', 'get', array('type' => 'select', 'label' => 'Vraag-Aanbod', 'options' => $offer_want_options))
-	->add('userid', 0, 'get', array('type' => 'select', 'label' => 'Lid', 'option_set' => 'active_users'))
+	->add('userid', 0, 'get', array('type' => 'select', 'label' => 'Gebruiker', 'option_set' => 'active_users'))
 	->add('catid', 0, 'get', array('type' => 'select', 'label' => 'Categorie', 'option_set' => 'categories'))
 	->add('postcode', '', 'get', array('type' => 'text', 'size' => 25, 'maxlength' => 8, 'label' => 'Postcode' ))
 	->add('filter', '', 'get', array('type' => 'submit', 'label' => 'Toon'))
 	->add('id', 0, 'get|post', array('type' => 'hidden'))	
 	->add('mode', '', 'get|post', array('type' => 'hidden'))
-	->add('msg_type', 'ow', 'post', array('type' => 'select', 'label' => 'Vraag-Aanbod', 'options' => $offer_want_options), array('match' => array('o', 'w')))
-	->add('id_user', $req->getSid(), 'post', array('type' => 'select', 'label' => '[admin] Van', 'option_set' => 'active_users'), array('match' => 'active_user'))
-	->add('id_category', 0, 'post', array('type' => 'select', 'label' => 'Categorie', 'option_set' => 'subcategories'), array('match' => 'subcategory'))
+	->add('msg_type', 'ow', 'post', array('type' => 'select', 'label' => 'Vraag-Aanbod', 'options' => $offer_want_options), array('not_empty' => true, 'match' => array('o', 'w')))
+	->add('id_user', $req->getSid(), 'post', array('type' => 'select', 'label' => '[admin] Van', 'option_set' => 'active_users'), array('not_empty' => true, 'match' => 'active_user'))
+	->add('id_category', 0, 'post', array('type' => 'select', 'label' => 'Categorie', 'option_set' => 'subcategories'), array('not_empty' => true, 'match' => 'subcategory'))
 	->add('content', '', 'post', array('type' => 'text', 'size' => 40, 'label' => 'Titel'), array('not_empty' => true))
 	->add('description', '', 'post', array('type' => 'textarea', 'cols' => 60, 'rows' => 15, 'label' => 'Inhoud'), array('not_empty' => true))	
-	->add('amount', 0, 'post', array('type' => 'text', 'size' => 3, 'maxlength' => 3, 'label' => 'Vraagprijs ('.$currency.')'), array('match' => 'positive'))
+	->add('amount', 0, 'post', array('type' => 'text', 'size' => 4, 'maxlength' => 3, 'label' => 'Vraagprijs ('.$currency.')'), array('match' => 'positive'))
 	->add('cdate', date('Y-m-d H:i:s'), 'post')
 	->add('mdate', date('Y-m-d H:i:s'), 'post')
-	->add('sendmail', '', 'post', array('type' => 'submit', 'label' => 'Versturen'))
 	->add('mailbody', '', 'post', array('type' => 'textarea', 'cols' => 60, 'rows' => 8), array('not_empty' => true, 'min_length' => 15))
 	->add('mailcc', 'checked', 'post', array('type' => 'checkbox', 'label' => 'Stuur een kopie naar mezelf'))
 	->addSubmitButtons()
@@ -76,7 +75,7 @@ if ($req->get('delete') && $req->get('id') && $req->isOwnerOrAdmin()){
 } else if ($req->get('edit') && $req->get('id') && $req->isOwnerOrAdmin()){
 	$edit = $req->errorsUpdate(array('id_user', 'msg_type', 'id_category', 'content', 'description', 'amount', 'mdate'));
 	
-} else if ($req->get('sendmail') && $req->get('id')){
+} else if ($req->get('send') && $req->get('id')){
 	
 	if (!$req->errors(array('mailbody', 'mailcc', 'id'))){
 
@@ -136,29 +135,30 @@ if (($req->get('mode') == 'edit') || $delete){
 if (($new && $req->isUser()) || (($edit || $delete) && $req->isOwnerOrAdmin()))
 {
 	echo '<h1>'.(($new) ? 'Toevoegen' : (($edit) ? 'Aanpassen' : 'Verwijderen?')).'</h1>';
-	echo '<form method="post" class="trans">';
-	echo '<table cellspacing="5" cellpadding="0" border="0">';
+	echo '<form method="post" class="trans form-horizontal" role="form">';
 	if ($delete){
-		echo '<tr><td colspan="2"><h2><a href="messages.php?id='.$req->get('id').'">';
+		echo '<h2><a href="messages.php?id='.$req->get('id').'">';
 		echo ($req->get('msg_type') == 'w') ? 'Vraag' : 'Aanbod';
-		echo ': '.$req->get('content').'</a></h2></td></tr><tr><td colspan="2">Door: ';
+		echo ': '.$req->get('content').'</a></h2><p>Door: ';
 		$req->renderOwnerLink();
-		echo '</td></tr><tr><td colspan="2"><p>'.$req->get('description').'</p></td></tr>';
+		echo '</p><p>'.$req->get('description').'</p>';
 	} else {
 		$id_user = ($req->isAdmin()) ? 'id_user' : 'non_existing_dummy';
-		$req->set_output('tr')->render(array($id_user, 'msg_type', 'id_category', 'content', 'description', 'amount'));
+		$req->set_output('formgroup')->render(array($id_user, 'msg_type', 'id_category', 'content', 'description', 'amount'));
 	}
-	echo '<tr><td colspan="2">';
+	echo '<div>';
 	$submit = ($new) ? 'create' : (($edit) ? 'edit' : 'delete');
 	$create_plus = ($new) ? 'create_plus' : 'non_existing_dummy';
 	$req->set_output('nolabel')->render(array($submit, $create_plus, 'cancel', 'id', 'mode'));
-	echo '</td></tr></table></form>';		
+	echo '</div></form>';		
 }
 
 if (!($new || $edit || $delete)){
-	echo '<form method="GET" class="trans"><table >';
-	$req->set_output('tr')->render(array('q', 'postcode', 'catid', 'userid', 'ow', 'filter'));
-	echo '</table></form>';
+	echo '<form method="GET" class="form-horizontal trans" role="form">';
+	$req->set_output('formgroup')->render(array('q', 'postcode', 'catid', 'userid', 'ow'));
+	echo '<div>';
+	$req->set_output('nolabel')->render('filter');
+	echo '</div></form>';
 }
 
 if (!$req->get('id') && !($new || $edit || $delete)){
@@ -331,8 +331,8 @@ if ($req->get('id') && !($edit || $delete || $new)){
 
 	//Direct URL
 	echo '<tr class="even_row"><td>';
-	$directurl='http://'.$baseurl.'/messages.php?id='.$req->get('id');
-	echo 'Directe link: <a href="' .$directurl .'">' .$directurl .'</a>';
+	$directurl = 'http://'.$_SERVER['HTTP_HOST'].'/messages.php?id='.$req->get('id');
+	echo 'Directe link: <a href="'.$directurl.'">' .$directurl .'</a>';
 	echo '<br><i><small>Deze link brengt leden van je groep rechtstreeks bij dit V/A</small></i>';
 	echo '</td></tr></table></td>';
 
@@ -358,7 +358,7 @@ if ($req->get('id') && !($edit || $delete || $new)){
 	
 	echo '<td><form action="messages.php" method="post"><table border="0">';	
 	$req->set_output('trtr')->render('mailbody')
-		->set_output('trtd')->render(array('mailcc', 'sendmail', 'id'));
+		->set_output('trtd')->render(array('mailcc', 'send', 'id'));
 	echo '</table></form></td>';
 	//
 

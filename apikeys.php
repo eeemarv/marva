@@ -67,9 +67,11 @@ if ($req->get('mode') == 'delete' && $req->get('id')){
 		->render();
 
 	echo '<h1>Apikey toevoegen</h1>';
-	echo '<form method="post" class="trans"><table>';
-	$req->set_output('tr')->render(array('apikey', 'type', 'comment', 'create'));
-	echo '</table></form>';
+	echo '<form method="post" class="trans form-horizontal">';
+	$req->set_output('formgroup')->render(array('apikey', 'type', 'comment'));
+	echo '<div>';
+	$req->set_output('nolabel')->render('create');
+	echo '</div></form>';
 }
 
 include($rootpath.'includes/footer.php');

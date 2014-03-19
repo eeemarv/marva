@@ -19,7 +19,7 @@ $req->setEntityTranslation('Nieuwsbericht')
 	->add('asc', 0, 'get')
 	->add('id', 0, 'get|post', array('type' => 'hidden', 'entity_id' => true))	
 	->add('mode', '', 'get')
-	->add('itemdate', date('Y-m-d'), 'post', array('type' => 'text', 'label' => 'Datum', 'size' => 10), array('not_empty' => true, 'date' => true))
+	->add('itemdate', date('Y-m-d'), 'post', array('type' => 'text', 'label' => 'Datum', 'size' => 10, 'placeholder' => 'jjjj-mm-dd'), array('not_empty' => true, 'date' => true))
 	->add('headline', '', 'post', array('type' => 'text', 'size' => 40, 'label' => 'Titel'), array('not_empty' => true))
 	->add('newsitem', '', 'post', array('type' => 'textarea', 'cols' => 60, 'rows' => 15, 'label' => 'Inhoud'), array('not_empty' => true))
 	->add('sticky', '', 'post', array('type' => 'checkbox', 'label' => 'Niet vervallen'))
@@ -83,21 +83,19 @@ if (($req->get('mode') == 'edit') || $delete){
 if (($new && $req->isUser()) || (($edit || $delete) && $req->isOwnerOrAdmin()))
 {
 	echo '<h1>'.(($new) ? 'Toevoegen' : (($edit) ? 'Aanpassen' : 'Verwijderen?')).'</h1>';
-	echo '<form method="post" class="trans" action="news.php">';
-	echo '<table cellspacing="5" cellpadding="0" border="0">';
+	echo '<form method="post" class="trans form-horizontal" role="form">';
 	if ($delete){
-		echo '<tr><td colspan="2"><h2><a href="news.php?id='.$req->get('id').'">';
-		echo $req->get('headline').'</a></h2></td></tr>';
-		echo '<tr><td colspan=2><p>'.$req->get('newsitem').'</p></td></tr>';
-	} else {
-		echo '<tr><td colspan="2">Geef de datum in als jjjj-mm-dd</td></tr>';			
-		$req->set_output('tr')->render(array('itemdate', 'headline', 'newsitem', 'sticky'));
+		echo '<h2><a href="news.php?id='.$req->get('id').'">';
+		echo $req->get('headline').'</a></h2>';
+		echo '<p>'.$req->get('newsitem').'</p>';
+	} else {		
+		$req->set_output('formgroup')->render(array('itemdate', 'headline', 'newsitem', 'sticky'));
 	}
-	echo '<tr><td colspan="2">';
+	echo '<div>';
 	$submit = ($new) ? 'create' : (($edit) ? 'edit' : 'delete');
 	$create_plus = ($new) ? 'create_plus' : 'non_existing_dummy';
 	$req->set_output('nolabel')->render(array($submit, $create_plus, 'cancel', 'id'));
-	echo '</td></tr></table></form>';		
+	echo '</div></form>';		
 }	
 
 if (!$req->get('id') && !($new || $edit || $delete)){
@@ -174,9 +172,11 @@ if ($req->get('id') && !($edit || $delete || $new)){
 	}	
 	echo '<p>Ingegeven door: ';
 	$req->renderOwnerLink();
-	echo '</p><p>';
+	echo '</p><p>Bericht:</p>';
+	echo '<p><strong>'.nl2br(htmlspecialchars($news["newsitem"],ENT_QUOTES)).'</strong></p>';
+	echo '<p>&nbsp;</p>';
 	echo ($news['sticky']) ? 'Dit bericht blijft behouden na de agenda datum.' : 'Dit bericht wordt automatisch verwijderd na de agenda datum.';
-	echo '</p><p><strong>'.nl2br(htmlspecialchars($news["newsitem"],ENT_QUOTES)).'</strong></p>';
+	echo '<p>&nbsp;</p>';		
 }
 include('./includes/footer.php');
 

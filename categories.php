@@ -17,7 +17,8 @@ $req->setEntityTranslation('Categorie')
 	->add('id_creator', $req->getSid(), 'post')
 	->add('id_parent', 0, 'get|post', array('type' => 'select', 'label' => 'Ouder-category', 'option_set' => 'maincategories'))
 	->addSubmitButtons()	
-	->cancel();
+	->cancel()
+	->query();
 
 $new = $edit = $delete = false;
 
@@ -46,7 +47,9 @@ if ($req->isSuccess()){
 
 include('includes/header.php');
 
-echo '<a href="categories.php?mode=new" class="btn btn-success pull-right">Toevoegen</a>';
+if(!$req->get('mode')){
+	echo '<a href="categories.php?mode=new" class="btn btn-success pull-right">Toevoegen</a>';
+}
 
 echo '<h1><a href="categories.php">Categorie&#235;n</a></h1>';
 
@@ -60,18 +63,17 @@ if (($req->get('mode') == 'edit') || $delete){
 
 if (($new || $edit || $delete) && $req->isAdmin()){
 	echo '<h1>'.(($new) ? 'Toevoegen' : (($edit) ? 'Aanpassen' : 'Verwijderen?')).'</h1>';
-	echo '<form method="post" class="trans">';
-	echo '<table cellspacing="5" cellpadding="0" border="0">';
+	echo '<form method="post" class="form-horizontal trans" role="form">';
+
 	if ($delete){
 		if ($req->get('id_parent')){
-			$parent = $db->getOne('select name from categories where id = '.$req->get('id_parent')). ' - ';
+			$parent = $db->getOne('select name from categories where id = '.$req->get('id_parent')). ': ';
 		} else {
 			$parent = '';
 		}
-		echo '<tr><td colspan="2"><h2>'.$parent.$req->get('name').'</h2></td></tr>';
+		echo '<h2>'.$parent.$req->get('name').'</h2>';
 	} else {
-		$id_user = ($req->isAdmin()) ? 'id_user' : 'non_existing_dummy';
-		$req->set_output('tr')->render(array($id_user, 'msg_type', 'id_category', 'content', 'description', 'amount'));
+		$req->set_output('formgroup')->render(array('name', 'id_parent'));
 	}
 	echo '<tr><td colspan="2">';
 	$submit = ($new) ? 'create' : (($edit) ? 'edit' : 'delete');
@@ -121,7 +123,7 @@ if (!$req->get('id') && !($new || $edit || $delete)){
 			'prefix' => 'prefix'))
 		->add_column('msg_num', array(
 			'title' => 'Vraag & Aanbod', 
-			'href' => 'messages.php', 
+			'href_base' => 'messages.php', 
 			'href_param' => 'catid', 
 			'href_id' => 'id',
 			'show_when' => 'msg_num'))

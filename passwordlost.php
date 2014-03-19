@@ -17,7 +17,13 @@ $req = new request('anonymous', true);
 
 
 $req->add('email', '', 'post', array('type' => 'text', 'label' => 'Email adres', 'size' => 50, 'maxlength' => 50), array('not_empty' => true, 'email' => true, 'match' => 'email_active_user'))
-	->add('send', '', 'post', array('type' => 'submit', 'label' => 'Reset Paswoord'));
+	->add('send', '', 'post', array('type' => 'submit', 'label' => 'Reset Paswoord', 'class' => 'btn btn-primary'))
+	->add('cancel', '', 'post', array('type' => 'submit', 'label' => 'Annuleren', 'class' => 'btn btn-default'));
+
+if ($req->get('cancel')){
+	header('location: .');
+	exit;
+}
 
 if ($req->get('send') && !$req->errors()){
 	$email = $req->get('email');
@@ -46,17 +52,18 @@ if ($req->get('send') && !$req->errors()){
 }
 
 	
-require_once('./includes/header.php');
+require_once('includes/header.php');
 
 echo '<h1><a href="passwordlost.php">Nieuw paswoord aanvragen</a></h1>';
 
-echo '<form method="post" class="trans">';
-echo '<table cellspacing="5" cellpadding="0" border="0">';
-$req->set_output('tr')->render(array('email', 'recaptcha', 'send'));
-echo '</table></form>';
+echo '<form method="post" class="trans form-horizontal" role="form">';
+$req->set_output('formgroup')->render(array('email', 'recaptcha'));
+echo '<div>';
+$req->set_output('nolabel')->render(array('send', 'cancel'));
+echo '</div></form>';
 
         
-require_once('./includes/footer.php');
+require_once('includes/footer.php');
 
 ?>
 

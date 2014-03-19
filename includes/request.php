@@ -518,6 +518,11 @@ class request {
 		return $this;
 	}	
 
+	private function render_formgroup($name){
+		echo '<div class="form-group"><label class="col-sm-2 control-label">';
+		echo $this->getLabelString($name).'</label><div class="col-sm-10">';
+		echo $this->getInputString($name).'</div></div>';
+	}	
 
 	public function getLabelString($name, $tag = ''){
 		$open_tag = ($tag) ? '<'.$tag.'>' : '';

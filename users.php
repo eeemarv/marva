@@ -36,23 +36,24 @@ $req->setEntityTranslation('Gebruiker')
 	->add('cdate', date('Y-m-d H:i:s'), 'post')
 	->add('mdate', date('Y-m-d H:i:s'), 'post')	
 	->add('adate', date('Y-m-d H:i:s'), 'post')	
-	->add('name', '', 'post', array('type' => 'text', 'size' => 50, 'maxlength' => 50, 'label' => 'Naam', 'admin' => true), array('not_empty' => true, 'unique' => true))
+	->add('name', '', 'post', array('type' => 'text', 'size' => 50, 'maxlength' => 50, 'label' => 'Gebruikersnaam', 'admin' => true), array('not_empty' => true, 'unique' => true))
 	->add('fullname', '', 'post', array('type' => 'text', 'size' => 50, 'maxlength' => 100, 'label' => 'Voor- en Achternaam', 'admin' => true), array('not_empty' => true))
 	->add('letscode', '', 'post', array('type' => 'text', 'size' => 10, 'maxlength' => 8, 'label' => 'Letscode', 'admin' => true), array('not_empty' => true, 'unique' => true))
 	->add('postcode', '', 'post', array('type' => 'text', 'size' => 10, 'maxlength' => 8, 'label' => 'Postcode', 'admin' => true), array('not_empty' => true))
-	->add('birthday', '', 'post', array('type' => 'text', 'label' => 'Geboortedatum (jjjj-mm-dd)', 'size' => 10, 'admin' => true), array('not_empty' => true, 'date' => true))
-	->add('hobbies', '', 'post', array('type' => 'textarea', 'cols' => 60, 'rows' => 15, 'label' => 'Hobbies/Interesses'))
+	->add('birthday', '', 'post', array('type' => 'text', 'label' => 'Geboortedatum', 'placeholder' => 'jjjj-mm-dd', 'size' => 10, 'admin' => true), array('not_empty' => true, 'date' => true))
+	->add('hobbies', '', 'post', array('type' => 'textarea', 'cols' => 50, 'rows' => 7, 'label' => 'Hobbies/Interesses'))
 	->add('comments', '', 'post', array('type' => 'text', 'size' => 50, 'maxlength' => 100, 'label' => 'Commentaar'))	
 	->add('admincomment', '', 'post', array('type' => 'text', 'size' => 50, 'maxlength' => 200, 'label' => 'Commentaar vd admin', 'admin' => true))	
 	->add('login', sha1(uniqid().microtime()), 'post')
 	->add('accountrole', 'user', 'post', array('type' => 'select', 'label' => 'Rechten', 'options' => $accountrole_options, 'admin' => true), array('not_empty' => true))
 	->add('status', 0, 'post', array('type' => 'select', 'label' => 'Status', 'options' => $status_options, 'admin' => true), array('not_empty' => true))
-	->add('minlimit', readconfigfromdb('minlimit'), 'post', array('type' => 'text', 'label' => 'Min limiet', 'size' => 10, 'admin' => true), array())
-	->add('maxlimit', readconfigfromdb('maxlimit'), 'post', array('type' => 'text', 'label' => 'Max limiet', 'size' => 10, 'admin' => true), array())
-	->add('mail', '', 'post', array('type' => 'text', 'label' => 'E-mail', 'size' => 50, 'maxlength' => 130), array('not_empty' => true, 'email' => true))
-	->add('adr', '', 'post', array('type' => 'text', 'label' => 'Adres', 'size' => 50, 'maxlength' => 130, 'placeholder' => 'Voorbeeldstraat 86, 4572 Voorbeeldplaatsnaam'), array('not_empty' => true))
-	->add('tel', '', 'post', array('type' => 'text', 'label' => 'Telefoon', 'size' => 50, 'maxlength' => 130))
-	->add('gsm', '', 'post', array('type' => 'text', 'label' => 'Gsm', 'size' => 50, 'maxlength' => 130))
+//	->add('minlimit', , 'post', array('type' => 'text', 'label' => 'Min limiet', 'size' => 10, 'admin' => true), array())
+	->add('maxlimit', $parameters['default_limit'], 'post', array('type' => 'text', 'label' => 'Limiet +/-', 'size' => 10, 'admin' => true), array())
+	->add('mail', '', 'post', array('type' => 'text', 'label' => 'E-mail', 'size' => 50, 'maxlength' => 100), array('not_empty' => true, 'email' => true))
+	->add('adr', '', 'post', array('type' => 'text', 'label' => 'Adres', 'size' => 50, 'maxlength' => 100, 'placeholder' => 'Voorbeeldstraat 86, 4572 Voorbeeldplaatsnaam'), array('not_empty' => true))
+	->add('tel', '', 'post', array('type' => 'text', 'label' => 'Telefoon', 'size' => 50, 'maxlength' => 20))
+	->add('gsm', '', 'post', array('type' => 'text', 'label' => 'Gsm', 'size' => 50, 'maxlength' => 20))
+	->add('web', 'http://', 'post', array('type' => 'text', 'label' => 'Website', 'size' => 50, 'maxlength' => 100, 'placeholder' => 'http://voorbeeld.com'))
 	->add('presharedkey', '', 'post', array('type' => 'text', 'label' => 'Preshared Key', 'size' => 50, 'maxlength' => 80, 'admin' => true, 'placeholder' => 'enkel voor interlets groepen'))
 	->add('creator', $req->getSid(), 'post')
 	->add('password', '', 'post')
@@ -142,37 +143,39 @@ $new = ($req->get('mode') == 'new') ? true : $new;
 $edit = ($req->get('mode') == 'edit') ? true : $edit;
 $delete = ($req->get('mode') == 'delete') ? true : $delete;
 
+if (($req->get('mode') == 'edit') || $delete){
+	$req->resetFromDb(array('letscode', 'name'));
+}
+
+
 if (($new && $req->isAdmin()) || (($edit && $req->isOwnerOrAdmin()) || ($delete && $req->isAdmin())))
 {
 	echo '<h1>'.(($new) ? 'Toevoegen' : (($edit) ? 'Aanpassen' : 'Verwijderen?')).'</h1>';
-	echo '<form method="post" class="trans" action="users.php">';
-	echo '<table cellspacing="5" cellpadding="0" border="0">';
+	echo '<form method="post" class="trans form-horizontal" role="form">';
 	if ($delete){
-		echo '<tr><td colspan="2"><h2><a href="users.php?id='.$req->get('id').'">';
-		echo ($req->get('msg_type') == 'w') ? 'Vraag' : 'Aanbod';
-		echo ': '.$req->get('content').'</a></h2></td></tr><tr><td colspan="2">Door: ';
-		$req->renderOwnerLink();
-		echo '</td></tr><tr><td colspan="2"><p>'.$req->get('description').'</p></td></tr>';
+		echo '<h2><a href="users.php?id='.$req->get('id').'">'.$req->get('letscode').' '.$req->get('name').'</h2>';
 	} else {
 		$id_user = ($req->isAdmin()) ? 'id_user' : 'non_existing_dummy';
-		$req->set_output('tr')->render(array($id_user, 'name', 'fullname', 
+		$req->set_output('formgroup')->render(array($id_user, 'name', 'fullname', 
 			'letscode', 'postcode', 'birthday', 'hobbies',  'comments', 
-			'accountrole', 'status', 'admincomment', 'minlimit', 'maxlimit', 'presharedkey',
-			'mail', 'adr', 'tel', 'gsm'));
+			'accountrole', 'status', 'maxlimit', 'admincomment', 'presharedkey',
+			'mail', 'adr', 'tel', 'gsm', 'web'));
 	}
-	echo '<tr><td colspan="2">';
+	echo '<div>';
 	$submit = ($new) ? 'create' : (($edit) ? 'edit' : 'delete');
 	$create_plus = ($new) ? 'create_plus' : 'non_existing_dummy';
 	$req->set_output('nolabel')->render(array($submit, $create_plus, 'cancel', 'id', 'mode'));
-	echo '</td></tr></table></form>';		
+	echo '</div></form>';		
 }
 
 
 
 if (!($new || $edit || $delete)){
-	echo '<form method="GET" class="trans"><table>';
-	$req->set_output('tr')->render(array('q', 'postcode_filter', 'filter'));
-	echo '</table></form>';
+	echo '<form method="GET" class="trans form-horizontal" role="form">';
+	$req->set_output('formgroup')->render(array('q', 'postcode_filter'));
+	echo '<div>';
+	$req->set_output('nolabel')->render('filter');
+	echo '</div></form>';
 }
 
 

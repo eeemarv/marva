@@ -22,7 +22,7 @@ $req->setEntityTranslation('Transactie')
 	
 	->add('orderby', 'date', 'get')
 	->add('asc', 0, 'get')
-	->add('userid', 0, 'get', array('type' => 'select', 'label' => 'Lid', 'option_set' => 'active_users'))
+	->add('userid', 0, 'get', array('type' => 'select', 'label' => 'Gebruiker', 'option_set' => 'active_users'))
 	->add('filter', '', 'get', array('type' => 'submit', 'label' => 'Toon'))
 	->add('limit', 25, 'get')
 	->add('start', 0, 'get')
@@ -72,20 +72,21 @@ $new = ($req->get('mode') == 'new') ? true : $new;
 if ($new && $req->isUser())
 {
 	echo '<h1>Toevoegen</h1>';
-	echo '<form method="post" class="trans" action="transactions.php">';
-	echo '<table cellspacing="5" cellpadding="0" border="0">';
+	echo '<form method="post" class="trans form-horizontal" role="form">';
 	$from_user_id = ($req->isAdmin()) ? 'from_user_id' : 'non_existing_dummy';
-	$req->set_output('tr')->render(array($from_user_id, 'letscode_to',  'amount', 'description', 'confirm_password', 'transid'));
-	echo '<tr><td colspan="2">';
+	$req->set_output('formgroup')->render(array($from_user_id, 'letscode_to',  'amount', 'description', 'confirm_password', 'transid'));
+	echo '<div>';
 	$req->set_output('nolabel')->render(array('create', 'create_plus', 'cancel'));
-	echo '</td></tr></table></form>';	
+	echo '</div></form>';	
 		
 } else {
 
 
-	echo '<form method="GET" class="trans"><table>';
-	$req->set_output('tr')->render(array('userid', 'filter'));
-	echo '</tr></table></form>';
+	echo '<form method="GET" class="trans form-horizontal" role="form">';
+	$req->set_output('formgroup')->render('userid');
+	echo '<div>';
+	$req->set_output('nolabel')->render('filter');
+	echo '</div></form>';
 
 	$orderby = $req->get('orderby');
 	$userid = $req->get('userid');

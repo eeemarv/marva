@@ -36,9 +36,9 @@ class data_table{
 	}
 
 	public function render(){
-		echo '<div class="row"><div class="col-md-12"><table class="table table-striped table-bordered table-condensed">';
+		echo '<div class="table-responsive"><table class="table table-striped table-bordered table-condensed">';
 		$this->render_header()->render_rows()->render_footer();
-		echo '</table></div></div>';
+		echo '</table></div>';
 		//$this->render_status_legend();		
 		echo '<script type="text/javascript" src="'.$this->rootpath.'js/table_sum.js"></script>';		
 		return $this;

@@ -1,6 +1,6 @@
 body {
   padding-top: 50px;	
-  /* background-image: url(../images/background_1.jpg);  */ 		
+/*  background-image: url(../background.jpg);  */ 		
 }
 
 
@@ -14,17 +14,9 @@ body {
 
 
 
-.navbar .brand {
-    margin-left: 10px;
-    margin-top: 10px;
-	background: url(../images/logo.png) no-repeat left center; 
-	height: 20px;
-	width: 100px;   
+.alert {
+	margin-top: 5px;
 }
-
-.navbar .brand div{
-    margin-left: 40px;  
-}  
 
 
 table.table div.row{
@@ -210,16 +202,21 @@ div.tt-is-under-cursor p.inactive
 
 
 
-.trans
+form.trans
 {
-background-color: #fdea9c;
+	background-color: #fdea9c;
 	border-collapse:collapse;
 	margin-top: 30px;
 	margin-bottom: 30px;
-	font-size: 12px;
-	border: 2px dashed #ffce0a;
-	padding:10px;	
+	padding: 10px; 
 }
+
+form.trans div{
+	margin-top: 2px;
+	margin-bottom: 2px;
+
+}
+
 
 
 /* Column 1: Navigation */

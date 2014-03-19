@@ -11,5 +11,4 @@ currency_singular: Straaltje
 currency_plural: Straaltjes
 
 currency_rate: 60 
-
-default_balance_limit: 2000
+default_limit: 2000
