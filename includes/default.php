@@ -12,8 +12,8 @@ $loader->add('Marva', __DIR__.'/');
 require_once __DIR__.'/../parameters.php';
 
 use Symfony\Component\Yaml\Yaml;
-
-$parameters = array_merge(Yaml::parse(__DIR__.'/../site/parameters.yml'), $parameters); 
+ 
+$parameters = array_merge_recursive(Yaml::parse(__DIR__.'/../site/parameters.yml'), $parameters); 
 
 if ($parameters['debug']){
 	error_reporting(E_ERROR);
@@ -27,47 +27,6 @@ if ($parameters['redirect']){
 	exit();
 }	 
 
-/*
-# Config file handling
-# the config file is named config/elas.conf.php
-# we will load it into the array $configuration
-
-// Get the baseurl, used for several things including multisite
-$baseurl = $_SERVER['HTTP_HOST'];
-
-# Get rid of missing rootpath errors
-if(!isset($rootpath)){
-	$rootpath = "";
-}
-
-if(is_dir($rootpath."sites/$baseurl")){
-	$dirbase = $baseurl;
-} else {
-	$dirbase = "default";
-}
-
-$xml_config = $rootpath ."sites/$dirbase/config/elas.xml";
-
-if(file_exists($xml_config)){
-	$xmlconfig = simplexml_load_file("$xml_config");
-	$configuration["db"]["dsn"] = $xmlconfig->dbdsn;
-	$configuration["system"]["timezone"] = $xmlconfig->timezone;
-	$configuration["hosting"]["enabled"] = false;
-} 
-
-
-if (!isset($configuration["db"]["dsn"])  && ($nocheckconfig != TRUE )){
-	
-// Check for presence of the $configuration variable: if not present, the configuration file should be created and we redirect the flow to the setup page
-	
-	echo 'configuration file error';
-	exit;
-}
-*/
-
-
-
-
 
 $con = $parameters['db'];
 $port = ($con['port']) ? ':'.$con['port'] : '';
@@ -77,6 +36,16 @@ $db->Connect($con['host'].$port, $con['user'], $con['password'], $con['dbname'])
 $db->setFetchMode(ADODB_FETCH_ASSOC);
 
 unset($con, $parameters['db']);
+
+
+$mail_addresses = array_intersect_key($parameters['mail'], array(
+	'info' => 'info', 'admin' => 'admin', 'support' => 'support', 
+	'noreply' => 'noreply', 'list' => 'list'));
+	
+foreach ($mail_addresses as $key => $val){
+	$val = (empty($val)) ? $key : $val;
+	$parameters['mail'][$key] = (filter_var($val, FILTER_VALIDATE_EMAIL)) ? $val : $val.'@'.$_SERVER['HTTP_HOST'];
+}	
 
 
 // Read the full config table to an array
@@ -97,6 +66,7 @@ function readconfigfromdb($searchkey){
     }
 }
 
+/*
 // Handle legacy config settings from the original config file
 $configuration["system"]["currency"] = readconfigfromdb("currency");
 $configuration["system"]["systemtag"] = readconfigfromdb("systemtag");
@@ -113,7 +83,7 @@ $configuration["mail"]["admin"] = readconfigfromdb("admin");
 $configuration["mail"]["support"] = readconfigfromdb("support");
 $configuration["mail"]["from_address"] = readconfigfromdb("from_address");
 $configuration["mail"]["from_address_transactions"] = readconfigfromdb("from_address_transactions");
-
+*/
 
 
 //require_once $dir.'/inc_config.php';

@@ -8,7 +8,6 @@ require_once($rootpath."cron/inc_cron.php");
 require_once($rootpath."cron/inc_upgrade.php");
 require_once($rootpath."cron/inc_stats.php");
 
-require_once($rootpath."includes/inc_mailfunctions.php");
 require_once($rootpath."includes/inc_userinfo.php");
 require_once($rootpath."includes/inc_saldofunctions.php");
 
@@ -39,7 +38,7 @@ echo "Upgraded database from schema version $dbversion to $doneversion\n\n";
 
 // PUT MAIN BODY HERE
 // echo "<p><small>Build from branch: " . $elas->branch .", revision: " .$elas->revision .", build: " .$elas->build;
-echo " *** eLAS v" .$elas->version . "(" .$elas->branch .")" ." build #" . $elas->build ." Cron system running [" .readconfigfromdb("systemtag") ."] ***\n\n";
+echo ' *** Marva  Cron system running [' .$parameters['letsgroup_code'].'] ***\n\n';
 
 
 
@@ -61,17 +60,9 @@ if(check_timestamp("saldo", $frequency) == 1) {
 	automail_saldo();
 }
 
-// Auto mail messages that have expired to the admin
-$frequency = readconfigfromdb("adminmsgexpfreqdays") * 1440;
-if(check_timestamp("admin_exp_msg", $frequency) == 1 && readconfigfromdb("adminmsgexp") == 1){
-	automail_admin_exp_msg();
-}
 
-// Check for and mail expired messages to the user
-$frequency = 1440;  
-if(check_timestamp("user_exp_msgs", $frequency) == 1 && readconfigfromdb("msgexpwarnenabled") == 1){
-	check_user_exp_msgs();
-}
+
+
 
 // Clean up expired messages after the grace period
 $frequency = 1440;  
@@ -110,11 +101,7 @@ if(check_timestamp("processqueue", $frequency) == 1){
 	write_timestamp("processqueue");
 }
 
-// Check if the hosting contract expired
-$frequency = 10080;
-if(check_timestamp("check_hosting", $frequency) == 1){
-        check_hosting();
-}
+
 
 // Publish news items that were approved
 $frequency = 30;
@@ -128,29 +115,21 @@ if(check_timestamp("update_stats", $frequency) == 1){
 	update_stats();
 }
 
-// Process the mail queue
-// DISABLED in 2.5
-// $frequency = 0;
-// if(check_timestamp("mailq_run", $frequency) == 1 && readconfigfromdb("mailinglists_enabled") == 1){
-//	mailq_run();
-//}
-	
-// END
+
+
 echo "\nCron run finished\n";
 
-////////////////////////////////////////////////////////////////////////////
-//////////////////////////////F U N C T I E S //////////////////////////////
-////////////////////////////////////////////////////////////////////////////
+
+
+// functions 
+
+
 
 function process_amqmessages(){
 	global $configuration;
 	
 	echo "Running Process AMQ messages...\n";
-	//echo "Hosting is " .$configuration["hosting"]["enabled"] . "\n";
-	if ($configuration["hosting"]["enabled"]	== 1){
-		echo "Getting hosting AMQ updates...\n";
-		amq_processhosting();
-	}
+
 	amq_processincoming();
 	write_timestamp("process_ampmessages");
 }
@@ -238,38 +217,7 @@ function mailq_run(){
 	write_timestamp("mailq_run");
 }
 
-function check_hosting(){
-	global $configuration;
-	global $db;
-	//TODO Add check if this instance has certain features like mailing lists and enable/disable them
-	if($configuration["hosting"]["enabled"] == 1){
-		// From 2.4.32 notifications will no longer be sent by eLAS but by ESM
-		echo "Running check_contract\n";
-		//$provider = get_provider();
-		$contract = get_contract();
-		//print_r($contract);
-		$enddate = strtotime($contract["end"]);
-		$graceperiod = $contract["graceperiod"];
-		$now = time();
 
-		switch($enddate){
-			case (($enddate + ($graceperiod * 24 * 60 * 60)) < $now):
-				//Het contract is vervallen en uit grace
-				//LOCK eLAS
-				$query = "UPDATE parameters SET value = 1 WHERE parameter = 'lockout'";
-				$db->Execute($query);
-				break;
-			case (($enddate + ($graceperiod * 24 * 60 * 60)) > $now):
-				//Het contract is niet vervallen of uit grace
-				//extra unLOCK eLAS
-				$query = "UPDATE parameters SET value = 0 WHERE parameter = 'lockout'";
-				$db->Execute($query);
-				break;
-		}
-		//sendemail($from,$mailto,$subject,$content)
-	}
-	write_timestamp("check_hosting");
-}
 
 function cat_update_count() {
 	echo "Running cat_update_count\n";
@@ -341,70 +289,6 @@ function cleanup_news() {
 	write_timestamp("cleanup_news");
 }
 
-function check_user_exp_msgs(){
-	//Fetch a list of all non-expired messages that havent sent a notification out yet and mail the user
-	echo "Running check_user_exp_msgs\n";
-	$msgexpwarningdays = readconfigfromdb("msgexpwarningdays");
-	$msgcleanupdays = readconfigfromdb("msgexpcleanupdays");
-	$warn_messages = get_warn_messages($msgexpwarningdays);
-	foreach ($warn_messages AS $key => $value){
-		//For each of these, we need to fetch the user's mailaddress and send him a mail.
-		$user = get_user_maildetails($value["id_user"]);
-		$username = $user["name"];
-
-		$content = "Beste $username\n\nJe vraag of aanbod '" .$value["content"] ."'";
-		$content .= " in eLAS gaat over " .$msgexpwarningdays;
-		$content .= " dagen vervallen.  Om dit te voorkomen kan je inloggen op eLAS en onder de optie 'Mijn Vraag & Aanbod' voor verlengen kiezen.";
-		$content .= "\n\nAls je niets doet verdwijnt dit V/A $msgcleanupdays na de vervaldag uit je lijst.";
-		$mailaddr = $user["emailaddress"];
-		$subject = "Je V/A in eLAS gaat vervallen";
-		mail_user_expwarn($mailaddr,$subject,$content);
-		mark_expwarn($value["id"],1);
-	}
-
-	//Fetch a list of expired messages and warn the user again.
-	$warn_messages = get_expired_messages();
-	foreach ($warn_messages AS $key => $value){
-                //For each of these, we need to fetch the user's mailaddress and send him a mail.               
-		$user = get_user_maildetails($value["id_user"]);
-                $username = $user["name"];
-
-                $content = "Beste $username\n\nJe vraag of aanbod '" .$value["content"] ."'";
-                $content .= " in eLAS is vervallen. Als je het niet verlengt wordt het $msgcleanupdays na de vervaldag automatisch verwijderd.";
-                $mailaddr = $user["emailaddress"];
-                $subject = "Je V/A in eLAS is vervallen";
-                mail_user_expwarn($mailaddr,$subject,$content);
-                mark_expwarn($value["id"],2);
-        }
-
-	// Finally, clear all the old flags with a single SQL statement 
-	// UPDATE messages SET exp_user_warn = 0 WHERE validity > now + 10
-	do_clear_msgflags();
-
-	// Write the timestamp
-	write_timestamp("user_exp_msgs");
-}
-
-
-function automail_admin_exp_msg(){
-	// Fetch a list of all expired messages and mail them to the admin
-	echo "Running automail_admin_exp_msg\n";
-	global $db;
-	$today = date("Y-m-d");
-	$query = "SELECT users.name AS username, messages.content AS message, messages.id AS mid, messages.validity AS validity FROM messages,users WHERE users.status <> 0 AND messages.id_user = users.id AND validity <= '" .$today ."'";
-	$messages = $db->GetArray($query);
-
-	//foreach($messages as $key => $value) {
-	//	echo $value["mid"];
-	//	echo $value["username"];
-	//	echo $value["message"];
-	//	echo $value["validity"];
-	//	echo "\n";
-	//}
-	mail_admin_expmsg($messages);
-
-	write_timestamp("admin_exp_msg");
-}
 
 
 function automail_saldo(){

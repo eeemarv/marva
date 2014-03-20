@@ -30,7 +30,7 @@ global $rootpath;
 require_once($rootpath."includes/inc_eventlog.php");
 require_once($rootpath."includes/inc_saldofunctions.php");
 require_once($rootpath."includes/inc_userinfo.php");
-require_once($rootpath."includes/inc_mailfunctions.php");
+require_once $rootpath.'includes/mail.php';
 
 function generate_transid(){
 	global $baseurl;
@@ -96,54 +96,54 @@ function get_transaction_by_id($transid){
 }
 
 function validate_inteletstransaction_input($posted_list){
-        global $db;
-        global $_SESSION;
-		$s_accountrole = $_SESSION["accountrole"];
-        $error_list = array();
+	global $db;
+	global $_SESSION;
+	$s_accountrole = $_SESSION["accountrole"];
+	$error_list = array();
 
-        //description may not be empty
-        if (!isset($posted_list["description"])|| (trim($posted_list["description"] )=="")){
-        $error_list["description"]="Dienst is niet ingevuld";
-        }
+	//description may not be empty
+	if (!isset($posted_list["description"])|| (trim($posted_list["description"] )=="")){
+	$error_list["description"]="Dienst is niet ingevuld";
+	}
 
-        //amount may not be empty
-        $var = trim($posted_list["amount"]);
-        if (!isset($posted_list["amount"])|| (trim($posted_list["amount"] )=="")){
-                $error_list["amount"]="Bedrag is niet ingevuld";
-        //amount amy only contain  numbers between 0 en 9
-        }elseif(eregi('^[0-9]+$', $var) == FALSE){
-                $error_list["amount"]="Bedrag is geen geldig getal";
-        }
+	//amount may not be empty
+	$var = trim($posted_list["amount"]);
+	if (!isset($posted_list["amount"])|| (trim($posted_list["amount"] )=="")){
+			$error_list["amount"]="Bedrag is niet ingevuld";
+	//amount amy only contain  numbers between 0 en 9
+	}elseif(eregi('^[0-9]+$', $var) == FALSE){
+			$error_list["amount"]="Bedrag is geen geldig getal";
+	}
 
-        //Amount may not be over the limit
-        $user = get_user($posted_list["id_from"]);
-        if(($user["saldo"] - $posted_list["amount"]) < $user["minlimit"] && $_SESSION["accountrole"] != "admin"){
-                $error_list["amount"]="Je beschikbaar saldo laat deze transactie niet toe";
-        }
+	//Amount may not be over the limit
+	$user = get_user($posted_list["id_from"]);
+	if(($user["saldo"] - $posted_list["amount"]) < $user["minlimit"] && $_SESSION["accountrole"] != "admin"){
+			$error_list["amount"]="Je beschikbaar saldo laat deze transactie niet toe";
+	}
 
-        //userfrom must exist
-        $query = "SELECT * from  users ";
-        $query .= " WHERE id = '".$posted_list["id_from"]."' " ;
-        $query .= " AND users.status <> '0'" ;
-        $rs = $db->Execute($query);
-        $number2 = $rs->recordcount();
-        if( $number2 == 0 ){
-                $error_list["id_from"]="Gebruiker bestaat niet";
-        }
+	//userfrom must exist
+	$query = "SELECT * from  users ";
+	$query .= " WHERE id = '".$posted_list["id_from"]."' " ;
+	$query .= " AND users.status <> '0'" ;
+	$rs = $db->Execute($query);
+	$number2 = $rs->recordcount();
+	if( $number2 == 0 ){
+			$error_list["id_from"]="Gebruiker bestaat niet";
+	}
 
-       //date may not be empty
-        if (!isset($posted_list["date"])|| (trim($posted_list["date"] )=="")){
-                $error_list["date"]="Datum is niet ingevuld";
-        }elseif(strtotime($posted_list["date"]) == -1){
-                $error_list["date"]="Fout in datumformaat (jjjj-mm-dd)";
-        }
+   //date may not be empty
+	if (!isset($posted_list["date"])|| (trim($posted_list["date"] )=="")){
+			$error_list["date"]="Datum is niet ingevuld";
+	}elseif(strtotime($posted_list["date"]) == -1){
+			$error_list["date"]="Fout in datumformaat (jjjj-mm-dd)";
+	}
 
 	//Description may not exceed 60 characters.
 	if(strlen($posted_list["description"]) > 60){
 		$error_list["description"] = "Omschrijving is te lang (max 60 karakters)";
 	}
 
-        return $error_list;
+	return $error_list;
 }
 
 
@@ -151,21 +151,21 @@ function validate_transaction_input($posted_list){
 	global $db;
 	global $_SESSION;
 	$s_accountrole = $_SESSION["accountrole"];
-        $error_list = array();
+	$error_list = array();
 
-        //description may not be empty
-        if (!isset($posted_list["description"])|| (trim($posted_list["description"] )=="")){
-        $error_list["description"]="Dienst is niet ingevuld";
-        }
+	//description may not be empty
+	if (!isset($posted_list["description"])|| (trim($posted_list["description"] )=="")){
+	$error_list["description"]="Dienst is niet ingevuld";
+	}
 
-        //amount may not be empty
-        $var = trim($posted_list["amount"]);
-        if (!isset($posted_list["amount"])|| (trim($posted_list["amount"] )=="")){
-                $error_list["amount"]="Bedrag is niet ingevuld";
-        //amount amy only contain  numbers between 0 en 9
-        }elseif(eregi('^[0-9]+$', $var) == FALSE){
-                $error_list["amount"]="Bedrag is geen geldig getal";
-        }
+	//amount may not be empty
+	$var = trim($posted_list["amount"]);
+	if (!isset($posted_list["amount"])|| (trim($posted_list["amount"] )=="")){
+			$error_list["amount"]="Bedrag is niet ingevuld";
+	//amount amy only contain  numbers between 0 en 9
+	}elseif(eregi('^[0-9]+$', $var) == FALSE){
+			$error_list["amount"]="Bedrag is geen geldig getal";
+	}
 
 	//Amount may not be over the limit
 	$user = get_user($posted_list["id_from"]);
@@ -201,43 +201,43 @@ function validate_transaction_input($posted_list){
 		$error_list["id_to"]="De bestemmeling is niet actief";
 	}	
 
-        //From and to may not be identical
-        //if ($posted_list["id_from"] == $posted_list["id_to"]){
-	//	$error_list["id_from"]="Van en aan moeten vershillend zijn";
-        //}
+	//From and to may not be identical
+	//if ($posted_list["id_from"] == $posted_list["id_to"]){
+//	$error_list["id_from"]="Van en aan moeten vershillend zijn";
+	//}
 
-        //date may not be empty
-        if (!isset($posted_list["date"])|| (trim($posted_list["date"] )=="")){
-                $error_list["date"]="Datum is niet ingevuld";
-        }elseif(strtotime($posted_list["date"]) == -1){
-                $error_list["date"]="Fout in datumformaat (jjjj-mm-dd)";
-        }
+	//date may not be empty
+	if (!isset($posted_list["date"])|| (trim($posted_list["date"] )=="")){
+			$error_list["date"]="Datum is niet ingevuld";
+	}elseif(strtotime($posted_list["date"]) == -1){
+			$error_list["date"]="Fout in datumformaat (jjjj-mm-dd)";
+	}
 
-        return $error_list;
+	return $error_list;
 }
 
 function validate_interletsq($posted_list){
 	global $db;
 	global $_SESSION;
 	$s_accountrole = $_SESSION["accountrole"];
-        $error_list = array();
+	$error_list = array();
 
-        //description may not be empty
-        if (!isset($posted_list["description"])|| (trim($posted_list["description"] )=="")){
-        $error_list["description"]="Dienst is niet ingevuld";
-        }
+	//description may not be empty
+	if (!isset($posted_list["description"])|| (trim($posted_list["description"] )=="")){
+	$error_list["description"]="Dienst is niet ingevuld";
+	}
 
-        //amount may not be empty
-        $var = trim($posted_list["amount"]);
-        if (!isset($posted_list["amount"])|| (trim($posted_list["amount"] )=="")){
-                $error_list["amount"]="Bedrag is niet ingevuld";
-        }
+	//amount may not be empty
+	$var = trim($posted_list["amount"]);
+	if (!isset($posted_list["amount"])|| (trim($posted_list["amount"] )=="")){
+			$error_list["amount"]="Bedrag is niet ingevuld";
+	}
 
         //userfrom must exist
 	$fromuser = get_user($posted_list["id_from"]);
-        if(empty($fromuser)){
-                $error_list["id_from"]="Gebruiker bestaat niet";
-        }
+	if(empty($fromuser)){
+			$error_list["id_from"]="Gebruiker bestaat niet";
+	}
 
         //userto must exist
 	$touser = get_user($posted_list["id_to"]);
@@ -250,51 +250,50 @@ function validate_interletsq($posted_list){
 		$error_list["id"]="Van en Aan zijn hetzelfde";
 	}
 	
-        //date may not be empty
-        if (!isset($posted_list["date"])|| (trim($posted_list["date"] )=="")){
-                $error_list["date"]="Datum is niet ingevuld";
-        }elseif(strtotime($posted_list["date"]) == -1){
-                $error_list["date"]="Fout in datumformaat (jjjj-mm-dd)";
-        }
+	//date may not be empty
+	if (!isset($posted_list["date"])|| (trim($posted_list["date"] )=="")){
+			$error_list["date"]="Datum is niet ingevuld";
+	}elseif(strtotime($posted_list["date"]) == -1){
+			$error_list["date"]="Fout in datumformaat (jjjj-mm-dd)";
+	}
 
-        return $error_list;
+	return $error_list;
 }
 
 function mail_interlets_transaction($posted_list, $transid){
-        session_start();
-        $s_id = $_SESSION["id"];
+	global $parameters;
 
-        $mailfrom = readconfigfromdb("from_address_transactions");
+	session_start();
+	$s_id = $_SESSION["id"];
 
-        $userfrom=get_user_maildetails($posted_list["id_from"]);
-        //$mailto .= ",".$userfrom["emailaddress"];
+	$mailfrom = readconfigfromdb("from_address_transactions");
 
-        //$userto=get_user_maildetails($posted_list["id_to"]);
-        //$mailto .= ",". $userto["emailaddress"];
+	$userfrom=get_user_maildetails($posted_list["id_from"]);
+
 	$userto = get_user_mailaddresses($posted_list["id_to"]);
 	$mailto .= ",". $userto;
 
-	$systemname = readconfigfromdb("systemname");
-        $systemtag = readconfigfromdb("systemtag");
-        $currency = readconfigfromdb("currency");
+	$systemname = $parameters['letsgroup_name'];
+	$systemtag = $parameters['letsgroup_code'];
+	$currency = $parameters['currency'];
 
-        $mailsubject .= "[Marva-".$systemtag."] " . "Interlets transactie";
+	$mailsubject .= "[Marva-".$systemtag."] " . "Interlets transactie";
 
-        $mailcontent  = "-- Dit is een automatische mail van het Marva systeem, niet beantwoorden aub --\r\n";
+	$mailcontent  = "-- Dit is een automatische mail van het Marva systeem, niet beantwoorden aub --\r\n";
 
 	$mailcontent  = "Er werd een interlets transactie ingegeven op de Marva installatie van $systemname met de volgende gegevens:\r\n\r\n";
-        //$mailcontent .= "Datum: \t\t$timestamp\r\n"
-        if(!empty($posted_list["real_from"])){
-                $mailcontent .= "Van: \t\t". $posted_list["real_from"] ."\r\n";
-        } else {
-                $mailcontent .= "Van: \t\t". $userfrom["fullname"] ."\r\n";
-        }
+
+	if(!empty($posted_list["real_from"])){
+			$mailcontent .= "Van: \t\t". $posted_list["real_from"] ."\r\n";
+	} else {
+			$mailcontent .= "Van: \t\t". $userfrom["fullname"] ."\r\n";
+	}
        
 	$mailcontent .= "Aan: \t\t". $posted_list["letscode_to"] ."\r\n";
         
 	$mailcontent .= "Voor: \t\t".$posted_list["description"]."\r\n";
 	//calculate metacurrency
-	$currencyratio = readconfigfromdb("currencyratio");
+	$currencyratio = $parameters['currency_rate'];
 	$meta = round($posted_list["amount"] / $currencyratio, 4);
 
         $mailcontent .= "Aantal: \t".$posted_list["amount"]. " $currency ($meta LETS uren*, $currencyratio $currency = 1 uur)\r\n";
@@ -314,10 +313,13 @@ function mail_interlets_transaction($posted_list, $transid){
 
 
 function mail_transaction($posted_list, $transid){
+	global $parameters;
+	
+	
 	session_start();
 	$s_id = $_SESSION["id"];
 
-	$mailfrom = readconfigfromdb("from_address_transactions");
+	$mailfrom = $parameters['mail']['noreply'];
 
 	$userfrom=get_user_maildetails($posted_list["id_from"]);
 	if($userfrom["accountrole"] != "interlets"){
@@ -325,14 +327,12 @@ function mail_transaction($posted_list, $transid){
 	}
 
 	$userto=get_user_maildetails($posted_list["id_to"]);
-	//if($userto["accountrole"] != "interlets"){
-	//	$mailto .= ",". $userto["emailaddress"];
-	//}
-        $userto_mail = get_user_mailaddresses($posted_list["id_to"]);
-        $mailto .= ",". $userto_mail;
 
-	$systemtag = readconfigfromdb("systemtag");
-	$currency = readconfigfromdb("currency");
+	$userto_mail = get_user_mailaddresses($posted_list["id_to"]);
+	$mailto .= ",". $userto_mail;
+
+	$systemtag = $parameters['letsgroup_code'];
+	$currency = $parameters['currency_plural'];
 
 	$mailsubject .= "[eLAS-".$systemtag."] " . $posted_list["amount"] . " " .$currency;
 	if(!empty($posted_list["real_from"])){
@@ -347,7 +347,7 @@ function mail_transaction($posted_list, $transid){
 	}
 
 	$mailcontent  = "-- Dit is een automatische mail van het Marva systeem, niet beantwoorden aub --\r\n";
-	//$mailcontent .= "Datum: \t\t$timestamp\r\n";
+
 	if(!empty($posted_list["real_from"])){
 		$mailcontent .= "Van: \t\t". $posted_list["real_from"] ."\r\n";
 	} else {
@@ -363,7 +363,7 @@ function mail_transaction($posted_list, $transid){
 	$mailcontent .= "Aantal: \t".$posted_list["amount"]."\r\n";
 	$mailcontent .= "\r\nTransactieID: \t\t$transid\r\n";
 
-	$mailcontent .= "\r\n--\nDe eLAS transactie robot\r\n";
+	$mailcontent .= "\r\n--\nDe Marva transactie robot\r\n";
 
 	sendemail($mailfrom,$mailto,$mailsubject,$mailcontent);
 	// log it
@@ -371,25 +371,27 @@ function mail_transaction($posted_list, $transid){
 }
 
 function mail_failed_interlets($myletsgroup, $transid, $id_from, $amount, $description, $letscode_to, $result,$admincc){
-	$mailfrom = readconfigfromdb("from_address_transactions");
+	global $parameters;
+	
+	$mailfrom = $parameters['mail']['noreply'];
 
-        $systemtag = readconfigfromdb("systemtag");
-        $currency = readconfigfromdb("currency");
+	$systemtag = $parameters['letsgroup_code'];
+	$currency = $paramters['currency_plural'];
 
 	$mailsubject .= "[Marva-".$systemtag."] Gefaalde transactie $transid" ;
 
-        $userfrom=get_user_maildetails($id_from);
-        if($userfrom["accountrole"] != "interlets"){
-                $mailto = $userfrom["emailaddress"];
-        }
+	$userfrom=get_user_maildetails($id_from);
+	if($userfrom["accountrole"] != "interlets"){
+			$mailto = $userfrom["emailaddress"];
+	}
 
 	if($admincc == 1){
-                $mailto .= ",". readconfigfromdb("admin");
+                $mailto .= ",". $parameters['mail']['admin'];
         }
 
 
         //$mailcontent .= "Datum: \t\t$timestamp\r\n";
-	$mailcontent  = "-- Dit is een automatische mail van het eLAS systeem, niet beantwoorden aub --\r\n";
+	$mailcontent  = "-- Dit is een automatische mail van het Marva systeem, niet beantwoorden aub --\r\n";
 	$mailcontent .= "Je interlets transactie hieronder kon niet worden uitgevoerd om de volgende reden:\r\n";
 	$mailcontent .= "\r\n"; 
 
@@ -407,20 +409,20 @@ function mail_failed_interlets($myletsgroup, $transid, $id_from, $amount, $descr
 	$mailcontent .= "\r\n";
 
 	// Transaction details
-	$amount = $amount * readconfigfromdb("currencyratio");
+	$amount = $amount * $parameters['currency_rate'];
 	$amount = round($amount);
 	$mailcontent .= "--\r\n";
-        $mailcontent .= "Letscode: \t". $letscode_to ."\r\n";
-        $mailcontent .= "Voor: \t\t".$description."\r\n";
-        $mailcontent .= "Aantal: \t".$amount." $currency\r\n";
-        $mailcontent .= "\r\nTransactieID: \t\t$transid\r\n";
+	$mailcontent .= "Letscode: \t". $letscode_to ."\r\n";
+	$mailcontent .= "Voor: \t\t".$description."\r\n";
+	$mailcontent .= "Aantal: \t".$amount." $currency\r\n";
+	$mailcontent .= "\r\nTransactieID: \t\t$transid\r\n";
 	$mailcontent .= "--\r\n";
 
-        $mailcontent .= "\r\n--\nDe Marva transactie robot\r\n";
+	$mailcontent .= "\r\n--\nDe Marva transactie robot\r\n";
 
-        sendemail($mailfrom,$mailto,$mailsubject,$mailcontent);
-        // log it
-        log_event($s_id,"Mail","Interlets failure sent to $mailto");
+	sendemail($mailfrom,$mailto,$mailsubject,$mailcontent);
+	// log it
+	log_event($s_id,"Mail","Interlets failure sent to $mailto");
 }
 
 function queuetransaction($posted_list) {

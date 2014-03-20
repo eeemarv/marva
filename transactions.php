@@ -6,7 +6,7 @@ require('./includes/default.php');
 
 require_once($rootpath.'includes/inc_transactions.php');
 require_once($rootpath.'includes/inc_userinfo.php'); 
-require_once($rootpath.'includes/inc_mailfunctions.php');
+
 
 require('./includes/request.php');
 require('./includes/data_table.php');

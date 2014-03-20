@@ -1,8 +1,6 @@
 <?php
 /**
- * Class to perform eLAS transactions
- *
- * This file is part of eLAS http://elas.vsbnet.be
+ * copyleft 2014 martti <info@martti.be>
  * 
  * Copyright(C) 2009 Guy Van Sanden <guy@vsbnet.be>
  *
@@ -23,7 +21,7 @@
 
 // Enable logging
 global $rootpath;
-require_once($rootpath."includes/inc_mailfunctions.php");
+require_once $rootpath.'includes/mail.php';
 
 function mail_news($id){
         global $db;

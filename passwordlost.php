@@ -5,7 +5,7 @@ require_once('./includes/default.php');
 
 require_once($rootpath."includes/inc_userinfo.php");
 require_once($rootpath."includes/inc_passwords.php");
-require_once($rootpath."includes/inc_mailfunctions.php");
+
 require_once($rootpath."includes/inc_eventlog.php");
 
 

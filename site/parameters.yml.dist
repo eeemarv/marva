@@ -12,3 +12,10 @@ currency_plural: Straaltjes
 
 currency_rate: 60 
 default_limit: 2000
+
+mail:
+    info: ~
+    support: ~
+    admin: ~
+    noreply: ~
+    list: ~

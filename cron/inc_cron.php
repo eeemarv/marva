@@ -147,27 +147,30 @@ function mail_admin_expmsg($messages) {
 }
 
 function mail_balance($mailaddr,$balance){
-	$from_address_transactions = readconfigfromdb("from_address_transactions");
-        if (!empty($from_address_transactions)){
-                $mailfrom .= trim($from_address_transactions);
-        }else { 
+	global $parameters;
+	
+	$from_address_transactions = $parameters['mail']['noreply'];
+	
+	if (!empty($from_address_transactions)){
+			$mailfrom .= trim($from_address_transactions);
+	}else { 
 		echo "Mail from address is not set in configuration\n";
 		return 0;
 	}
 
 	$mailto = $mailaddr;
 
-	$systemtag = readconfigfromdb("systemtag");
-        $mailsubject .= "[eLAS-".$systemtag ."] - Saldo mail"; 
+	$systemtag = $parameters['letsgroup_code'];
+	$mailsubject .= "[eLAS-".$systemtag ."] - Saldo mail"; 
 
-        $mailcontent .= "-- Dit is een automatische mail van het eLAS systeem, niet beantwoorden aub --\r\n";
+	$mailcontent .= "-- Dit is een automatische mail van het eLAS systeem, niet beantwoorden aub --\r\n";
 	$mailcontent .= "\nJe ontvangt deze mail omdat je de optie 'Mail saldo' in eLAS hebt geactiveerd,\nzet deze uit om deze mails niet meer te ontvangen.\n";
 
-	$currency = readconfigfromdb("currency");
+	$currency = $parameters['currency_plural'];
 	$mailcontent .= "\nJe huidig LETS saldo is " .$balance ." " .$currency ."\n";
 
 	$mailcontent .= "\nDe eLAS MailSaldo Robot\n";
-        sendemail($mailfrom,$mailto,$mailsubject,$mailcontent);
+    sendemail($mailfrom,$mailto,$mailsubject,$mailcontent);
 }
 
 
@@ -179,45 +182,48 @@ function mark_expwarn($messageid,$value){
 
 
 function mail_user_expwarn($mailaddr,$subject,$content) {
-	$from_address_transactions = readconfigfromdb("from_address_transactions");
-        if (!empty($from_address_transactions)){
-                $mailfrom .= trim($from_address_transactions);
-        }else {
-                echo "Mail from address is not set in configuration\n";
-                return 0;
-        }
-
-        $mailto = $mailaddr;
+	global $parameters;
 	
-	$systemtag = readconfigfromdb("systemtag");
-        $mailsubject .= "[eLAS-".$systemtag ."] - " .$subject;
+	$from_address_transactions = $parameters['mail']['noreply']; 
+	
+	if (!empty($from_address_transactions)){
+			$mailfrom .= trim($from_address_transactions);
+	}else {
+			echo "Mail from address is not set in configuration\n";
+			return 0;
+	}
 
-        $mailcontent .= "-- Dit is een automatische mail van het eLAS systeem, niet beantwoorden aub --\r\n\n";
-        $mailcontent .= "$content\n\n";
+	$mailto = $mailaddr;
+	
+	$systemtag = $parameters['letsgroup_code'];
+	$mailsubject .= "[eLAS-".$systemtag ."] - " .$subject;
+
+	$mailcontent .= "-- Dit is een automatische mail van het eLAS systeem, niet beantwoorden aub --\r\n\n";
+	$mailcontent .= "$content\n\n";
 
 	$mailcontent .= "Als je nog vragen of problemen hebt, kan je terecht op ";
-        $mailcontent .= readconfigfromdb("support");
+	$mailcontent .= $parameters['mail']['support'];
 
-        $mailcontent .= "\n\nDe eLAS Robot\n";
-        sendemail($mailfrom,$mailto,$mailsubject,$mailcontent);
+	$mailcontent .= "\n\nDe eLAS Robot\n";
+	sendemail($mailfrom,$mailto,$mailsubject,$mailcontent);
 	log_event("","Mail","Message expiration mail sent to $mailto");
 }
 
 
 function check_timestamp($cronjob,$agelimit){
-        // agelimit is the time after which to rerun the job in MINUTES
-        global $db;
-        $query = "SELECT lastrun FROM cron WHERE cronjob = '" .$cronjob ."'";
-        $job = $db->GetRow($query);
-        $now = time();
-        $limit = $now - ($agelimit * 60);
-        $timestamp = strtotime($job["lastrun"]);
+	// agelimit is the time after which to rerun the job in MINUTES
+	global $db;
+	$query = "SELECT lastrun FROM cron WHERE cronjob = '" .$cronjob ."'";
+	$job = $db->GetRow($query);
+	$now = time();
+	$limit = $now - ($agelimit * 60);
+	$timestamp = strtotime($job["lastrun"]);
 
-        if($limit > $timestamp) {
-                return 1;
-        } else {
-                return 0;
-        }
+	if($limit > $timestamp) {
+			return 1;
+	} else {
+			return 0;
+	}
 
 	//log the cronjob execution
 	

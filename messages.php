@@ -2,19 +2,19 @@
 
 ob_start();
 
-require_once('./includes/default.php');
+require_once 'includes/default.php';
 
 
 require_once('./includes/inc_userinfo.php'); 
-require_once('./includes/inc_mailfunctions.php'); 
+require_once 'includes/mail.php'; 
 
-require_once('./includes/request.php');
-require_once('./includes/data_table.php');
-require_once('./includes/pagination.php');
+require_once 'includes/request.php';
+require_once 'includes/data_table.php';
+require_once 'includes/pagination.php';
 
 $req = new request('guest');
 
-$currency = readconfigfromdb('currency');
+$currency = $parameters['currency_plural'];
 
 $offer_want_options = array(
 	'ow' => array('text' => ''),

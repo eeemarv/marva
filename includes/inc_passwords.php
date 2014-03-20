@@ -1,8 +1,7 @@
 <?php
+
+
 /**
- * Class to perform eLAS password functions
- *
- * This file is part of eLAS http://elas.vsbnet.be
  *
  * Copyright(C) 2009 Guy Van Sanden <guy@vsbnet.be>
  *
@@ -24,8 +23,8 @@
 */
 
 function sendpasswordresetemail($password, $user,$s_id){
-	global $baseurl;
-	$mailfrom = readconfigfromdb("from_address");
+	global $baseurl, $parameters;
+	$mailfrom = $parameters['mail']['noreply'];
 
         if (!empty($user["emailaddress"])){
                 $mailto = $user["emailaddress"];
@@ -34,7 +33,7 @@ function sendpasswordresetemail($password, $user,$s_id){
                 return 0;
         }
 
-	$systemtag = readconfigfromdb("systemtag");
+	$systemtag = $parameters['letsgroup_code'];
         $mailsubject = "[";
         $mailsubject .= $systemtag;
         $mailsubject .= "] Marva account";
@@ -58,7 +57,7 @@ Er werd voor jou een account aangemaakt waarmee je kan inloggen en je gegevens b
 
 
         $mailcontent .= "Als je nog vragen of problemen hebt, kan je terecht bij ";
-        $mailcontent .= readconfigfromdb("support");
+        $mailcontent .= $parameters['mail']['support'];
         $mailcontent .= "\n\n";
         $mailcontent .= "Met vriendelijke groeten.\n\nDe Marva Account robot\n";
 
@@ -74,8 +73,8 @@ Er werd voor jou een account aangemaakt waarmee je kan inloggen en je gegevens b
 
 
 function sendactivationmail($password, $user,$s_id){
-	global $baseurl;
-	$mailfrom = readconfigfromdb("from_address");
+	global $baseurl, $parameters;
+	$mailfrom = $parameters['mail']['noreply'];
 
         if (!empty($user["emailaddress"])){
                 $mailto = $user["emailaddress"];
@@ -90,8 +89,8 @@ function sendactivationmail($password, $user,$s_id){
                 return 0;
         }
 
-	$systemtag = readconfigfromdb("systemtag");
-        $systemletsname = readconfigfromdb("systemname");
+	$systemtag = $paramters['letsgroup_code'];
+        $systemletsname = $parameters['letsgroup_name'];
         $mailsubject = "[";
         $mailsubject .= $systemtag;
         $mailsubject .= "] Marva account activatie voor $systemletsname";
@@ -121,13 +120,13 @@ function sendactivationmail($password, $user,$s_id){
 		$mailcontent .= "\n";
 		
 
-	$mailcontent .= "Met eLAS kan je je gebruikersgevens, vraag&aanbod en lets-transacties";
+	$mailcontent .= "Met Marva kan je je gebruikersgevens, vraag&aanbod en lets-transacties";
 	$mailcontent .= " zelf bijwerken op het Internet.";
         $mailcontent .= "\n\n";
 
 
 		$mailcontent .= "Als je nog vragen of problemen hebt, kan je terecht bij ";
-		$mailcontent .= readconfigfromdb("support");
+		$mailcontent .= $parameters['mail']['support'];
 		$mailcontent .= "\n\n";
 		$mailcontent .= "Veel plezier bij het letsen! \n\n De Marva Account robot\n";
 

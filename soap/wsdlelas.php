@@ -226,11 +226,11 @@ function messagesearch($term){
 }
 
 function messagedetails($msgid){
-	global $db;
+	global $db, $parameters;
         $query = "SELECT * FROM messages WHERE id=$msgid";
 	$message = $db->GetRow($query);
-	$currency = readconfigfromdb("currency");
-	$currencyratio = readconfigfromdb("currencyratio");
+	$currency = $parameters['currency_plural'];
+	$currencyratio = $parameters['currency_rate'];
 	$return = $message['id_user'] ."," .$message['content'] ."," .$message['Description'] ."," .$message['amount'] ."," .$currency ."," .$currencyratio ."," .$message['units'] ."," .$message['validity'];
 	return $return;
 }
