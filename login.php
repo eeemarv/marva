@@ -32,7 +32,7 @@ if ($req->get('cancel')){
 }
 
 
-$location = ltrim($req->get('location'), '/');
+$location = urldecode(ltrim($req->get('location'), '/'));
 $location = ($location) ? $location : 'messages.php';
 $location = ($location == 'login.php') ? 'messages.php' : $location;
 $location = urlencode($location); 

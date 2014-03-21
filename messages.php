@@ -43,11 +43,13 @@ $req->setEntityTranslation('Bericht')
 	->add('id_category', 0, 'post', array('type' => 'select', 'label' => 'Categorie', 'option_set' => 'subcategories'), array('not_empty' => true, 'match' => 'subcategory'))
 	->add('content', '', 'post', array('type' => 'text', 'size' => 40, 'label' => 'Titel'), array('not_empty' => true))
 	->add('description', '', 'post', array('type' => 'textarea', 'cols' => 60, 'rows' => 15, 'label' => 'Inhoud'), array('not_empty' => true))	
-	->add('amount', 0, 'post', array('type' => 'text', 'size' => 4, 'maxlength' => 3, 'label' => 'Vraagprijs ('.$currency.')'), array('match' => 'positive'))
+	->add('amount', 0, 'post', array('type' => 'text', 'size' => 4, 'maxlength' => 3, 'label' => 'Richtprijs ('.$currency.')'), array('match' => 'positive'))
 	->add('cdate', date('Y-m-d H:i:s'), 'post')
 	->add('mdate', date('Y-m-d H:i:s'), 'post')
 	->add('mailbody', '', 'post', array('type' => 'textarea', 'cols' => 60, 'rows' => 8), array('not_empty' => true, 'min_length' => 15))
 	->add('mailcc', 'checked', 'post', array('type' => 'checkbox', 'label' => 'Stuur een kopie naar mezelf'))
+	->add('image_file', '', 'post', array('type' => 'file', 'label' => 'Foto formaat .jpg of .jpeg max. 300kB', 'class' => 'btn btn-default'))
+	->add('image_send', '', 'post', array('type' => 'submit', 'label' => 'Toevoegen', 'class' => 'btn btn-success'))
 	->addSubmitButtons()
 	
 	->cancel()
@@ -79,7 +81,7 @@ if ($req->get('delete') && $req->get('id') && $req->isOwnerOrAdmin()){
 	
 	if (!$req->errors(array('mailbody', 'mailcc', 'id'))){
 
-		$systemtag = readconfigfromdb('systemtag');
+		$systemtag = $parameters['letsgroup_code'];
 		
 		$user = get_user($req->getItemValue('id_user'));
 		$me = get_user($req->getSid());
@@ -87,26 +89,56 @@ if ($req->get('delete') && $req->get('id') && $req->isOwnerOrAdmin()){
 		$usermail = get_user_maildetails($req->getItemValue('id_user'));
 		$my_mail = get_user_maildetails($req->getSid());
 
-		$mailsubject .= '[Marva-'.$systemtag .'] - Reactie op je V/A ' .$req->getItemValue('content');
-		$mailfrom = $my_mail['emailaddress'];
+		$subject .= '[Marva-'.$systemtag .'] - Reactie op je V/A ' .$req->getItemValue('content');
+		$from = $my_mail['emailaddress'];
 
-		$mailto =  $usermail['emailaddress'];
-		$mailto .= ($req->get('mailcc')) ? ', '.$my_mail['emailaddress'] : '';
+		$to =  $usermail['emailaddress'];
+		$to .= ($req->get('mailcc')) ? ', '.$my_mail['emailaddress'] : '';
 
-		$mailcontent = 'Beste ' .$user['fullname'] .'\r\n\n
+		$content = 'Beste ' .$user['fullname'] .'\r\n\n
 			-- '.$me['fullname'].' heeft een reactie op je vraag/aanbod verstuurd via Marva --\r\n\n'.$reactie.'\n\n
 			* Om te antwoorden kan je gewoon reply kiezen of de contactgegevens hieronder gebruiken\n
 			* Contactgegevens van '.$me['fullname'] .':\n';
 		
 		foreach($contact as $key => $value){
-			$mailcontent .= '* '.$value['abbrev'] .'\t' .$value['value'] .'\n';
+			$content .= '* '.$value['abbrev'] .'\t' .$value['value'] .'\n';
 		}
 		
-		$mailstatus = sendemail($mailfrom,$mailto,$mailsubject,$mailcontent,1);
+		$mailstatus = sendemail($from, $to, $subject, $content);
 		
 		$req->setSuccess();
 	}	
-}	 
+} else if ($req->get('image_send') && $req->get('id') && $req->isOwnerOrAdmin()){
+	$filename = $_FILES['image_file']['name'];
+	$ext = pathinfo($filename, PATHINFO_EXTENSION);
+	var_dump($req->get('image_file'), $_FILES['image_file']['name'], $ext);
+	$size = $_FILES['image_file']['size'] / 1024;
+	$type = $_FILES['image_file']['type'];
+	$error = $_FILES['image_file']['error'];
+	$tmp_name = $_FILES['image_file']['tmp_name'];	
+	if (!$filename){
+		setstatus('Selecteer eerst een foto-bestand alvorens op te laden.', 'danger');
+	} elseif (!in_array($ext, array('jpg', 'JPG', 'jpeg', 'JPEG'))){
+		setstatus('Ongeldige bestands-extensie. De bestands-extensie moet jpg of jpeg zijn.', 'danger');
+	} elseif (!in_array($type, array('image/jpeg', 'image/jpg', 'image/pjpeg'))) {
+		setstatus('Ongeldig bestands-type.', 'danger');
+	} elseif ($size > 300){
+		setstatus('Te groot bestand. De maximum grootte is 300 kB.', 'danger');
+	} elseif ($error) { 
+		setstatus('Bestands-fout: '.$error, 'danger');
+	} else {
+		$filename = strtr(base64_encode(uniqid().microtime()), '+/=', '---').'-'.$req->get('id').'.'.strtolower($ext);
+		var_dump('site/images/messages/'.$filename);			
+		if (move_uploaded_file($tmp_name, $_SERVER[DOCUMENT_ROOT].'/site/images/messages/'.$filename)){
+			$db->Execute('insert into msgpictures (msgid, PictureFile) values (\''.$req->get('id').'\', \''.$filename.'\')');
+			log_event($userid,'Pict','Message-Picture '. $filename.' uploaded');
+			setstatus('Foto toegevoegd.', 'success');				
+			$req->setSuccess();	
+		} else {
+			setstatus('Foto opladen is niet gelukt.', 'danger');
+		}
+	}		
+}		 
 
 
 if ($req->isSuccess()){
@@ -116,7 +148,7 @@ if ($req->isSuccess()){
 	exit;	
 }		
 
-include('./includes/header.php');
+include 'includes/header.php';
 
 if($req->isUser() && !$req->get('mode')){	
 	echo '<a href="./messages.php?mode=new" class="btn btn-success pull-right">Toevoegen</a>';
@@ -253,121 +285,130 @@ if (!$req->get('id') && !($new || $edit || $delete)){
 if ($req->get('id') && !($edit || $delete || $new)){
 	$message = $req->getItem();
 	$owner = $req->getOwner();
-	$msgpictures = $db->GetArray('SELECT * FROM msgpictures WHERE msgid = ' .$req->get('id'));	
-		
+	
 	if ($req->isOwnerOrAdmin()){
 		$admin = ($req->isAdmin()) ? '[admin] ' : '';
 		echo '<a href="messages.php?mode=delete&id='.$req->get('id').'" class="btn btn-danger pull-right">'.$admin.'Verwijderen</a>';
 		echo '<a href="messages.php?mode=edit&id='.$req->get('id').'" class="btn btn-primary pull-right">'.$admin.'Aanpassen</a>';
-		$myurl='messages/upload_picture.php?msgid='.$req->get('id');
-		echo '<a href="#" class="btn btn-default pull-right">'.$admin.'Foto toevoegen</a>';	
 	}
 	
 	
 	$title = $message["content"];
 	
 	$contact = get_contact($owner['id']);
+	
 	$mailuser = get_user_maildetails($owner['id']);	
 	
 
 	echo '<h1>'.(($message['msg_type'] == 'o') ? 'Aanbod' : 'Vraag').': '.htmlspecialchars($message['content']).'</h1>';
 	echo '<p>Ingegeven door: '; 
 	$req->renderOwnerLink();
-	echo '<i> saldo: <a href="'.$rootpath.'transactions.php?userid='.$owner['id'].'">' .$owner['saldo'];
-	echo '</a> ' .$currency .'</i> - <a href="messages.php?userid='.$owner['id'].'">Toon alle vraag en aanbod van ';
+	echo '- <i> saldo: <a href="'.$rootpath.'transactions.php?userid='.$owner['id'].'">' .$owner['saldo'];
+	echo '</a> ' .getCurrencyText($owner['saldo'], false);
+	echo '</i> - <a href="messages.php?userid='.$owner['id'].'">Toon alle vraag en aanbod van ';
 	echo $owner['letscode'].' '.$owner['name'].'</a></p>';
-
 	
-	echo "<script type='text/javascript' src='". $rootpath ."js/msgpicture.js'></script>";
-	echo "<table class='data' border='1' width='95%'><tr>";
-
-	// The picture table is nested
-	echo "<td valign='top'>";
-	echo "<table class='data' border='1'>";
-	echo "<tr><td colspan='4' align='center'><img id='mainimg' src='" .$rootpath ."gfx/nomsg.png' width='200'></img></td></tr>";
-	echo "<tr>";
-	$picturecounter = 1;
-	foreach($msgpictures as $key => $value){
-		$file = $value["PictureFile"];
-		$url = $rootpath ."/sites/" .$dirbase ."/msgpictures/" .$file;
-		echo "<td>";
-		if($picturecounter == 1) {
-			 echo "<script type='text/javascript'>loadpic('$url')</script>";
-		}
-		if ($picturecounter <= 4) {
-			$picurl="showpicture.php?id=" .$value["id"];
-			echo "<img src='/sites/" .$dirbase ."/msgpictures/$file' width='50' onmouseover=loadpic('$url') onclick=window.open('$picurl','Foto','width=800,height=600,scrollbars=yes,toolbar=no,location=no')></td>";
-		}
-		$picturecounter += 1;
-	}
-	echo '</tr></td></table></td>';
-	// end picture table
-
-	// Show message
-	echo '<td valign="top">';
-	echo '<table cellspacing="0" cellpadding="0" border="0" width="100%">';
+	echo '<p>Categorie: </p>'; // 
 	
-	// empty row
-    echo '<tr><td>&nbsp</td></tr>';
-
-	echo "<tr><td>";
-	if (!empty($message['description'])){
-		echo nl2br(htmlspecialchars($message['description'],ENT_QUOTES));
-	} else {
-		echo "<i>Er werd geen omschrijving ingegeven</i>";
-	}
-	echo "</td></tr>";
-
-	// 2x empty row
-    echo "<tr><td>&nbsp</td></tr><tr><td>&nbsp</td></tr>";
-
-	echo "<tr class='even_row'><td valign='bottom'>";
-	if (!empty($message["amount"])){
-		echo "De (vraag)prijs is " .$message["amount"] ." " .$currency;
-	} else { 
-		echo "Er werd geen vraagprijs ingegeven";
-	}
-	echo "</td></tr>";
-
-	//Direct URL
-	echo '<tr class="even_row"><td>';
 	$directurl = 'http://'.$_SERVER['HTTP_HOST'].'/messages.php?id='.$req->get('id');
-	echo 'Directe link: <a href="'.$directurl.'">' .$directurl .'</a>';
-	echo '<br><i><small>Deze link brengt leden van je groep rechtstreeks bij dit V/A</small></i>';
-	echo '</td></tr></table></td>';
+	echo '<p>Link: <a href="'.$directurl.'">' .$directurl .'</a></p>';
+	 
 
-	// End message
+	$query = 'select contact.value, type_contact.abbrev
+		from type_contact, contact
+		where contact.id_user='.$req->getOwnerId().'
+		and contact.id_type_contact = type_contact.id
+		and contact.flag_public = 1';
+	$contacts = $db->GetArray($query);
+	
+	$contact_table = new data_table();
+	$contact_table->set_data($contacts)
+		->add_column('abbrev')
+		->add_column('value', array(
+			'href_mail' => true,
+			'href_adr' => true));
+	
+	$contact_table->render();
 
-	echo '</tr><tr>';
+
+	$images = $db->GetArray('SELECT * FROM msgpictures WHERE msgid = ' .$req->get('id'));
+
+	if (count($images)){
+		
+		echo '<div id="images-carousel" class="carousel slide" data-ride="carousel">';
+		echo '<ol class="carousel-indicators">';
+		foreach ($images as $key => $row){
+			echo '<li data-target="#images-carousel" data-slide-to="'.$key.'" class="active"></li>';
+		}
+		echo '</ol>';
+		echo '<div class="carousel-inner">';
+		foreach ($images as $key => $row){
+			echo '<div'.(($key) ? '' : ' class="active"').'>';
+			echo '<img src="site/images/messages/'.$row['PictureFile'].'" alt="foto"></div>';
+		}	
+		echo '</div>';
+		echo '<a class="left carousel-control" href="#images-carousel" data-slide="prev">';
+		echo '<span class="glyphicon glyphicon-chevron-left"></span></a>';
+		echo '<a class="right carousel-control" href="#images-carousel" data-slide="next">'; 
+		echo '<span class="glyphicon glyphicon-chevron-right"></span></a>';
+		echo '</div>';
+		if ($req->isOwnerOrAdmin()){
+
+			if ($req->isAdmin()){
+				echo '<div class="row"><div class="col-md-12"><p>[admin]</p></div></div>';
+			}
+			echo '<div class="row">';			
+			foreach ($images as $key => $row){
+				echo '<div class="col-md-2"><div class="thumbnail">';
+				echo '<img src="site/images/messages/'.$row['PictureFile'].'" alt="foto">';
+				echo '<div class="caption"><p>';
+				echo '<a href="messages.php?mode=image_delete&id='.$req->get('id').'&image_id='.$row['id'].'" class="btn btn-danger">';
+				echo 'X</a></p></div></div>';
+			}
+			echo'</div>';			
+
+		}
+	}
+	
+	if ($req->isOwnerOrAdmin()){
+		echo '<div class="row"><div class="col-md-12">';
+		if ($req->isAdmin()){
+			$req->setLabel('image_send', '[admin] '.$req->getLabel('image_send'));
+		}		
+		echo '<form method="post" class="trans form-horizontal" role="form" enctype="multipart/form-data">';
+		$req->set_output('formgroup')->render('image_file');
+		$req->set_output('nolabel')->render(array('image_send', 'id'));
+		echo '</form></div></div>';	
+	}
+	
+				
+
+	$message_description = ($message['description']) ? nl2br(htmlspecialchars($message['description'],ENT_QUOTES)) : 
+		'<p class="text-danger">Er werd geen omschrijving ingegeven</p>';
+	$amount_text = ($message['amount']) ? 'Richtprijs: '.getCurrencyText($message['amount']) : 
+		'<p class="text-danger">Er werd geen richtprijs ingegeven</p>';
+	echo '<div class="panel panel-default"><div class="panel-heading">Omschrijving</div>';
+	echo '<div class="panel-body">'.$message_description.'</div>';
+	echo '<div class="panel-footer">'.$amount_text.'</div></div>';
 
 
-
-	//Contact info goes here
-	echo '<td width="254" valign="top">';
-	$userid = $message["id_user"];
-	echo "<div id='contactinfo'></div>";
-	echo "<script type='text/javascript'>showsmallloader('contactinfo');loadurlto('messages/rendercontact.php?id=$userid', 'contactinfo')</script>";
-	echo "</td>";
-	//End contact info
-
-	//Response form
+	
 	if (empty($mailuser['emailaddress']) || $s_accountrole == 'guest'){
 		$req->setDisabled(array('sendmail', 'mailbody', 'mailcc'));
 	}
-	$req->setLabel('mailbody', 'Je reactie naar '.$owner['letscode'].' '.$owner['name']);
+	$req->setLabel('mailbody', 'Je reactie naar '.$owner['letscode'].' '.$owner['name']);	
 	
-	echo '<td><form action="messages.php" method="post"><table border="0">';	
-	$req->set_output('trtr')->render('mailbody')
-		->set_output('trtd')->render(array('mailcc', 'send', 'id'));
-	echo '</table></form></td>';
-	//
-
-
-	echo '</tr></table>';
+	echo '<form method="post" class="trans form-horizontal" role="form">';
+	$email = ($req->getSid()) ? 'non_existing_dummy_1' : 'email';
+	$recaptcha = ($req->getSid()) ? 'non_existing_dummy_2' : 'recaptcha';
+	$req->set_output('formgroup')->render(array('mailbody', 'mailcc'));
+	echo '<div>';
+	$req->set_output('nolabel')->render(array('send', 'id'));
+	echo '</div></form>';	
 	
 }
 
-include('./includes/footer.php');
+include 'includes/footer.php';
 
 ?>
 

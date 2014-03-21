@@ -40,7 +40,7 @@ class data_table{
 		$this->render_header()->render_rows()->render_footer();
 		echo '</table></div>';
 		//$this->render_status_legend();		
-		echo '<script type="text/javascript" src="'.$this->rootpath.'js/table_sum.js"></script>';		
+		
 		return $this;
 	}
 	
@@ -125,6 +125,12 @@ class data_table{
 						$href_target = ($td['href_target']) ? ' target="'.$td['href_target'].'"' : '';
 						$td_1 = '<a href="'.$href.'"'.$href_target.'>';
 						$td_2 = '</a>'; 
+					} elseif ($td['href_mail'] && $row['abbrev'] == 'mail') {
+						$td_1 = '<a href="mailto:'.$text.'">';
+						$td_2 = '</a>';
+					} elseif ($td['href_adr'] && $row['abbrev'] == 'adr') {
+						$td_1 = '<a href="http://maps.google.be/maps?f=q&source=s_q&hl=nl&geocode=&q='.$text.'" target="_blank">';
+						$td_2 = '</a>';	
 					} else {
 						$td_1 = $td_2 = '';
 					}

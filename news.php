@@ -44,10 +44,10 @@ if ($req->get('delete') && $req->get('id') && $req->isOwnerOrAdmin()){
 } else if (($req->get('create') || $req->get('create_plus'))  && $req->isUser()){
 	$new = $req->errorsCreate(array('itemdate', 'headline', 'newsitem', 'sticky', 'cdate', 'id_user'));
 	if (!$req->isAdmin() && $req->isSuccess()){
-		$mailsubject = '[Marva-'.readconfigfromdb('systemtag').'] Nieuwsbericht / Agendapunt gecreëerd ';
-		$mailcontent = '-- Dit is een automatische mail van het Marva systeem, niet beantwoorden aub --\r\n';
-		$mailcontent .= '\nEen lid gaf een nieuwsbericht met titel: '.$req->get('headline');
-		sendemail(readconfigfromdb('from_address'),readconfigfromdb('newsadmin'),$mailsubject,$mailcontent);						
+		$subject = '[Marva-'.$parameters['letsgroup_code'].'] Nieuwsbericht / Agendapunt gecreëerd ';
+		$content = '-- Dit is een automatische mail van het Marva systeem, niet beantwoorden aub --\r\n';
+		$content .= '\nEen lid gaf een nieuwsbericht met titel: '.$req->get('headline');
+		sendemail($parameters['mail']['noreply'], $parameters['mail']['news-admin'], $subject, $content);						
 	}
 									
 } else if ($req->get('edit') && $req->get('id') && $req->isOwnerOrAdmin()){
@@ -64,7 +64,7 @@ if ($req->isSuccess()){
 
 
 	
-include('./includes/header.php');
+include 'includes/header.php';
 
 if($req->isUser() && !$req->get('mode')){	
 	echo '<a href="./news.php?mode=new" class="btn btn-success pull-right">Toevoegen</a>';
@@ -172,13 +172,14 @@ if ($req->get('id') && !($edit || $delete || $new)){
 	}	
 	echo '<p>Ingegeven door: ';
 	$req->renderOwnerLink();
-	echo '</p><p>Bericht:</p>';
-	echo '<p><strong>'.nl2br(htmlspecialchars($news["newsitem"],ENT_QUOTES)).'</strong></p>';
+	echo '<div class="panel panel-default"><div class="panel-heading">Bericht</div>';
+	echo '<div class="panel-body">'.nl2br(htmlspecialchars($news["newsitem"],ENT_QUOTES));
+    echo '</div></div>';
 	echo '<p>&nbsp;</p>';
 	echo ($news['sticky']) ? 'Dit bericht blijft behouden na de agenda datum.' : 'Dit bericht wordt automatisch verwijderd na de agenda datum.';
 	echo '<p>&nbsp;</p>';		
 }
-include('./includes/footer.php');
+include 'includes/footer.php';
 
 ?>
 

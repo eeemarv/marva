@@ -3,11 +3,12 @@ ob_start();
 
 $rootpath = "./";
 
-require_once($rootpath.'includes/default.php');
+require_once 'includes/default.php';
 
-require_once($rootpath.'includes/inc_content.php');
+require_once 'includes/inc_content.php';
+require_once 'includes/mail.php';
 
-require_once($rootpath.'includes/request.php');
+require_once 'includes/request.php';
 
 $req = new request('anonymous', true);
 
@@ -15,6 +16,7 @@ $req->setEntity('contact')
 	->add('email', '', 'post', array('type' => 'text', 'label' => 'Email adres', 'size' => 50, 'maxlength' => 50), array('not_empty' => true, 'email' => true))
 	->add('subject', '', 'post', array('type' => 'text', 'label' => 'Onderwerp', 'size' => 50, 'maxlength' => 60), array('not_empty' => true))
 	->add('content', '', 'post', array('type' => 'textarea', 'label' => 'Bericht', 'cols' => 50, 'rows' => 7), array('not_empty' => true))
+	->add('mailcc', 'checked', 'post', array('type' => 'checkbox', 'label' => 'Stuur een kopie naar mezelf'))
 	->add('recaptcha', '', 'post', array('type' => 'recaptcha', 'label' => 'Recaptcha'), array( 'match' => 'recaptcha', 'not_empty' => true))
 	->addSubmitButtons();
 
@@ -35,12 +37,14 @@ if ($req->get('send') && !$req->errors()){
 
 require_once 'includes/header.php';
 
-echo '<h1><a href="contact.php">Contact Beheer</a></h1>';
+$support = ($req->getSid()) ? ' support' : '';
+
+echo '<h1><a href="contact.php">Contact '.$support.'</a></h1>';
 
 echo '<form method="post" class="trans form-horizontal" role="form">';
 $email = ($req->getSid()) ? 'non_existing_dummy_1' : 'email';
 $recaptcha = ($req->getSid()) ? 'non_existing_dummy_2' : 'recaptcha';
-$req->set_output('formgroup')->render(array($email, 'subject', 'content', $recaptcha));
+$req->set_output('formgroup')->render(array($email, 'subject', 'content', 'mailcc', $recaptcha));
 echo '<div>';
 $req->set_output('nolabel')->render(array('send', 'cancel'));
 echo '</div></form>';
@@ -96,7 +100,7 @@ function helpmail($posted_list,$rootpath){
 
 	$mailsubject = $parameters['code'] ." - " .$posted_list['subject'];
 
-        $mailcontent  = "-- via de Marva website werd het volgende bericht ingegeven --\r\n";
+        $mailcontent  = "-- via de website werd het volgende bericht ingegeven --\r\n";
 	$mailcontent .= "E-mail: {$posted_list['email']}\r\n";
 	$mailcontent .= "Login:  {$posted_list['login']}\r\n";
 	$mailcontent .= "Omschrijving:\r\n";

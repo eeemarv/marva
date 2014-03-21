@@ -28,6 +28,7 @@ web/cache/*
 components/*
 vendor/*
 composer.phar
+
 web/bundles/
 web/js/*
 web/css/*

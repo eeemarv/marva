@@ -64,6 +64,7 @@ class request {
 			
 		if (!$security_level || (!in_array($security_level, array('admin', 'user', 'guest', 'anonymous')))){
 			header(' ', true, 500);
+			include '500.html';
 			exit;
 		}
 				
@@ -78,7 +79,7 @@ class request {
 			|| ($security_level == 'user' && !in_array($this->s_accountrole, array('admin', 'user')))
 			|| ($security_level == 'guest' && !in_array($this->s_accountrole, array('admin', 'user', 'guest')))){
 			header('HTTP/1.1 403 Unauthorized', true, 403);	
-			//header(' ', true, 403);
+			include '403.html';
 			exit;			
 		}	
 
@@ -148,10 +149,9 @@ class request {
 		if ($this->get('id')){
 			$this->item = $db->GetRow('select * from '.$this->entity.' where id = '.$this->get('id'));
 			if (!$this->item){
-				header('HTTP/1.0 404 Not Found');
-				echo '<h1>404 Not Found</h1>';
-				echo '<p>De gevraagde pagina kon niet gevonden worden.</p>';
-				exit();
+				header('HTTP/1.0 404 Not Found', true, 404);
+				include '404.html';
+				exit;
 			}
 			$this->dataTransform();
 		}
@@ -287,6 +287,10 @@ class request {
 		return $this->owner;
 	}
 	
+	public function getOwnerId(){
+		return $this->owner['id'];
+	}
+	
 	public function getOwnerValue($name_param){
 		return $this->owner[$name_param];
 	}
@@ -407,7 +411,11 @@ class request {
 	public function setLabel($name, $label){
 		$this->parameters[$name]['label'] = (isset($this->parameters[$name])) ? $label : null;
 		return $this;
-	}	
+	}
+	
+	public function getLabel($name){
+		return $this->parameters[$name]['label'];
+	}		
 	
 	public function reset($name){
 		if (is_array($name)){
@@ -800,8 +808,7 @@ class request {
 	}	
 	
 
-	function isDate($date)
-	{
+	function isDate($date){
 		if(preg_match("/^(\d{4})-(\d{2})-(\d{2})$/", $date, $matches)){
 			if(checkdate($matches[2], $matches[3], $matches[1])){
 				return true;

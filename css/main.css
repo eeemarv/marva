@@ -503,19 +503,40 @@ a.pull-right{
 }
 
 
-/* admin */
+/* navbar-admin */
 
-div.admin{
+
+
+nav.navbar-admin{
 	background-color:#504332;
 	color: white;
-	padding: 10px;
+	margin-bottom: 0;
 }
-div.admin a{
+nav.navbar-admin div.navbar-header p.navbar-brand{
+	margin-bottom: 0;
+}
+nav.navbar-admin li{
+	background-color:#504332;
+	color: white;
+	margin-bottom: 0;
+}
+nav.navbar-admin li a{
 	color: yellow;
 }
-div.admin a.active{
-	color: white;
+nav.navbar-admin li a:hover{
+	background-color: #764;
 }
+nav.navbar-admin li.active a{
+	color: white;
+	background-color: #653;
+}
+nav.navbar-admin div.navbar-header button.navbar-toggle{
+	background-color: #653;
+	border-color: grey;
+}
+
+
+
 
 /* Tooltip */
 

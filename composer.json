@@ -13,8 +13,15 @@
         "recaptcha/recaptcha": "1.11",
         "twbs/bootstrap": "3.1.1",
         "components/jquery": "1.11.*",
-        "twitter/typeahead.js": "0.10.*"
+        "twitter/typeahead.js": "0.10.*",
+        "blueimp/jquery-file-upload": "9.5.7",
+        "components/jquery": "1.11.0"
     },
+    
+   	"config": {
+        "component-dir": "vendor"
+    },
+        
     "repositories": [
         {
             "type": "package",
@@ -54,7 +61,7 @@
 					"type": "zip"            
 				}			
 			}
-        }                  
+        }
+                    
     ]  
-
 }

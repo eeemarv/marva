@@ -1,18 +1,17 @@
 <?php
 
 ob_start();
-require('./includes/default.php');
+require 'includes/default.php';
 
 
 require_once($rootpath.'includes/inc_transactions.php');
 require_once($rootpath.'includes/inc_userinfo.php'); 
 
 
-require('./includes/request.php');
-require('./includes/data_table.php');
-require('./includes/pagination.php');
+require 'includes/request.php';
+require 'includes/data_table.php';
+require 'includes/pagination.php';
 
-$currency = readconfigfromdb('currency');
 
 $req = new request('user');
 
@@ -31,7 +30,7 @@ $req->setEntityTranslation('Transactie')
 	->add('date', date('Y-m-d'), 'post')
 	->add('cdate', date('Y-m-d H:i:s'), 'post')
 	->add('letscode_to', '', 'post', array('type' => 'text', 'size' => 40, 'maxlength' => 10, 'label' => 'Aan LetsCode', 'autocomplete' => 'off'), array('not_empty' => true))
-	->add('amount', '', 'post', array('type' => 'text', 'size' => 10, 'maxlength' => 6, 'label' => 'Aantal '.$currency , 'autocomplete' => 'off'), array('not_empty' => true))
+	->add('amount', '', 'post', array('type' => 'text', 'size' => 10, 'maxlength' => 6, 'label' => 'Aantal '.$parameters['currency_plural'] , 'autocomplete' => 'off'), array('not_empty' => true))
 	->add('description', '', 'post', array('type' => 'text', 'size' => 40, 'maxlength' => 60, 'label' => 'Omschrijving', 'autocomplete' => 'off'), array('not_empty' => true))
 	->add('transid', generate_transid(), 'post', array('type' => 'hidden'))		
 	->addSubmitButtons()

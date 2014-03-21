@@ -1,5 +1,7 @@
 <?php
 /**
+ * copyleft 2014 martti <info@martti.be>
+ * 
  *
  * Copyright(C) 2009 Guy Van Sanden <guy@vsbnet.be>
  *

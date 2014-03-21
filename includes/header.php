@@ -1,7 +1,7 @@
 <?php 
 
-$bootstrap = ($parameters['load_from_cdn']) ? '//netdna.bootstrapcdn.com/bootstrap/3.1.1' : $rootpath.'vendor/twbs/bootstrap/dist';
-$jquery = ($parameters['load_from_cdn']) ? 'http://code.jquery.com/jquery-1.11.0.min.js' : $rootpath.'vendor/components/jquery/jquery.min.js';
+$bootstrap = ($parameters['cdn']) ? '//netdna.bootstrapcdn.com/bootstrap/3.1.1' : $rootpath.'vendor/twbs/bootstrap/dist';
+$jquery = ($parameters['cdn']) ? 'http://code.jquery.com/jquery-1.11.0.min.js' : $rootpath.'vendor/jquery/jquery.min.js';
 
 
 echo <<<EOF
@@ -25,14 +25,24 @@ echo <<<EOF
 	
 	<script type="text/javascript" src="{$rootpath}/js/ajax.js"></script>
 <!--	<script type="text/javascript" src="{$rootpath}/js/mootools-core.js"></script>
-	<script type="text/javascript" src="{$rootpath}/js/mootools-more.js"></script> -->
-	<script type="text/javascript" src="{$rootpath}/tinybox/tinybox.js"></script>
+	<script type="text/javascript" src="{$rootpath}/js/mootools-more.js"></script>
+	
+	<script type="text/javascript" src="{$rootpath}/tinybox/tinybox.js"></script> -->
+
+
+
+
+
+
+	
+	<script type="text/javascript" src="{$rootpath}/js/table_sum.js"></script>
 			
 	<script src="{$jquery}"></script>
 	<script src="{$bootstrap}/js/bootstrap.min.js"></script>
-
 	
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	
+	
+
 </head>
 <body>
 

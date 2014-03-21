@@ -3,37 +3,39 @@
 echo '</div>';
 
 if ($req->isAdmin()){
-	echo '<div class="admin">';
-	echo '<div class="row"><div class="col-md-12"><h4>[admin]</h4></div></div>';
-	echo '<div class="row">';	
+
+	echo '<nav class="navbar navbar-bottom navbar-admin" role="navigation">
+		<div class="container-fluid">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex2-collapse">
+					<span class="sr-only"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<p class="navbar-brand">[admin]</p>
+		</div>
+		<div class="collapse navbar-collapse navbar-ex2-collapse">
+		<ul class="nav navbar-nav">';
 	$menu = array(
 		'categories' => 'Categorieën',
 		'apikeys'	=> 'Apikeys',
 		'type_contact' => 'Contact-types',
 		'eventlog' => 'Logs',
-		);
-
+		'db_backup' => 'Database backup',
+		);	
+		
 	foreach($menu as $entity => $label){
 		$active = ($req->getEntity() == $entity) ? ' class="active"' : '';	
-		echo '<div class="col-md-3"><a href="'.$entity.'.php"'.$active.'>'.$label.'</a></div>';
+		echo '<li'.$active.'><a href="'.$entity.'.php">'.$label.'</a></li>';
 		
 	}
-	echo '</div></div>';
-/*	echo '<nav class="navbar navbar-inverse navbar-bottom" role="navigation">';
-	echo '<div class="container">';
-	echo '<p class="navbar-text navbar-right">Signed in as <a href="#" class="navbar-link">Mark Otto</a></p>';
-	echo '</div></nav>'; 
-
-*/
-	
-	
-	
-	
+	echo '</ul></div></nav>';	
 }
 
 
 echo '<footer class="footer"><div class="container">';
 echo '<p><a href="https://github.com/marttii/marva"><i class="fa fa-github fa-lg"></i>marva ';
 echo exec('git describe --long --abbrev=10 --tags');			
-echo '</a></p></div></footer>';
+echo '</a></p></footer>';
 echo '</body></html>';

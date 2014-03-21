@@ -16,7 +16,7 @@ use Symfony\Component\Yaml\Yaml;
 $parameters = array_merge_recursive(Yaml::parse(__DIR__.'/../site/parameters.yml'), $parameters); 
 
 if ($parameters['debug']){
-	error_reporting(E_ERROR);
+	error_reporting(E_ALL);
 } else {
 	error_reporting(0);
 }
@@ -39,7 +39,7 @@ unset($con, $parameters['db']);
 
 
 $mail_addresses = array_intersect_key($parameters['mail'], array(
-	'info' => 'info', 'admin' => 'admin', 'support' => 'support', 
+	'info' => 'info', 'admin' => 'admin', 'support' => 'support', 'news-admin' => 'news-admin',
 	'noreply' => 'noreply', 'list' => 'list'));
 	
 foreach ($mail_addresses as $key => $val){
@@ -106,6 +106,13 @@ function setstatus($status, $type = "info"){
 	array_push($_SESSION["status"], array('message' => $status, 'type' => $type));
 }
 
+
+function getCurrencyText($amount, $includeAmount = true){
+	global $parameters;
+	$out = ($includeAmount) ? $amount.' ' : '';
+	$out .= (((int) $amount == 1 || (int) $amount == -1)) ? $parameters['currency_singular'] : $parameters['currency_plural'];
+	return $out;	
+}	
 
 // Make timestamps for SQL statements
 function make_timestamp($timestring){

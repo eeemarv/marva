@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "c6e46cf0966c982223a0d67bfadb223d",
+    "hash": "2585b382f9596d21b9e1b53f477b6248",
     "packages": [
         {
             "name": "adodb/adodb-php",
@@ -40,6 +40,57 @@
                 }
             ],
             "time": "2013-01-04 11:54:13"
+        },
+        {
+            "name": "blueimp/jquery-file-upload",
+            "version": "9.5.7",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/vkhramtsov/jQuery-File-Upload.git",
+                "reference": "1840dc3c01f3469ca75a9f754201bfaee40b56c5"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/vkhramtsov/jQuery-File-Upload/zipball/1840dc3c01f3469ca75a9f754201bfaee40b56c5",
+                "reference": "1840dc3c01f3469ca75a9f754201bfaee40b56c5",
+                "shasum": ""
+            },
+            "type": "library",
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Sebastian Tschan",
+                    "homepage": "https://blueimp.net",
+                    "role": "Developer"
+                }
+            ],
+            "description": "File Upload widget for jQuery.",
+            "homepage": "https://github.com/blueimp/jQuery-File-Upload",
+            "keywords": [
+                "bootstrap",
+                "chunk",
+                "cross-domain",
+                "cross-site",
+                "drag",
+                "drop",
+                "file",
+                "gae",
+                "go",
+                "jquery",
+                "multiple",
+                "php",
+                "preview",
+                "progress",
+                "python",
+                "resume",
+                "selection",
+                "upload",
+                "widget"
+            ],
+            "time": "2014-03-11 06:27:43"
         },
         {
             "name": "components/jquery",

@@ -10,8 +10,7 @@ $s_name = $_SESSION["name"];
 $s_letscode = $_SESSION["letscode"];
 $s_accountrole = $_SESSION["accountrole"];
 	
-include($rootpath."includes/inc_smallheader.php");
-include($rootpath."includes/inc_content.php");
+
 
 $msgid = $_GET["msgid"];
 
@@ -30,7 +29,7 @@ if(isset($s_id)) {
 		if($ext == "jpeg" || $ext == "JPEG" || $ext == "jpg" || $ext == "JPG"){
 			if($file_size > ($sizelimit * 1024)) {
 				//Resize the image first
-	                        echo "Je foto is te groot, bezig met verkleinen...<br>";
+
 				resizepic($file,$tmpfile,$rootpath, $msgid);
 			} else {
 				//echo "Foto voor Message " .$msgid;
@@ -38,7 +37,7 @@ if(isset($s_id)) {
 			}
 		} else {
 			echo "<font color='red'>Bestand is niet in jpeg (jpg) formaat, je foto werd niet toegevoegd</font>";
-			setstatus("Fout: foto niet toegevoegd", 'danger');
+			setstatus("Fout: foto niet toegevoegd. Het bestandsformaat moet jpg/jpeg zijn.", 'danger');
 		}
 	
 	} else {
@@ -76,7 +75,8 @@ function place_picture($file,$tmpfile,$rootpath,$msgid){
 	$ext = pathinfo($file, PATHINFO_EXTENSION);
 	// Limit file size
 	// Check if the file is already there.
-	$ts = time();
+	$ts = uniqid().microtime();
+
 	$uploadfile =  $rootpath ."sites/$dirbase/msgpictures/" .$msgid ."_" .$ts ."." .$ext;
 	if(file_exists($uploadfile)){
 		echo "<font color='red'>Het bestand bestaat al, hernoem je bestand en probeer opnieuw.</font>";
@@ -85,7 +85,15 @@ function place_picture($file,$tmpfile,$rootpath,$msgid){
     			echo "Foto uploaden is niet gelukt...\n";
 		} else {
 			echo "Foto opgeladen, wordt toegevoegd aan je profiel...<br>";
-			$target = $msgid ."_" .$ts ."." .$ext;
+			$file = $msgid .'-' .$ts.'.' .$ext;
+
+	$query = "INSERT INTO msgpictures (msgid, PictureFile) VALUES ('$msgid','$file')";
+	$db->Execute($query);
+	log_event($userid,"Pict","Message-Picture $file uploaded");
+
+	// Redirect
+	setstatus("Foto toegevoegd", 'success');
+			
 			dbinsert($msgid, $target,$rootpath);
 		}
 	}
@@ -136,5 +144,4 @@ function dbinsert($msgid, $file, $rootpath) {
 }
 
 
-include($rootpath."includes/inc_smallfooter.php");
 ?>

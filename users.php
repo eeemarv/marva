@@ -244,6 +244,28 @@ if (!$req->get('id') && !($new || $edit || $delete)){
 			));
 	}
 	
+	echo'
+		<ul class="nav nav-tabs">
+	  <li class="active"><a href="#" class="bg-danger">Home</a></li>
+	  <li><a href="#" class="bg-info">Profile</a></li>
+	  <li><a href="#" class="bg-warning">Messages</a></li>
+	  <li><a href="#" class="bg-danger">Home</a></li>
+	  <li><a href="#" class="bg-info">Profile</a></li>
+	  <li><a href="#">Messages</a></li>	  
+	  <li><a href="#" class="bg-danger">Home</a></li>
+	  <li class="active "><a href="#" class="bg-info">Profile</a></li>
+	  <li><a href="#">Messages</a></li>
+	  <li><a href="#" class="bg-danger">Home</a></li>
+	  <li><a href="#" class="bg-info">Profile</a></li>
+	  <li><a href="#">Messages</a></li>		  
+	  
+	</ul><p></p>';
+
+	
+	
+	
+	
+	
 	$table->render();
 	
 	if (sizeof($users) == 1){
