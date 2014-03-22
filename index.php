@@ -24,9 +24,12 @@ require_once('includes/default.php');
 require_once('includes/request.php');
 
 $req = new request('anonymous');
+
+$req->setEntity('index');
 	
 require('includes/header.php');
 
+include 'site/index_content.html';
 
 var_dump($parameters, $con);
 

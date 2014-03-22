@@ -137,6 +137,8 @@ require_once($rootpath.'includes/header.php');
 
 echo '<h1><a href="login.php">Inloggen</a></h1>';
 
+include 'site/login_content.html';
+
 if(!$req->get('token')){
 	echo '<form method="post" class="trans form-horizontal" role="form">';
 	$req->set_output('formgroup')->render(array('letscode', 'password'));

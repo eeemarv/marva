@@ -33,7 +33,7 @@ $req->add('fixed', 10, 'post', array('type' => 'text', 'size' => 4, 'maxlength' 
 	->add('description', '', 'post', array('type' => 'text', 'size' => 40, 'maxlength' => 60, 'label' => 'Omschrijving', 'autocomplete' => 'off'), array('not_empty' => true))
 	->add('confirm_password', '', 'post', array('type' => 'password', 'size' => 10, 'maxlength' => 20, 'label' => 'Paswoord (extra veiligheid)', 'autocomplete' => 'off'), array('not_empty' => true, 'match' => 'password'))
 	->add('create', '', 'post', array('type' => 'submit', 'label' => 'Voer alle transacties uit.'))
-	->add('transid', generate_transid(), 'post', array('type' => 'hidden'));
+	->add('transid', generateUniqueId(), 'post', array('type' => 'hidden'));
 
 
 $query = 'SELECT id, fullname, letscode, accountrole, status, saldo, minlimit, maxlimit, adate  
@@ -84,7 +84,7 @@ if ($req->get('create') && !$req->errors() && $to_user_id){
 			} else {
 				$notice .= '<p><font color="red"><strong>'.$notice_text.'Mislukt</strong></font></p>';
 			}
-			$transid = generate_transid();
+			$transid = generateUniqueId();
 		}
 	}
 	$req->set('letscode_to', '');

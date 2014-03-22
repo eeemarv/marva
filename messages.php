@@ -127,7 +127,7 @@ if ($req->get('delete') && $req->get('id') && $req->isOwnerOrAdmin()){
 	} elseif ($error) { 
 		setstatus('Bestands-fout: '.$error, 'danger');
 	} else {
-		$filename = strtr(base64_encode(uniqid().microtime()), '+/=', '---').'-'.$req->get('id').'.'.strtolower($ext);
+		$filename = generateUniqueId().'-'.$req->get('id').'.'.strtolower($ext);
 		var_dump('site/images/messages/'.$filename);			
 		if (move_uploaded_file($tmp_name, $_SERVER[DOCUMENT_ROOT].'/site/images/messages/'.$filename)){
 			$db->Execute('insert into msgpictures (msgid, PictureFile) values (\''.$req->get('id').'\', \''.$filename.'\')');
@@ -194,7 +194,7 @@ if (!($new || $edit || $delete)){
 }
 
 if (!$req->get('id') && !($new || $edit || $delete)){
-
+ echo $db->GetOne('select 29 | 15 ');
 	$userid = $req->get('userid');
 	$catid = $req->get('catid');
 	$q = $req->get('q');
@@ -285,6 +285,7 @@ if (!$req->get('id') && !($new || $edit || $delete)){
 if ($req->get('id') && !($edit || $delete || $new)){
 	$message = $req->getItem();
 	$owner = $req->getOwner();
+	$category = $db->GetRow('select name from categories where id = '.$message['id_category']);
 	
 	if ($req->isOwnerOrAdmin()){
 		$admin = ($req->isAdmin()) ? '[admin] ' : '';
@@ -308,7 +309,7 @@ if ($req->get('id') && !($edit || $delete || $new)){
 	echo '</i> - <a href="messages.php?userid='.$owner['id'].'">Toon alle vraag en aanbod van ';
 	echo $owner['letscode'].' '.$owner['name'].'</a></p>';
 	
-	echo '<p>Categorie: </p>'; // 
+	echo '<p>Categorie: <a href="messages.php?catid='.$message['id_category'].'">'.$category['name'].'</a></p>'; // 
 	
 	$directurl = 'http://'.$_SERVER['HTTP_HOST'].'/messages.php?id='.$req->get('id');
 	echo '<p>Link: <a href="'.$directurl.'">' .$directurl .'</a></p>';
@@ -352,6 +353,10 @@ if ($req->get('id') && !($edit || $delete || $new)){
 		echo '<a class="right carousel-control" href="#images-carousel" data-slide="next">'; 
 		echo '<span class="glyphicon glyphicon-chevron-right"></span></a>';
 		echo '</div>';
+		
+		        echo '<script>
+            $("#images-carousel").carousel();
+        </script>';
 		if ($req->isOwnerOrAdmin()){
 
 			if ($req->isAdmin()){

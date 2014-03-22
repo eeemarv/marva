@@ -351,6 +351,10 @@ class request {
 		if ($this->isPost() && in_array($method, array('post', 'get|post', 'post|get'))){
 			$value = $_POST[$name];
 		}
+		if ($this->parameters[$name]['type'] == 'checkbox'){
+			
+					
+		}			
 		if (!isset($value)){
 			$this->parameters[$name]['value'] = $default;
 			return $this;

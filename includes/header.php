@@ -14,7 +14,7 @@ echo <<<EOF
 	<meta name="keywords" content="{$parameters['meta_keywords']}">
 	<meta name="description" content="{$parameters['meta_description']}">    
 
-	<title>{$parameters['site_name']}</title>
+	<title>{$parameters['letsgroup_name']}</title>
 	
 	<link rel="stylesheet" href="{$bootstrap}/css/bootstrap.min.css">
 	<link type="text/css" rel="stylesheet" href="{$rootpath}css/main.css">	
@@ -23,8 +23,8 @@ echo <<<EOF
 
 	<!-- ajax.js contains eLAS custom ajax functions that are being migrated to MooTools -->
 	
-	<script type="text/javascript" src="{$rootpath}/js/ajax.js"></script>
-<!--	<script type="text/javascript" src="{$rootpath}/js/mootools-core.js"></script>
+<!--	<script type="text/javascript" src="{$rootpath}/js/ajax.js"></script>
+	<script type="text/javascript" src="{$rootpath}/js/mootools-core.js"></script>
 	<script type="text/javascript" src="{$rootpath}/js/mootools-more.js"></script>
 	
 	<script type="text/javascript" src="{$rootpath}/tinybox/tinybox.js"></script> -->
@@ -46,11 +46,11 @@ echo <<<EOF
 </head>
 <body>
 
-<script type='text/javascript'>
+<!-- <script type='text/javascript'>
 	function OpenTBox(url){
 		TINY.box.show({url:url,width:0,height:0})
 	}
-</script>
+</script> -->
 
 <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
 <div class="container-fluid">
@@ -61,7 +61,7 @@ echo <<<EOF
 		<span class="icon-bar"></span>
 		<span class="icon-bar"></span>
 	</button>
-	<a class="navbar-brand" href="./">{$parameters['site_name']}</a>
+	<a class="navbar-brand" href="./" >{$parameters['letsgroup_name']}</a>
 </div>
 <div class="collapse navbar-collapse navbar-ex1-collapse">
   <ul class="nav navbar-nav">
@@ -104,6 +104,18 @@ if ($req->isGuest()){
 	
 }		
 echo '</div></div></nav>';
+
+if ($req->getEntity() == 'index'){
+	if (file_exists('site/index_pre_container.html')){
+		include 'site/index_pre_container.html';
+	} else {
+		echo '<div class="jumbotron"><div class="container">';
+		echo '<h1>'.$parameters['letsgroup_name'].'</h1>';
+		echo '<p>'.$parameters['site_slogan'].'</p></div></div>';
+	}		
+}	
+
+
 	
 echo '<div class="container-fluid">';
 

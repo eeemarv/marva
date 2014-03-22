@@ -112,7 +112,13 @@ function getCurrencyText($amount, $includeAmount = true){
 	$out = ($includeAmount) ? $amount.' ' : '';
 	$out .= (((int) $amount == 1 || (int) $amount == -1)) ? $parameters['currency_singular'] : $parameters['currency_plural'];
 	return $out;	
-}	
+}
+
+function generateUniqueId(){
+    return rtrim(strtr(base64_encode(hash('sha256', uniqid(mt_rand(), true), true)), '/', '-'), '=');	
+	
+}
+
 
 // Make timestamps for SQL statements
 function make_timestamp($timestring){

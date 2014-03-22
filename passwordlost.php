@@ -56,6 +56,8 @@ require_once('includes/header.php');
 
 echo '<h1><a href="passwordlost.php">Nieuw paswoord aanvragen</a></h1>';
 
+include 'site/passwordlost_content.html';
+
 echo '<form method="post" class="trans form-horizontal" role="form">';
 $req->set_output('formgroup')->render(array('email', 'recaptcha'));
 echo '<div>';

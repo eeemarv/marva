@@ -32,7 +32,7 @@ $req->setEntityTranslation('Transactie')
 	->add('letscode_to', '', 'post', array('type' => 'text', 'size' => 40, 'maxlength' => 10, 'label' => 'Aan LetsCode', 'autocomplete' => 'off'), array('not_empty' => true))
 	->add('amount', '', 'post', array('type' => 'text', 'size' => 10, 'maxlength' => 6, 'label' => 'Aantal '.$parameters['currency_plural'] , 'autocomplete' => 'off'), array('not_empty' => true))
 	->add('description', '', 'post', array('type' => 'text', 'size' => 40, 'maxlength' => 60, 'label' => 'Omschrijving', 'autocomplete' => 'off'), array('not_empty' => true))
-	->add('transid', generate_transid(), 'post', array('type' => 'hidden'))		
+	->add('transid', generateUniqueId(), 'post', array('type' => 'hidden'))		
 	->addSubmitButtons()
 	
 	->cancel()
