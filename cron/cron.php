@@ -3,25 +3,24 @@ ob_start();
 $rootpath = "../";
 require_once($rootpath."includes/default.php");
 
-require_once($rootpath."includes/inc_amq.php");
+
 require_once($rootpath."cron/inc_cron.php");
+
+
 require_once($rootpath."cron/inc_upgrade.php");
-require_once($rootpath."cron/inc_stats.php");
 
 require_once($rootpath."includes/inc_userinfo.php");
 require_once($rootpath."includes/inc_saldofunctions.php");
 
-require_once($rootpath."includes/inc_news.php");
 require_once($rootpath."includes/inc_eventlog.php");
 session_start();
 
 header('Content-type: text/plain');
-//global $elas;
-global $xmlconfig;
-global $db;
+
+
 
 # Upgrade the DB first if required
-			
+/*			
 $query = "SELECT * FROM `parameters` WHERE `parameter`= 'schemaversion'";
 $qresult = $db->GetRow($query) ;
 $dbversion = $qresult["value"];
@@ -35,24 +34,14 @@ while($currentversion < $schemaversion){
 }
 echo "Upgraded database from schema version $dbversion to $doneversion\n\n";
 
+*/
 
-// PUT MAIN BODY HERE
-// echo "<p><small>Build from branch: " . $elas->branch .", revision: " .$elas->revision .", build: " .$elas->build;
-echo ' *** Marva  Cron system running [' .$parameters['letsgroup_code'].'] ***\n\n';
-
+echo ' *** Cron system running [' .$parameters['letsgroup_code'].'] ***\n\n';
 
 
-// Check and create required paths
-$frequency = 10;
-if(check_timestamp("create_paths", $frequency) == 1) {
-	create_paths();
-}
 
-// Check for incoming messages on the AMQ
-$frequency = 5;
-if(check_timestamp("process_ampmessages", $frequency) == 1) {
-	process_amqmessages();
-}
+
+
 
 // Auto mail saldo on request
 $frequency = readconfigfromdb("saldofreqdays") * 1440;
@@ -61,23 +50,14 @@ if(check_timestamp("saldo", $frequency) == 1) {
 }
 
 
-
-
-
-// Clean up expired messages after the grace period
-$frequency = 1440;  
-if(check_timestamp("cleanup_messages", $frequency) == 1 && readconfigfromdb("msgcleanupenabled") == 1){
-        cleanup_messages();
-}
-
 // Update counts for each message category
-$frequency = 60;
+$frequency = 1440;
 if(check_timestamp("cat_update_count", $frequency) == 1) {
         cat_update_count();
 }
 
 // Update the cached saldo
-$frequency = 60;
+$frequency = 1440;
 if(check_timestamp("saldo_update", $frequency) == 1) {
 	saldo_update();
 }
@@ -102,21 +82,6 @@ if(check_timestamp("processqueue", $frequency) == 1){
 }
 
 
-
-// Publish news items that were approved
-$frequency = 30;
-if(check_timestamp("publish_news", $frequency) == 1){
-	publish_news();
-}
-
-// Update the stats table
-$frequency = 720;
-if(check_timestamp("update_stats", $frequency) == 1){
-	update_stats();
-}
-
-
-
 echo "\nCron run finished\n";
 
 
@@ -125,103 +90,22 @@ echo "\nCron run finished\n";
 
 
 
-function process_amqmessages(){
-	global $configuration;
-	
-	echo "Running Process AMQ messages...\n";
 
-	amq_processincoming();
-	write_timestamp("process_ampmessages");
-}
 
-function create_paths() {
-	global $rootpath;
-	global $baseurl;
-	
-	echo "Running create_paths...\n";
-	
-	// Auto create the json directory
-	$dirname = "$rootpath/sites/$baseurl/json";
-	if (!file_exists($dirname)){
-		echo "    Creating directory $dirname\n";
-		mkdir("$dirname", 0770);
-		echo "    Creating .htaccess file for $dirname\n";
-		file_put_contents("$dirname/.htaccess", "Deny from all\n");
-	}
-	
-	write_timestamp("create_paths");
-}
 
-function mailq_run(){
-	# Process mails in the queue and hand them of to a droid
-	global $provider;
-	global $configuration;
-	global $db;
-	global $baseurl;
-	
-	$systemname = readconfigfromdb("systemname");
-    $systemtag = readconfigfromdb("systemtag");
-    
-	echo "Running mailq_run...\n";
-	
-	$query = "SELECT * FROM mailq WHERE `sent` = 0"; 
-	$mails = $db->GetArray($query);
-			
-	foreach ($mails AS $key => $value){
-		echo "Processing message " .$value["msgid"] . " to list " .$value["listname"] . "\n";
-		
-		# Get all subscribers for that list
-		$query = "SELECT * FROM lists, listsubscriptions WHERE listsubscriptions.listname = lists.listname AND listsubscriptions.listname = '" .$value["listname"] . "'";
-		$subscribers = $db->GetArray($query);
 
-		$footer = "--\nJe krijgt deze mail via de lijst '" .$value["listname"] ."' op de eLAS installatie van " .$systemname .".\nJe kan je mailinstellingen en abonnementen wijzigen in je eLAS profiel op http://" .$baseurl .".";
-		// Set maildroid format version
-		$message["mformat"] = "1";
-		$message["id"] = $value["msgid"];
-		$message["contenttype"] = "text/html";
-		$message["charset"] = "utf-8";
-		$message["from"] = $value["from"];
-		$message["to"] = array();
-		$message["subject"] = "[eLAS-$systemtag " . $value["listname"] ."] " .$value["subject"];
-		$message["body"] = "<html>\n" .$value["message"];
-		$message["body"] .= "\n\n<small>$footer</small></html>";
-		$message["body"] = nl2br($message["body"]);
-		
-		
-		foreach ($subscribers AS $subkey => $subvalue){
-			//echo "\nFound subsciberID: " . $subvalue["user_id"] . "\n";
-			$usermails =  get_user_mailarray($subvalue["user_id"]);
-			//var_dump($usermails);
-					
-			foreach($usermails as $mailkey => $mailvalue){			
-				array_push($message["to"], $mailvalue["value"]);
-			}
-			
-			//var_dump($message);
-		}
-		$json = json_encode($message);
-				
-		$mystatus = esm_mqueue($json);
-		if($mystatus == 1){
-			$query = "UPDATE mailq SET  sent = 1 WHERE msgid = '" . $message["id"] ."'";
-			$db->Execute($query);
-			$mid = $message["id"];
-			log_event("","Mail","Queued $mid to ESM");
-		} else {
-			echo "Failed to AMQ queue message " . $message["id"] ."\n";
-			log_event("","Mail","Failed to queue $mid to ESM");
-		}
-	}
-	echo "\n";
 
-	write_timestamp("mailq_run");
-}
 
 
 
 function cat_update_count() {
 	echo "Running cat_update_count\n";
+	
+	
         $catlist = get_cat();
+        
+        
+        
         foreach ($catlist AS $key => $value){
                 $cat_id = $value["id"];
                 update_stat_msgs($cat_id);
@@ -245,37 +129,9 @@ function saldo_update(){
 	write_timestamp("saldo_update");
 }
 
-function publish_news(){
-	global $db;
-	global $baseurl;
-	
-    echo "Running publish_news...\n";
 
-    $query = "SELECT * FROM news WHERE approved = 1 AND published IS NULL OR published = 0;";
-	$newsitems = $db->GetArray($query);
-
-    foreach ($newsitems AS $key => $value){
-		mail_news($value["id"]);
-		
-		# GVS 20130505 Killing ostatus support
-		#// Push to ostatus too
-		$fullurl = "http://" . $baseurl ."/news/view.php?id=" . $value["id"];
-		$message = "Nieuws: " .$value["headline"];
-		#ostatus_queue($message, $fullurl);
-			
-		$q2 = "UPDATE news SET published=1 WHERE id=" .$value["id"];
-		$db->Execute($q2);
-	}
-	write_timestamp("publish_news");
-}
  
-function cleanup_messages(){
-	// Fetch a list of all expired messages that are beyond the grace period and delete them
-	echo "Running cleanup_messages\n";
-	do_auto_cleanup_messages();
-	do_auto_cleanup_inactive_messages();
-	write_timestamp("cleanup_messages");
-}
+
 
 function cleanup_tokens(){
 	echo "Running cleanup_tokens\n";

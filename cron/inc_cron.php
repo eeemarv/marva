@@ -3,8 +3,7 @@
 
 function update_stat_msgs($cat_id){
 	global $db;
-        //$query = "SELECT COUNT(*) AS stat_msg_wanted FROM messages WHERE id_category = ".$cat_id ;
-        //$query .= " AND msg_type = 0 ";
+
 	$query = "SELECT COUNT(*) AS stat_msg_wanted";
         $query .= " FROM messages, users ";
         $query .= " WHERE ";
@@ -17,8 +16,6 @@ function update_stat_msgs($cat_id){
         $stat_wanted = $row["stat_msg_wanted"];
 
 
-        //$query = "SELECT COUNT(*) AS stat_msg_offer FROM messages WHERE id_category = ".$cat_id ;
-        //$query .= " AND msg_type = 1 ";
 	$query = "SELECT COUNT(*) AS stat_msg_offer";
         $query .= " FROM messages, users ";
         $query .= " WHERE ";
@@ -41,53 +38,8 @@ function get_cat(){
         return $cat_list;
 }
 
-function get_warn_messages($daysnotice) {
-	global $db;
-	$now = time();
-	$testdate = $now + ($daysnotice * 60 * 60 * 24);
-	$testdate = date('Y-m-d', $testdate);
-	$query = "SELECT * FROM messages WHERE exp_user_warn = 0 AND validity < '" .$testdate ."'";
-	//echo $query;
-	$warn_messages  = $db->GetArray($query);
-        return $warn_messages;
-}
 
-function do_clear_msgflags(){ 
-        global $db;
-	$now = time();
-	$daysnotice =  readconfigfromdb("msgexpwarningdays");
-	$testdate = $now + ($daysnotice * 60 * 60 * 24);
-        $testdate = date('Y-m-d', $testdate);
-	$query = "UPDATE messages SET exp_user_warn = 0 WHERE validity > '" .$testdate ."'";
-	$db->Execute($query);
-}
 
-function get_expired_messages() {
-	global $db;
-	$now = time();
-	$testdate = date('Y-m-d', $now);
-        $query = "SELECT * FROM messages WHERE exp_user_warn = 1 AND validity < '" .$testdate ."'";
-        //echo $query;
-        $expired_messages  = $db->GetArray($query);
-        return $expired_messages;
-}
-
-function do_auto_cleanup_messages(){
-        global $db;
-        $now = time();
-        $daysnotice =  readconfigfromdb("msgexpcleanupdays");
-        $testdate = $now - ($daysnotice * 60 * 60 * 24);
-        $testdate = date('Y-m-d', $testdate);
-        $query = "SELECT * FROM messages WHERE validity < '" .$testdate ."'";
-        $messages = $db->GetArray($query);
-
-        foreach ($messages AS $key => $value){
-		$mid = $value["id"];
-		log_event("","Cron","Expired MessageID $mid deleted");
-                $query = "DELETE FROM messages WHERE id = " .$mid;
-                $db->Execute($query);
-        }
-}
 
 function do_auto_cleanup_inactive_messages(){
 	global $db;
@@ -114,100 +66,23 @@ function do_cleanup_tokens(){
         $db->Execute($query);
 }
 
-function mail_admin_expmsg($messages) {
-	$admin = readconfigfromdb("admin");
-        if (empty($admin)){
-	   echo "No admin E-mail address specified in config\n";
-	   return 0;
-	} else {
-	   $mailto = $admin;
-	}
-	
-	$from_address_transactions = readconfigfromdb("from_address_transactions");
-        if (!empty($from_address_transactions)){
-                $mailfrom .= "From: ".trim($from_address_transactions)."\r\n";
-        }else {
-                echo "Mail from address is not set in configuration\n";
-                return 0;
-        }
 
-	$systemtag = readconfigfromdb("systemtag");
-	$mailsubject = "[eLAS-".$systemtag ."] - Rapport vervallen V/A";
-	
-	$mailcontent = "-- Dit is een automatische mail van het eLAS systeem, niet beantwoorden aub --\r\n\n";
-
-	$mailcontent .= "ID\tUser\tMessage\n";
-	foreach($messages as $key => $value) {
-		$mailcontent .=  $value["mid"] ."\t" .$value["username"] ."\t" .$value["message"] ."\t" .$value["validity"] ."\n";
-        }
-	
-	$mailcontent .=  "\n\n";
-
-	sendemail($mailfrom,$mailto,$mailsubject,$mailcontent);
-}
-
-function mail_balance($mailaddr,$balance){
+function mail_balance($to, $balance){
 	global $parameters;
 	
-	$from_address_transactions = $parameters['mail']['noreply'];
-	
-	if (!empty($from_address_transactions)){
-			$mailfrom .= trim($from_address_transactions);
-	}else { 
-		echo "Mail from address is not set in configuration\n";
-		return 0;
-	}
+	$from = $parameters['mail']['noreply'];
 
-	$mailto = $mailaddr;
+	$subject .= '['.$parameters['letsgroup_code'].'] - Saldo mail'; 
 
-	$systemtag = $parameters['letsgroup_code'];
-	$mailsubject .= "[eLAS-".$systemtag ."] - Saldo mail"; 
-
-	$mailcontent .= "-- Dit is een automatische mail van het eLAS systeem, niet beantwoorden aub --\r\n";
-	$mailcontent .= "\nJe ontvangt deze mail omdat je de optie 'Mail saldo' in eLAS hebt geactiveerd,\nzet deze uit om deze mails niet meer te ontvangen.\n";
+	$content .= "-- Dit is een automatische mail, niet beantwoorden aub --\r\n";
+	$content .= "\nJe ontvangt deze mail omdat je de optie 'Mail saldo' op de website hebt geactiveerd,\nzet deze uit om deze mails niet meer te ontvangen.\n";
 
 	$currency = $parameters['currency_plural'];
 	$mailcontent .= "\nJe huidig LETS saldo is " .$balance ." " .$currency ."\n";
 
-	$mailcontent .= "\nDe eLAS MailSaldo Robot\n";
-    sendemail($mailfrom,$mailto,$mailsubject,$mailcontent);
+    sendemail($from, $to, $subject, $content);
 }
 
-
-function mark_expwarn($messageid,$value){
-	global $db;
-	$query = "UPDATE messages set exp_user_warn = '" .$value ."' WHERE id = " .$messageid;
-	$db->Execute($query);
-}
-
-
-function mail_user_expwarn($mailaddr,$subject,$content) {
-	global $parameters;
-	
-	$from_address_transactions = $parameters['mail']['noreply']; 
-	
-	if (!empty($from_address_transactions)){
-			$mailfrom .= trim($from_address_transactions);
-	}else {
-			echo "Mail from address is not set in configuration\n";
-			return 0;
-	}
-
-	$mailto = $mailaddr;
-	
-	$systemtag = $parameters['letsgroup_code'];
-	$mailsubject .= "[eLAS-".$systemtag ."] - " .$subject;
-
-	$mailcontent .= "-- Dit is een automatische mail van het eLAS systeem, niet beantwoorden aub --\r\n\n";
-	$mailcontent .= "$content\n\n";
-
-	$mailcontent .= "Als je nog vragen of problemen hebt, kan je terecht op ";
-	$mailcontent .= $parameters['mail']['support'];
-
-	$mailcontent .= "\n\nDe eLAS Robot\n";
-	sendemail($mailfrom,$mailto,$mailsubject,$mailcontent);
-	log_event("","Mail","Message expiration mail sent to $mailto");
-}
 
 
 function check_timestamp($cronjob,$agelimit){

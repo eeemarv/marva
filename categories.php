@@ -17,7 +17,7 @@ $req->setEntityTranslation('Categorie')
 	->add('id_creator', $req->getSid(), 'post')
 	->add('id_parent', 0, 'get|post', array('type' => 'select', 'label' => 'Ouder-category', 'option_set' => 'maincategories'))
 	->addSubmitButtons()	
-	->cancel()
+	->cancel(false)
 	->query();
 
 $new = $edit = $delete = false;
@@ -63,7 +63,7 @@ if (($req->get('mode') == 'edit') || $delete){
 
 if (($new || $edit || $delete) && $req->isAdmin()){
 	echo '<h1>'.(($new) ? 'Toevoegen' : (($edit) ? 'Aanpassen' : 'Verwijderen?')).'</h1>';
-	echo '<form method="post" class="form-horizontal trans" role="form">';
+	echo '<form method="post" class="form-horizontal trans" role="form" action="categories.php">';
 
 	if ($delete){
 		if ($req->get('id_parent')){
@@ -119,8 +119,10 @@ if (!$req->get('id') && !($new || $edit || $delete)){
 	$table->set_data($cats)
 		->enable_no_results_message()
 		->add_column('name', array(
-			'title' => 'Categorie', 
-			'prefix' => 'prefix'))
+			'title' => 'Categorie (edit)', 
+			'prefix' => 'prefix',
+			'href_id' => 'id',
+			'href_static_param' => '&mode=edit'))
 		->add_column('msg_num', array(
 			'title' => 'Vraag & Aanbod', 
 			'href_base' => 'messages.php', 

@@ -2,6 +2,7 @@
 
 $bootstrap = ($parameters['cdn']) ? '//netdna.bootstrapcdn.com/bootstrap/3.1.1' : $rootpath.'vendor/twbs/bootstrap/dist';
 $jquery = ($parameters['cdn']) ? 'http://code.jquery.com/jquery-1.11.0.min.js' : $rootpath.'vendor/jquery/jquery.min.js';
+$font_awesome = ($parameters['cdn']) ? '//netdna.bootstrapcdn.com/font-awesome/4.0.3' : $rootpath.'vendor/font-awesome';
 
 
 echo <<<EOF
@@ -17,6 +18,7 @@ echo <<<EOF
 	<title>{$parameters['letsgroup_name']}</title>
 	
 	<link rel="stylesheet" href="{$bootstrap}/css/bootstrap.min.css">
+	<link rel="stylesheet" href="{$font_awesome}/css/font-awesome.min.css">
 	<link type="text/css" rel="stylesheet" href="{$rootpath}css/main.css">	
 	<link type="text/css" rel="stylesheet" href="{$rootpath}tinybox/tinybox.css">
 			

@@ -243,21 +243,6 @@ text-decoration: none;
 
 
 
-/* Column 2: Content */
-
-td.news div
-{
-background-color: #F5FBE1;
-padding: 3px;
-border: 1px dashed #9974ff;
-}
-
-
-div.border_b
-{
-padding-bottom: 10px;
-border-bottom: 1px dashed #9974ff;
-}
 
 
 
@@ -568,4 +553,39 @@ div.tooltip p {
   margin: 10px;
   color: White;
 }
+
+
+/* inactive */
+
+.bg-inactive { 
+background-color: #ddd;
+}
+
+/** nav-tabs (users)**/
+
+.bg-white {
+  background-color: white; 
+}
+
+
+.nav-tabs {
+   border-bottom: 1px solid #777; 
+}
+
+.nav-tabs > li.active > a,
+.nav-tabs > li.active > a:hover,
+.nav-tabs > li.active > a:focus {
+  background-color: transparent;
+  border: 1px solid #777;
+  border-bottom-color: transparent; /* */
+
+  } 
+  
+.nav-tabs > li > a,
+.nav-tabs > li > a:hover,
+.nav-tabs > li > a:focus {
+  border-bottom-color: #777; 
+  } 
+  
+
 

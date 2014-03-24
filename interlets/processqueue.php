@@ -1,19 +1,17 @@
 <?php
 ob_start();
 $rootpath = "../";
-require_once($rootpath."includes/inc_default.php");
-require_once($rootpath."includes/inc_adoconnection.php");
-require_once($rootpath."includes/inc_dbconfig.php");
+require_once($rootpath."includes/default.php");
+
+
 require_once($rootpath."includes/inc_userinfo.php");
 require_once($rootpath."includes/inc_eventlog.php");
 require_once($rootpath."includes/inc_transactions.php");
 // Pull in the NuSOAP code
-require_once($rootpath."soap/lib/nusoap.php");
 
-session_start();
 
 // PUT MAIN BODY HERE
-echo "Running eLAS Interlets System\n\n";
+echo "Running eLAS Soap Interlets System\n\n";
 
 // Process the interlets Queue
 // Foreach entry, try to execute it, than remove if complete OR expired, leave on failures  
@@ -150,8 +148,9 @@ function update_queue($transid,$count,$result){
 function localcommit($myletsgroup, $transid, $id_from, $amount, $description, $letscode_to){
 	//FIXME Add data validation and clear error message for bug #321
 	//FIXME output debug info when elasdebug = 1
+	global $parameters
 	echo "Local commiting $transid\t\t";
-	$ratio = readconfigfromdb("currencyratio");
+	$ratio = $parameters['currency_rate'];
 	$posted_list["amount"] = $amount * $ratio;
 	$posted_list["description"] = $description;
 	$posted_list["id_from"] = $id_from;

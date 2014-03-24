@@ -3,14 +3,10 @@ ob_start();
 
 $rootpath = './';
 
-
-
-
 require_once($rootpath.'includes/default.php');
 
 require_once($rootpath.'includes/inc_eventlog.php');
 require_once($rootpath.'includes/inc_userinfo.php');
-require_once($rootpath.'includes/inc_auth.php');
 require_once($rootpath.'includes/inc_tokens.php');
 
 require_once($rootpath.'includes/request.php');
@@ -35,9 +31,8 @@ if ($req->get('cancel')){
 $location = urldecode(ltrim($req->get('location'), '/'));
 $location = ($location) ? $location : 'messages.php';
 $location = ($location == 'login.php') ? 'messages.php' : $location;
-$location = urlencode($location); 
 
-$login_redirect = 'login.php?location='.$location;
+$login_redirect = 'login.php?location='.urlencode($location);
 
 /*
 if ($req->getSid()){

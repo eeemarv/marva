@@ -1,9 +1,9 @@
 <?php
 ob_start();
-require_once('./includes/default.php');
+require_once 'includes/default.php';
 
-require_once('./includes/request.php');
-require_once('./includes/data_table.php');
+require_once 'includes/request.php';
+require_once 'includes/data_table.php';
 
 $accountrole_options = array(
 	'user' => array('text' => 'user'),
@@ -30,6 +30,7 @@ $req->setEntityTranslation('Gebruiker')
 	->add('orderby', 'letscode', 'get')
 	->add('asc', 1, 'get')
 	->add('show', 'active', 'get')
+	->add('view', 'account', 'get')
 	->add('id', 0, 'get|post', array('type' => 'hidden'))	
 	->add('mode', '', 'get|post', array('type' => 'hidden'))
 	
@@ -128,7 +129,7 @@ if ($req->isSuccess()){
 }	
 	
 	
-include('./includes/header.php');
+include 'includes/header.php';
 
 
 
@@ -218,7 +219,8 @@ if (!$req->get('id') && !($new || $edit || $delete)){
 			'render' => 'limit',
 			'href_id' => 'id',
 			'href_param' => 'userid',
-			'href_base' => './transactions.php',
+			'href_base' => 'transactions.php',
+//			'footer' => 'sum',
 			)),	
 		'postcode' => array_merge($asc_preset_ary, array(
 			'title' => 'Postcode')));
@@ -244,29 +246,66 @@ if (!$req->get('id') && !($new || $edit || $delete)){
 			));
 	}
 	
-	echo'
-		<ul class="nav nav-tabs">
-	  <li class="active"><a href="#" class="bg-danger">Home</a></li>
-	  <li><a href="#" class="bg-info">Profile</a></li>
-	  <li><a href="#" class="bg-warning">Messages</a></li>
-	  <li><a href="#" class="bg-danger">Home</a></li>
-	  <li><a href="#" class="bg-info">Profile</a></li>
-	  <li><a href="#">Messages</a></li>	  
-	  <li><a href="#" class="bg-danger">Home</a></li>
-	  <li class="active "><a href="#" class="bg-info">Profile</a></li>
-	  <li><a href="#">Messages</a></li>
-	  <li><a href="#" class="bg-danger">Home</a></li>
-	  <li><a href="#" class="bg-info">Profile</a></li>
-	  <li><a href="#">Messages</a></li>		  
-	  
-	</ul><p></p>';
 
 	
 	
+		
+			
+	$tabs = array(
+		'active' => array('text' => 'Actief', 'class' => 'bg-white'),
+		'new' => array('text' => 'Instappers', 'class' => 'bg-success'),	
+		'leaving' => array('text' => 'Uitstappers', 'class' => 'bg-danger'),
+//		'system' => array('text' => 'Systeem', 'class' => 'bg-info'),
+		'interlets' => array('text' => 'Interlets groepen', 'class' => 'bg-warning'),
+		'inactive' => array('text' => '[admin] Inactief', 'class' => 'bg-inactive', 'admin' => true),
+		);
+			
+		
+	$inactive_tabs = array(
+		'all' => array('text' => 'Alle', 'class' => 'inactive', 'admin' => true),
+		'newly_registered' => array('text' => 'Nieuw geregistreerd', 'class' => 'inactive', 'admin' => true),
+		'info_1' => array('text' => 'Info-pakket', 'class' => 'inactive', 'admin' => true),
+		'info_2' => array('text' => 'Info-moment', 'class' => 'inactive', 'admin' => true),
+		'deactivated' => array('text' => 'Gedesactiveerd', 'class' => 'inactive', 'admin' => true), 
+		);
 	
 	
+		
 	
+	
+	echo'<ul class="nav nav-tabs">';
+	foreach ($tabs as $key => $filter){
+		$class = ($req->get('show') == $key) ? 'active '.$filter['class'] : $filter['class'];
+		$class = ($class) ? ' class="'.$class.'"' : '';
+		echo '<li'.$class.'><a href="users.php?show='.$key.'">'.$filter['text'].'</a></li>';
+	}	
+		
+		  
+	  
+	echo '</ul><p></p>';
+
+
 	$table->render();
+
+/*
+	$views = array(	
+		'account' => array('text' => 'Saldo\'s'),
+		'phone' => array('text' => 'Telefoonnummers'),
+		'address' => array('text' => 'Adressen'),
+		'email' => array('text' => 'Email'),
+		'transactions' => array('text' => 'Transacties');
+	
+	echo '<div class="panel panel-default"><h3>[admin] weergave</h3><ul class="nav nav-pills">';
+	foreach ($views as $key => $view){
+		$class = ($req->get('view') == $key) ? ' class="active"' : '';
+		echo '<li'.$class.'><a href="users.php?view='.$key.'">'.$view['text'].'</a></li>';	
+	}	
+	echo '</ul></div>';
+*/
+
+
+
+
 	
 	if (sizeof($users) == 1){
 		$req->set('id', $users[0]['id']);
@@ -278,18 +317,16 @@ if ($req->get('id') && !($edit || $delete || $new)){
 
 	$id = $req->get('id');
 	
-	echo <<<EOF
-	<link rel="stylesheet" type="text/css" href="vendor/jqplot/jqplot/jquery.jqplot.min.css" />
-	<script type="text/javascript">var user_id = {$id};</script>	
-	<script src="vendor/jqplot/jqplot/jquery.jqplot.min.js"></script>
-	<script src="vendor/jqplot/jqplot/plugins/jqplot.donutRenderer.js"></script>
-	<script src="vendor/jqplot/jqplot/plugins/jqplot.cursor.min.js"></script>
-	<script src="vendor/jqplot/jqplot/plugins/jqplot.dateAxisRenderer.min.js"></script>
-	<script src="vendor/jqplot/jqplot/plugins/jqplot.canvasTextRenderer.min.js"></script>
-	<script src="vendor/jqplot/jqplot/plugins/jqplot.canvasAxisTickRenderer.min.js"></script>
-	<script src="vendor/jqplot/jqplot/plugins/jqplot.highlighter.min.js"></script>	
-	<script src="js/graph_user_transactions.js"></script>
-EOF;
+	echo '<link rel="stylesheet" type="text/css" href="vendor/jqplot/jqplot/jquery.jqplot.min.css" />
+		<script type="text/javascript">var user_id = '.$id.';</script>	
+		<script src="vendor/jqplot/jqplot/jquery.jqplot.min.js"></script>
+		<script src="vendor/jqplot/jqplot/plugins/jqplot.donutRenderer.js"></script>
+		<script src="vendor/jqplot/jqplot/plugins/jqplot.cursor.min.js"></script>
+		<script src="vendor/jqplot/jqplot/plugins/jqplot.dateAxisRenderer.min.js"></script>
+		<script src="vendor/jqplot/jqplot/plugins/jqplot.canvasTextRenderer.min.js"></script>
+		<script src="vendor/jqplot/jqplot/plugins/jqplot.canvasAxisTickRenderer.min.js"></script>
+		<script src="vendor/jqplot/jqplot/plugins/jqplot.highlighter.min.js"></script>	
+		<script src="js/graph_user_transactions.js"></script>';
 
 	$query = 'SELECT * FROM users ';
 	$query .= 'WHERE id='.$req->get('id').' ';

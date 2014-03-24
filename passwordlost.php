@@ -9,7 +9,7 @@ require_once($rootpath."includes/inc_passwords.php");
 require_once($rootpath."includes/inc_eventlog.php");
 
 
-require_once('./includes/request.php');
+require_once 'includes/request.php';
 
 
 

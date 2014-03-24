@@ -17,7 +17,7 @@ $req->setEntityTranslation('Apikey')
 	->add('comment', '', 'post', array('type' => 'text', 'label' => 'commentaar', 'size' => 50, 'maxlength' => 60), array('not_empty' => true))
 	->add('type', 'interlets', 'post', array('type' => 'hidden'))
 	->addSubmitButtons()	
-	->cancel()
+	->cancel(false)
 	->query();
 
 if ($req->get('delete') && $req->get('id')){

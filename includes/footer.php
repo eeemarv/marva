@@ -35,7 +35,7 @@ if ($req->isAdmin()){
 
 
 echo '<footer class="footer"><div class="container">';
-echo '<p><a href="https://github.com/marttii/marva"><i class="fa fa-github fa-lg"></i>marva ';
+echo '<p><a href="https://github.com/marttii/marva"><i class="fa fa-github fa-lg"></i> marva ';
 echo exec('git describe --long --abbrev=10 --tags');			
 echo '</a></p></footer>';
 echo '</body></html>';

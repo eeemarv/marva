@@ -53,7 +53,7 @@ class data_table{
 		if (!$this->header){
 			return $this;
 		}
-		echo '<tr class="header">';
+		echo '<tr>';
 		foreach($this->columns as $val) { 
 			$title = htmlspecialchars($val['title'], ENT_QUOTES);
 			$href = $this->get_link($val['title_href'], $val['title_params']);
@@ -90,7 +90,7 @@ class data_table{
 		if (!$this->footer){
 			return $this;
 		}	
-		echo '<tr class="header">';			
+		echo '<tr>';			
 		foreach($this->columns as $val) { 
 			$text = ($val['footer_text']) ? $val['footer_text'] : ' ';
 			$text = ($val['footer'] == 'sum') ? $val['count'] : htmlspecialchars($text, ENT_QUOTES);

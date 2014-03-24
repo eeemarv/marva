@@ -205,9 +205,10 @@ class request {
 		return false;		
 	}
 	
-	public function cancel(){
+	public function cancel($keep_id = true){
 		if ($this->isPost() && $this->get('cancel')){
-			$this->reset(array('mode'));
+			header('location: '.$this->url.(($keep_id) ? '?id='.$this->get('id') : ''));
+			exit;
 		}
 		return $this;	
 	}				
