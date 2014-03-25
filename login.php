@@ -14,6 +14,7 @@ require_once($rootpath.'includes/request.php');
 $req = new request('anonymous', true);
 
 $req->setEntity('login')
+	->setUrl('login.php')
 	->add('letscode', '', 'post', array('type' => 'text', 'size' => 50, 'maxlength' => 50, 'label' => 'Letscode'), array('not_empty' => true, 'active_letscode' => true))
 	->add('password', '', 'post', array('type' => 'password', 'size' => 50, 'maxlength' => 50, 'label' => 'Paswoord'), array('not_empty' => true))
 	->add('submit_login', '', 'post', array('type' => 'submit', 'label' => 'Login', 'class' => 'btn btn-primary'))
@@ -28,7 +29,7 @@ if ($req->get('cancel')){
 }
 
 
-$location = urldecode(ltrim($req->get('location'), '/'));
+$location = ltrim(urldecode($req->get('location')), '/');
 $location = ($location) ? $location : 'messages.php';
 $location = ($location == 'login.php') ? 'messages.php' : $location;
 

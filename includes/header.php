@@ -93,7 +93,11 @@ if ($req->isGuest()){
 		echo '<li><a href="messages.php?userid='.$req->getSid().'">Mijn vraag & aanbod</a></li>';
 		echo '<li><a href="users.php?id='.$req->getSid().'">Mijn gegevens</a></li>';
 		echo '<li><a href="transactions.php?userid='.$req->getSid().'">Mijn transacties</a></li>';
-//		echo '<li><a href="news.php?userid='.$req->getSid().'">Mijn nieuws</a></li>';
+		if ($req->isAdminAccountRole()){
+			echo '<li class="divider"></li>';
+			$active = ($req->isAdmin()) ? ' class="active"' : '';
+			echo '<li '.$active.'><a href="admin.php?location='.urlencode($_SERVER['REQUEST_URI']).'">[admin] functies</a></li>';
+		}
 		echo '<li class="divider"></li>';
 		echo '<li><a href="logout.php">Uitloggen</a></li>';
 		echo '</ul></li>';

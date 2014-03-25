@@ -20,6 +20,7 @@ class request {
 	private $success = false;
 	private $entity_translation;
 	private $data_transformers = array();
+	private $admin_functions_enable = false;
 
 	private $parameters = array();
 	private $render_keys = array('type', 'value', 'size', 'maxlength', 'style', 
@@ -60,7 +61,8 @@ class request {
 		$s_id = $this->s_id = (isset($_SESSION['id'])) ? $_SESSION['id'] : null;
 		$s_name = $this->s_name = (isset($_SESSION['name'])) ? $_SESSION['name'] : null;
 		$s_letscode = $this->s_letscode = (isset($_SESSION['letscode'])) ? $_SESSION['letscode'] : null;
-		$s_accountrole = $this->s_accountrole = (isset($_SESSION['accountrole'])) ? $_SESSION['accountrole'] : null;	
+		$s_accountrole = $this->s_accountrole = (isset($_SESSION['accountrole'])) ? $_SESSION['accountrole'] : null;
+		$this->admin_functions_enable = (isset($_SESSION['admin_functions_enable'])) ? true : false;	
 			
 		if (!$security_level || (!in_array($security_level, array('admin', 'user', 'guest', 'anonymous')))){
 			header(' ', true, 500);
@@ -259,8 +261,28 @@ class request {
 	}	
 
 	public function isAdmin(){
-		return ($this->s_accountrole == 'admin') ? true : false;
+		return $this->admin_functions_enable;
 	}
+	
+	public function getAdminLabel(){
+		return ($this->isAdmin())? '[admin] ' : '';
+	}	
+	
+	public function toggleAdmin(){
+		if ($this->admin_functions_enable){
+			unset($_SESSION['admin_functions_enable']);
+			$this->admin_functions_enable = false;
+		} else {
+			$this->admin_functions_enable = $_SESSION['admin_functions_enable'] = true;
+		}	
+		return $this;	
+	}	
+	
+	public function isAdminAccountrole(){
+		return ($this->s_accountrole == 'admin') ? true : false;
+	}	
+	
+	
 	
 	public function isUser(){
 		return ($this->s_accountrole == 'admin' || $this->accountrole == 'user') ? true : false;
