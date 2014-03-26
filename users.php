@@ -29,7 +29,7 @@ $req->setEntityTranslation('Gebruiker')
 	->add('postcode_filter', '', 'get', array('type' => 'text', 'size' => 25, 'maxlength' => 8, 'label' => 'Postcode' ))
 	->add('orderby', 'letscode', 'get')
 	->add('asc', 1, 'get')
-	->add('show', 'active', 'get')
+	->add('show', 'active', 'get', array('type' => 'hidden'))
 	->add('view', 'account', 'get')
 	->add('id', 0, 'get|post', array('type' => 'hidden'))	
 	->add('mode', '', 'get|post', array('type' => 'hidden'))
@@ -76,10 +76,25 @@ if ($req->get('delete') && $req->get('id') && $req->isAdmin()){
 	$transactions = $db->GetArray('select id from transactions where id_from = '.$req->get('id').' or id_to = '.$req->get('id'));
 	
 	if (count($transactions)){
-		setstatus('Een gebruiker die reeds transacties gedaan heeft, kan niet worden verwijderd.', 'error');
+		setstatus('Een gebruiker die reeds transacties gedaan heeft, kan niet worden verwijderd.', 'danger');
 	} else {	
 		$req->delete();
-		// contacts, messages, msgpictures & picture to be deleted here or in cronjob.
+		$user = $req->getItem();
+		if ($user['PictureFile']){
+			unlink('site/images/users/'.$user['PictureFile']);
+		}
+		$db->Execute('delete from contact where id_user = '.$req->get('id'));
+		$messages = $db->getArray('select * from messages where id_user = '.$req->get('id'));
+		foreach ($messages as $message){
+			$db->Execute('update categories set '.$column.' = '.$column.' - 1 where id = '.$message['id_category']);
+			$message_images = $db->GetArray('select * from msgpictures where msgid = '.$message['id']);
+			foreach ($message_images as $image){
+				unlink('site/images/messages/'.$image['PictureFile']);
+			}
+			$db->Execute('delete from msgpictures where msgid = '.$message['id']);
+		}
+		$db->Execute('delete from messages where id_user = '.$req->get('id'));
+		$db->Execute('delete from news where id_user = '.$req->get('id'));
 	}
 	
 } else if (($req->get('create') || $req->get('create_plus')) && $req->isAdmin()){
@@ -132,7 +147,6 @@ if ($req->isSuccess()){
 include 'includes/header.php';
 
 
-
 if ($req->isAdmin() && !$req->get('mode')){			
 	echo '<a href="./users.php?mode=new" class="btn btn-success pull-right">[admin] Toevoegen</a>';
 }
@@ -175,20 +189,85 @@ if (!($new || $edit || $delete)){
 	echo '<form method="GET" class="trans form-horizontal" role="form">';
 	$req->set_output('formgroup')->render(array('q', 'postcode_filter'));
 	echo '<div>';
-	$req->set_output('nolabel')->render('filter');
+	$req->set_output('nolabel')->render('filter', 'show');
 	echo '</div></form>';
+	
+	
+		
 }
 
 
 if (!$req->get('id') && !($new || $edit || $delete)){
+	
+	$tabs = array(
+		'active' => array('text' => 'Alle', 'class' => 'bg-white', 
+			'where' => 'status in (1, 2, 4, 7) '),
+		'new' => array('text' => 'Instappers', 'class' => 'bg-success', 
+			'where' => 'UNIX_TIMESTAMP(adate) > '.(time() - 86400*$parameters['new_user_days']).' and status = 1 '),	
+		'leaving' => array('text' => 'Uitstappers', 'class' => 'bg-danger',
+			'where' => 'status = 2 '),
+		'system' => array('text' => 'Systeem', 'class' => 'bg-info',
+			'where' => 'status = 4 '),
+		'interlets' => array('text' => 'Interlets groepen', 'class' => 'bg-warning',
+			'where' => 'status = 7'),
+		'inactive' => array('text' => '[admin] Inactief', 'class' => 'bg-inactive', 'admin' => true,
+			'tabs' => array(
+				
+			)),
+		);
+
+	echo'<ul class="nav nav-tabs">';
+	foreach ($tabs as $key => $filter){
+		if ($filter['admin'] && !$req->isAdmin()){
+			continue;
+		}
+		$class = ($req->get('show') == $key) ? 'active '.$filter['class'] : $filter['class'];
+		$class = ($class) ? ' class="'.$class.'"' : '';
+		echo '<li'.$class.'><a href="users.php?show='.$key.'">'.$filter['text'].'</a></li>';
+	}		
+	echo '</ul><p></p>';	
+	
+	$inactive_tabs = array(
+		'all' => array('text' => 'Alle', 'class' => 'inactive', 'admin' => true),
+		'newly_registered' => array('text' => 'Nieuw geregistreerd', 'class' => 'inactive', 'admin' => true),
+		'info_1' => array('text' => 'Info-pakket', 'class' => 'inactive', 'admin' => true),
+		'info_2' => array('text' => 'Info-moment', 'class' => 'inactive', 'admin' => true),
+		'deactivated' => array('text' => 'Gedesactiveerd', 'class' => 'inactive', 'admin' => true), 
+		);		
+	
+	
 	$q = $req->get('q');
 	$orderby = $req->get('orderby');
 	$asc = $req->get('asc');
 	$postcode = $req->get('postcode_filter');
+	$show = $req->get('show');
 	
-	$query = 'select id, letscode, fullname, saldo, postcode from users 
-		where ( status = 1 or status = 2 or status = 3 )
-		and users.accountrole <> \'guest\' ';
+	switch ($show){
+		case 'new': $where_show = 'UNIX_TIMESTAMP(adate) > '.(time() - 86400*$parameters['new_user_days']).' and status = 1 ';
+			break;
+		case 'leaving': $where_show = 'status = 2 ';
+			break;
+		case 'system': $where_show = 'status = 4 ';
+			break;
+		case 'interlets': $where_show = 'status = 7 ';
+			break;
+		case 'inactive': 
+			if (!$req->isAdmin()){
+				break;
+			}
+			switch ($inactive){
+				//case 'new': $where_show 
+			
+				default: $where_show = 'status in (0, 3, 5, 6, 8, 9) ';
+			}
+			break;	
+		default: $where_show = 'status in (1, 2, 4, 7) ';
+			break;
+	}	
+	
+	$query = 'select id, letscode, fullname, saldo, postcode, status, 
+		unix_timestamp(adate) as unix from users 
+		where '.$where_show.'and accountrole <> \'guest\' ';
 	$query .= ($q) ? 'and (fullname like \'%' .$q .'%\' or name like \'%'.$q.'%\' or letscode like \'%'.$q.'%\') ' : '';
 	$query .= ($postcode) ? 'and postcode = \''.$postcode.'\' ' : '';
 	if ($orderby){
@@ -220,10 +299,11 @@ if (!$req->get('id') && !($new || $edit || $delete)){
 			'href_id' => 'id',
 			'href_param' => 'userid',
 			'href_base' => 'transactions.php',
-//			'footer' => 'sum',
+		//	'footer' => 'sum',
 			)),	
 		'postcode' => array_merge($asc_preset_ary, array(
-			'title' => 'Postcode')));
+			'title' => 'Postcode')),
+		'unix' => array('title' => 'unix'));
 	
 	$table_column_ary[$req->get('orderby')]['asc'] = ($req->get('asc')) ? 0 : 1;
 	$table_column_ary[$req->get('orderby')]['indicator'] = ($req->get('asc')) ? '&nbsp;&#9650;' : '&nbsp;&#9660;';
@@ -246,45 +326,13 @@ if (!$req->get('id') && !($new || $edit || $delete)){
 			));
 	}
 	
-
 	
+	$table->setRenderRowOptions(function ($row){
+		global $parameters;
+		$class = getUserClass($row);		
+		return ($class) ? ' class="'.$class.'"' : '';
+	});
 	
-		
-			
-	$tabs = array(
-		'active' => array('text' => 'Actief', 'class' => 'bg-white'),
-		'new' => array('text' => 'Instappers', 'class' => 'bg-success'),	
-		'leaving' => array('text' => 'Uitstappers', 'class' => 'bg-danger'),
-//		'system' => array('text' => 'Systeem', 'class' => 'bg-info'),
-		'interlets' => array('text' => 'Interlets groepen', 'class' => 'bg-warning'),
-		'inactive' => array('text' => '[admin] Inactief', 'class' => 'bg-inactive', 'admin' => true),
-		);
-			
-		
-	$inactive_tabs = array(
-		'all' => array('text' => 'Alle', 'class' => 'inactive', 'admin' => true),
-		'newly_registered' => array('text' => 'Nieuw geregistreerd', 'class' => 'inactive', 'admin' => true),
-		'info_1' => array('text' => 'Info-pakket', 'class' => 'inactive', 'admin' => true),
-		'info_2' => array('text' => 'Info-moment', 'class' => 'inactive', 'admin' => true),
-		'deactivated' => array('text' => 'Gedesactiveerd', 'class' => 'inactive', 'admin' => true), 
-		);
-	
-	
-		
-	
-	
-	echo'<ul class="nav nav-tabs">';
-	foreach ($tabs as $key => $filter){
-		$class = ($req->get('show') == $key) ? 'active '.$filter['class'] : $filter['class'];
-		$class = ($class) ? ' class="'.$class.'"' : '';
-		echo '<li'.$class.'><a href="users.php?show='.$key.'">'.$filter['text'].'</a></li>';
-	}	
-		
-		  
-	  
-	echo '</ul><p></p>';
-
-
 	$table->render();
 
 /*
@@ -308,7 +356,8 @@ if (!$req->get('id') && !($new || $edit || $delete)){
 
 	
 	if (sizeof($users) == 1){
-		$req->set('id', $users[0]['id']);
+		$req->set('id', $users[0]['id'])
+			->query();
 	}	
 }
 	
@@ -327,27 +376,29 @@ if ($req->get('id') && !($edit || $delete || $new)){
 		<script src="vendor/jqplot/jqplot/plugins/jqplot.canvasAxisTickRenderer.min.js"></script>
 		<script src="vendor/jqplot/jqplot/plugins/jqplot.highlighter.min.js"></script>	
 		<script src="js/graph_user_transactions.js"></script>';
-
+/*
 	$query = 'SELECT * FROM users ';
 	$query .= 'WHERE id='.$req->get('id').' ';
-	$query .= 'AND ( status = 1 OR status = 2 OR status = 3 )';
+	$query .= 'AND status in (1, 2, 3, 4, 7)';
 	$user = $db->GetRow($query);	
-
-
-    $admin = ($req->isAdmin()) ? '[admin] ' : '';		
+*/
+	$req->setItemValue('unix', strtotime($req->getItemValue('adate')));
+	$user = $req->getItem();
+			
 	if ($req->isAdmin()){	
-		echo '<a href="users.php?mode=delete&id='.$req->get('id').'" class="btn btn-danger pull-right">'.$admin.'Verwijderen</a>';
+		echo '<a href="users.php?mode=delete&id='.$req->get('id').'" class="btn btn-danger pull-right">'.$req->getAdminLabel().'Verwijderen</a>';
 	}
 	if ($req->isOwnerOrAdmin()){			
-		echo '<a href="users.php?mode=edit&id='.$req->get('id').'" class="btn btn-primary pull-right">'.$admin.'Aanpassen</a>';
+		echo '<a href="users.php?mode=edit&id='.$req->get('id').'" class="btn btn-primary pull-right">'.$req->getAdminLabel().'Aanpassen</a>';
 	}	
 		
 //		$myurl='messages/upload_picture.php?msgid='.$req->get('id');
 //		echo "<li><a href='#' onclick=window.open('$myurl','upload_picture','width=640,height=480,scrollbars=yes,toolbar=no,location=no,menubar=no')>Foto toevoegen</a></li>";	
 
 
-
-
+	$class = getUserClass($user);
+	$class = ($class) ? ' class="bg-'.$class.'"' : '';
+	echo '<div'.$class.'>';
 	echo '<h1>'.trim($user['letscode']).'&nbsp;'.htmlspecialchars($user['fullname'],ENT_QUOTES).'</h1>';
 	
 	
@@ -369,7 +420,7 @@ if ($req->get('id') && !($edit || $delete || $new)){
 
 	echo "<table  cellpadding='0' cellspacing='0' border='0'  width='99%'>";
 	echo "<tr class='even_row'>";
-	echo "<td><strong>{$currency}stand</strong></td><td></td><td><strong>Transactie-Interacties</strong></td></tr>";
+	echo "<td><strong>{$parameters['currency_plural']}stand</strong></td><td></td><td><strong>Transactie-Interacties</strong></td></tr>";
 	echo "<tr><td>";
 	echo "<strong>".$balance."</strong>";
 	echo "</td><td><div id='chartdiv1' style='height:200px;width:300px;'></div></td>";
@@ -410,10 +461,13 @@ if ($req->get('id') && !($edit || $delete || $new)){
 	echo "<tr><td colspan='3'><p>&#160;</p></td></tr>";
 	echo "</table>";
 
-	
+	echo '</div>';
 	
 }		
 
-include('./includes/footer.php');
+include 'includes/footer.php';
+
+	
+
 
 ?>

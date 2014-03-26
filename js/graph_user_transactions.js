@@ -161,7 +161,7 @@ jQuery(document).ready(function($){
 
 			$.jqplot('chartdiv2', [donut] , {
 				title: 'Laatste Jaar',		
-				grid: {borderWidth: 0, shadow: false},
+				grid: {borderWidth: 0, shadow: false, background: 'transparent'},
 				seriesDefaults: {
 				  renderer:$.jqplot.DonutRenderer,
 				  rendererOptions:{

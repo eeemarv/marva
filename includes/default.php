@@ -115,7 +115,7 @@ function getCurrencyText($amount, $includeAmount = true){
 }
 
 function generateUniqueId(){
-    return rtrim(strtr(base64_encode(hash('sha256', uniqid(mt_rand(), true), true)), '/', '-'), '=');	
+    return rtrim(strtr(base64_encode(hash('sha256', uniqid(mt_rand(), true), true)), '+/', '-_'), '=');	
 	
 }
 
@@ -128,5 +128,23 @@ function make_timestamp($timestring){
         $timestamp = mktime(0,0,0,$month, $day, $year);
         return $timestamp;
 }
+
+function getUserClass($user){
+	global $parameters;
+	switch ($user['status']){
+		case '0':
+		case '3':
+		case '5':
+		case '6':
+		case '8':
+		case '9': return 'inactive';
+		case '2': return 'danger';
+		case '4': return 'info';
+		case '7': return 'warning'; 
+		default:
+			return ($user['unix'] > (time() - ($parameters['new_user_days'] * 86400))) ? 'success' : ''; 	
+	}	
+}
+
 
 ?>

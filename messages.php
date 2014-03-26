@@ -436,6 +436,9 @@ if ($req->get('id') && !($edit || $delete || $new || $image_delete)){
 
 
 	if ($req->isOwnerOrAdmin()){
+		if (sizeof($images) > 5){
+			$req->setDisabled(array('image_file', 'image_send'));
+		}
 		echo '<div class="row"><div class="col-md-12">';
 		if ($req->isAdmin()){
 			$req->setLabel('image_send', $req->getAdminLabel().$req->getLabel('image_send'));

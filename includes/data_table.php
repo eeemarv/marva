@@ -12,8 +12,10 @@ class data_table{
 	private $req = null;
 	private $rootpath = '../';
 	private $no_results_message = false;
+	private $render_row_options;
 
 	public function __construct(){
+		$this->render_row_options = function($row){ return ''; };
 	}
 	
 	public function set_data($data = array()){
@@ -57,7 +59,7 @@ class data_table{
 		foreach($this->columns as $val) { 
 			$title = htmlspecialchars($val['title'], ENT_QUOTES);
 			$href = $this->get_link($val['title_href'], $val['title_params']);
-			echo '<td valign="top"><strong>';
+			echo '<td><strong>';
 			if ($href){
 				echo '<a href="'.$href.'">';
 			}
@@ -101,13 +103,19 @@ class data_table{
 		return $this;
 	}
 	
+	public function setRenderRowOptions($func){
+		$this->render_row_options = $func;
+		return $this;
+	}
+	
+	
 	private function render_rows(){
 		if (!sizeof($this->data) && $this->no_results_message){
 			echo '<tr><td colspan="'.sizeof($this->columns).'">Er zijn geen resultaten</td></tr>';
 			return $this;
 		}
 		foreach ($this->data as $key => $row){
-			echo '<tr>';
+			echo '<tr'.call_user_func($this->render_row_options, $row).'>';
 			foreach ($this->columns as &$td){
 				$text = ($td['text']) ? $td['text'] : (($td['replace_by']) ? $row[$td['replace_by']] : $row[$td['key']]);
 				$show = ((!$row[$td['show_when']] && $td['show_when']) || $row[$td['not_show_when']]) ? false : true;
@@ -143,7 +151,7 @@ class data_table{
 							$bgcolor = ($this->check_newcomer($row['adate'])) ? ' bgcolor="#B9DC2E"' : $bgcolor;
 							$fontopen = ($bgcolor) ? '<font color="white">' : '';
 							$fontclose = ($bgcolor) ? '</font>' : '';
-							echo '<td valign="top"'.$bgcolor.$td_class.'>'.$td_1.$fontopen.'<strong>';
+							echo '<td'.$bgcolor.$td_class.'>'.$td_1.$fontopen.'<strong>';
 							echo htmlspecialchars($text, ENT_QUOTES);
 							echo '</strong>'.$fontclose.$td_2.'</td>';					
 							break;
@@ -151,11 +159,11 @@ class data_table{
 							$overlimit = ($row['saldo'] < $row['minlimit'] || ($row['maxlimit'] != null && $row['saldo'] > $row['maxlimit'])) ? true : false;
 							$fontopen = ($overlimit) ? '<font color="red">' : '';
 							$fontclose = ($overlimit) ? '</font>' : '';						
-							echo '<td valign="top"'.$td_class.'>'.$td_1.$fontopen.$text.$fontclose.$td_2.'</td>';					
+							echo '<td'.$td_class.'>'.$td_1.$fontopen.$text.$fontclose.$td_2.'</td>';					
 							break;
 						case 'admin':
 							$bgcolor = ($row['accountrole'] == 'admin') ? ' bgcolor="yellow"' : '';						
-							echo '<td valign="top"'.$bgcolor.$td_class.'>'.(($show) ? $td_1.$text.$td_2 : '&nbsp;').'</td>';					
+							echo '<td'.$bgcolor.$td_class.'>'.(($show) ? $td_1.$text.$td_2 : '&nbsp;').'</td>';					
 							break;
 						default: 
 							echo '<td'.$td_class.'>'.(($show) ? $td_1.htmlspecialchars($text,ENT_QUOTES).$td_2 : '&nbsp;').'</td>';						
