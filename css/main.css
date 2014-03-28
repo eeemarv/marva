@@ -110,6 +110,65 @@ tr.ajax-loader td div{
    
 /** typeahead fix **/ 
 
+.tt-query
+.tt-hint 
+{
+    width: 396px;
+    height: 30px;
+    padding: 8px 12px;
+    font-size: 24px;
+    line-height: 30px;
+    border: 2px solid #ccc;
+    -webkit-border-radius: 8px;
+    -moz-border-radius: 8px;
+    border-radius: 8px;
+    outline: none;
+}
+
+.tt-query {
+    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+    -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+}
+
+.tt-hint {
+    color: #999
+}
+
+.tt-dropdown-menu {
+    width: 422px;
+    margin-top: 2px;
+    padding: 8px 0;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    -webkit-border-radius: 8px;
+    -moz-border-radius: 8px;
+    border-radius: 8px;
+    -webkit-box-shadow: 0 5px 10px rgba(0,0,0,.2);
+    -moz-box-shadow: 0 5px 10px rgba(0,0,0,.2);
+    box-shadow: 0 5px 10px rgba(0,0,0,.2);
+}
+
+.tt-suggestion {
+    padding: 3px 20px;
+    font-size: 18px;
+    line-height: 24px;
+}
+
+.tt-suggestion.tt-is-under-cursor {
+    color: #fff;
+    background-color: #0097cf;
+
+}
+
+.tt-suggestion p {
+    margin: 0;
+}
+
+
+
+/*
 .twitter-typeahead .tt-query,
 .twitter-typeahead .tt-hint {
   margin-bottom: 0;
@@ -220,7 +279,7 @@ form.trans div{
 
 
 /* Column 1: Navigation */
-	
+/*	
 td.nav
 {
 padding-top: 30px;
@@ -232,131 +291,19 @@ padding-right: 10px;
 border-right: 1px dashed #9974ff;
 background-color: #c1c3e3;
 }
-
+*/
 /* title navigation blocks */
-
+/*
 div.nav span.nav
 {
 padding-left: 40px;
 text-decoration: none;
 }
-
-
-
-
-
+*/
 
 	
 /* Data table */
 
-table.data 
-{
-border-collapse:collapse;
-margin-top: 30px;
-min-width: 400px;
-margin-bottom: 30px;
-font-size: 15px;
-border: 1px solid #7579d9;
-}
-
-table.data td
-{
-padding: 2px;
-font-size: 13px;
-border-top: 0px solid #ccc;
-}
-
-table.selectbox
-{
-	background-color: #fdea9c;
-	border-collapse:collapse;
-	margin-top: 30px;
-	margin-bottom: 30px;
-	font-size: 15px;
-	border: 2px dashed #ffce0a;
-}
-
-table.selectbox td
-{
-	padding: 2px;
-	font-size: 13px;
-	border-top: 0px solid #ccc;
-}
-
-
-table.msgview
-{
-	background-color: #c1c3e3;
-	min-width: 400px;
-	border-collapse:collapse;
-	margin-top: 30px;
-	margin-bottom: 30px;
-	font-size: 15px;
-	border: 2px dashed #35375c;
-}
-
-table.msgview td
-{
-	padding: 2px;
-	font-size: 13px;
-	border-top: 0px solid #ccc;
-}
-
-table.memberview
-{
-	background-color: #c1c3e3;
-	border-collapse:collapse;
-	margin-top: 30px;
-	margin-bottom: 30px;
-	font-size: 15px;
-}
-
-table.memberview td
-{
-	padding: 2px;
-	font-size: 13px;
-	border-top: 0px solid #ccc;
-}
-
-
-tr.msgviewheader
-{
-	background-color:  #35375c;
-	color: #fff;
-}
-
-tr.memberheader        
-{
-	background-color:  #35375c;
-	color: #fff;
-}
-
-tr.header
-{
-	color: #fff;
-	background-color: #666;
-}
-
-table.data tr.header td a
-{
-	color: #eee;
-}
-
-
-table.data td.border_r
-{
-	border-collapse:collapse;
-	border-right: 1px solid #DCF2F8;
-}
-
-table.data td.data_header
-{
-	padding: 2px;
-	font-size: 16px;
-	color: #ffffff;
-	font-weight: bold;
-	border: 0px solid #7579d9;
-}
 
 table.data td.right
 {
@@ -364,10 +311,6 @@ table.data td.right
 	padding-right: 10px;		
 }
 
-table.data td
-{
-	padding-left: 5px;
-}
 	
 /* pagination */
 
@@ -523,35 +466,23 @@ nav.navbar-admin div.navbar-header button.navbar-toggle{
 
 
 
-/* Tooltip */
+/* Tooltip on charts */
 
-div.tooltip {
-  background-color: #3D6199;
+div.chart-tooltip {
+  background-color: black;
   color: White;
   position: absolute;
   left: 25px;
-  top: -25px;
+  top: -60px;
   z-index: 1000000;
-  width: 250px;
-  border-radius: 5px;
+  width: 300px;
+  border-radius: 10px;
 }
-div.tooltip:   before {
-  border-color: transparent #3D6199 transparent transparent;
-  border-right: 6px solid #3D6199;
-  border-style: solid;
-  border-width: 6px 6px 6px 0px;
-  content: "";
-  display: block;
-  height: 0;
-  width: 0;
-  line-height: 0;
-  position: absolute;
-  top: 40%;
-  left: -6px;
-}
-div.tooltip p {
+
+div.chart-tooltip p {
   margin: 10px;
-  color: White;
+  color: white;
+  font-size: 1.2em;
 }
 
 
@@ -587,6 +518,12 @@ background-color: #ddd;
   border-bottom-color: #777; 
   } 
  
+/* messages carousel */
 
+.messages-carousel div.item img {
+  width: auto;
+  height: 380px;
+  max-height: 380px;
+}
 
 

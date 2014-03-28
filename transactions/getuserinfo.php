@@ -33,7 +33,7 @@ $err = $client->getError();
 if (!$err) {
 	$result = $client->call('userbyletscode', array('apikey' => $myapikey, 'letscode' => $letscode));
 	$err = $client->getError();
-    	if (!$err) {
+    if (!$err) {
 		echo $result;
 	}
 }

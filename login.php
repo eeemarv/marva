@@ -133,7 +133,9 @@ require_once($rootpath.'includes/header.php');
 
 echo '<h1><a href="login.php">Inloggen</a></h1>';
 
-include 'site/login_content.html';
+if (file_exists('site/login_content.html')){
+	include 'site/login_content.html';
+}
 
 if(!$req->get('token')){
 	echo '<form method="post" class="trans form-horizontal" role="form">';

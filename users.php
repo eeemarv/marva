@@ -2,6 +2,10 @@
 ob_start();
 require_once 'includes/default.php';
 
+require_once 'includes/inc_userinfo.php'; 
+require_once 'includes/mail.php'; 
+
+
 require_once 'includes/request.php';
 require_once 'includes/data_table.php';
 
@@ -58,10 +62,16 @@ $req->setEntityTranslation('Gebruiker')
 	->add('presharedkey', '', 'post', array('type' => 'text', 'label' => 'Preshared Key', 'size' => 50, 'maxlength' => 80, 'admin' => true, 'placeholder' => 'enkel voor interlets groepen'))
 	->add('creator', $req->getSid(), 'post')
 	->add('password', '', 'post')
-	
+	->add('mail_body', '', 'post', array('type' => 'textarea', 'cols' => 60, 'rows' => 8), array('not_empty' => true, 'min_length' => 15))
+	->add('mail_cc', 'checked', 'post', array('type' => 'checkbox', 'label' => 'Stuur een kopie naar mezelf'))
+	->add('mail_send', '', 'post', array('type' => 'submit', 'label' => 'Versturen', 'class' => 'btn btn-primary'))	
+	->add('image_file', '', 'post', array('type' => 'file', 'label' => 'Foto formaat .jpg of .jpeg max. 300kB', 'class' => 'btn btn-default'))
+	->add('image_send', '', 'post', array('type' => 'submit', 'label' => 'Foto toevoegen', 'class' => 'btn btn-success'))
+	->add('image_delete', '', 'post', array('type' => 'submit', 'label' => 'Foto verwijderen', 'class' => 'btn btn-danger'))
 	->addSubmitButtons()
 	
 	->cancel()
+	->setOwnerParam('id')
 	->query();
 
 $new = $edit = $delete = false;
@@ -70,13 +80,16 @@ if ($req->get('mode') == 'new'){
 	$req->setSecurityLevel('admin');	
 }
 
+if ($req->get('id')){
+	$transactions = $db->GetArray('select id from transactions where id_from = '.$req->get('id').' or id_to = '.$req->get('id'));
+}
+
+$user = $req->getItem();
 
 if ($req->get('delete') && $req->get('id') && $req->isAdmin()){
-
-	$transactions = $db->GetArray('select id from transactions where id_from = '.$req->get('id').' or id_to = '.$req->get('id'));
-	
-	if (count($transactions)){
+	if (sizeof($transactions)){
 		setstatus('Een gebruiker die reeds transacties gedaan heeft, kan niet worden verwijderd.', 'danger');
+		
 	} else {	
 		$req->delete();
 		$user = $req->getItem();
@@ -134,6 +147,48 @@ if ($req->get('delete') && $req->get('id') && $req->isAdmin()){
 } else if ($req->get('edit') && $req->get('id') && $req->isOwner()){
 	
 	$edit = $req->errorsUpdate(array('mdate', 'comments', 'hobbies', 'login'));
+	
+} else if ($req->get('image_send') && $req->get('id') && $req->isOwnerOrAdmin()){
+	$filename = $_FILES['image_file']['name'];
+	$ext = pathinfo($filename, PATHINFO_EXTENSION);
+	$size = $_FILES['image_file']['size'] / 1024;
+	$type = $_FILES['image_file']['type'];
+	$error = $_FILES['image_file']['error'];
+	$tmp_name = $_FILES['image_file']['tmp_name'];	
+	if (!$filename){
+		setstatus('Selecteer eerst een foto-bestand alvorens op te laden.', 'danger');
+	} elseif (!in_array($ext, array('jpg', 'JPG', 'jpeg', 'JPEG'))){
+		setstatus('Ongeldige bestands-extensie. De bestands-extensie moet jpg of jpeg zijn.', 'danger');
+	} elseif (!in_array($type, array('image/jpeg', 'image/jpg', 'image/pjpeg'))) {
+		setstatus('Ongeldig bestands-type.', 'danger');
+	} elseif ($size > 300){
+		setstatus('Te groot bestand. De maximum grootte is 300 kB.', 'danger');
+	} elseif ($error) { 
+		setstatus('Bestands-fout: '.$error, 'danger');
+	} else {
+		if ($user['PictureFile']){
+			unlink('site/images/users/'.$user['PictureFile']);
+		}	
+		$filename = generateUniqueId().'-'.$req->get('id').'.'.strtolower($ext);			
+		if (move_uploaded_file($tmp_name, $_SERVER[DOCUMENT_ROOT].'/site/images/users/'.$filename)){
+			$db->AutoExecute('users', array('PictureFile' => $filename), 'UPDATE', 'id = '.$req->get('id'));
+//			log_event($req->get('id'),'Pict','User-Picture '. $filename.' uploaded');
+			setstatus('Foto toegevoegd.', 'success');				
+			$req->setSuccess();	
+		} else {
+			setstatus('Foto opladen is niet gelukt.', 'danger');
+		}
+	}
+			
+} else if ($req->get('image_delete') && $req->get('id') && $req->isOwnerOrAdmin()){
+	$result = $db->AutoExecute('users', array('PictureFile' => null), 'UPDATE', 'id = '.$req->get('id'));
+	if ($result){
+		unlink('site/images/users/'.$user['PictureFile']);		
+		setstatus('Foto verwijderd', 'success');
+	} else {
+		setstatus('Fout bij het verwijderen.', 'danger');
+	}	
+	$req->setSuccess();
 }
 
 if ($req->isSuccess()){
@@ -184,8 +239,22 @@ if (($new && $req->isAdmin()) || (($edit && $req->isOwnerOrAdmin()) || ($delete 
 }
 
 
+$image_delete = ($req->get('mode') == 'image_delete') ? true : false;
 
-if (!($new || $edit || $delete)){
+if ($image_delete && $req->isOwnerOrAdmin()){
+	$plural = (sizeof($images) > 1) ? '\'s' : '';
+	echo '<h1>Foto verwijderen?</h1>';
+	echo '<form method="post" class="trans form-horizontal" role="form">';
+	echo '<div class="row">';			
+	echo '<div class="col-md-4"><div class="thumbnail">';
+	echo '<img src="site/images/users/'.$user['PictureFile'].'" alt="foto"/></div></div>';
+	echo '</div>';
+	$req->set_output('nolabel')->render(array('image_delete', 'cancel', 'id', 'mode'));
+	echo '</div></form>';		
+}
+
+
+if (!($new || $edit || $delete || $image_delete)){
 	echo '<form method="GET" class="trans form-horizontal" role="form">';
 	$req->set_output('formgroup')->render(array('q', 'postcode_filter'));
 	echo '<div>';
@@ -197,7 +266,7 @@ if (!($new || $edit || $delete)){
 }
 
 
-if (!$req->get('id') && !($new || $edit || $delete)){
+if (!$req->get('id') && !($new || $edit || $delete || $image_delete)){
 	
 	$tabs = array(
 		'active' => array('text' => 'Alle', 'class' => 'bg-white', 
@@ -303,7 +372,7 @@ if (!$req->get('id') && !($new || $edit || $delete)){
 			)),	
 		'postcode' => array_merge($asc_preset_ary, array(
 			'title' => 'Postcode')),
-		'unix' => array('title' => 'unix'));
+		);
 	
 	$table_column_ary[$req->get('orderby')]['asc'] = ($req->get('asc')) ? 0 : 1;
 	$table_column_ary[$req->get('orderby')]['indicator'] = ($req->get('asc')) ? '&nbsp;&#9650;' : '&nbsp;&#9660;';
@@ -358,10 +427,11 @@ if (!$req->get('id') && !($new || $edit || $delete)){
 	if (sizeof($users) == 1){
 		$req->set('id', $users[0]['id'])
 			->query();
+		$transactions = $db->GetArray('select id from transactions where id_from = '.$req->get('id').' or id_to = '.$req->get('id'));	
 	}	
 }
 	
-if ($req->get('id') && !($edit || $delete || $new)){
+if ($req->get('id') && !($edit || $delete || $new || $image_delete)){
 
 
 	$id = $req->get('id');
@@ -384,9 +454,11 @@ if ($req->get('id') && !($edit || $delete || $new)){
 */
 	$req->setItemValue('unix', strtotime($req->getItemValue('adate')));
 	$user = $req->getItem();
+	
 			
-	if ($req->isAdmin()){	
-		echo '<a href="users.php?mode=delete&id='.$req->get('id').'" class="btn btn-danger pull-right">'.$req->getAdminLabel().'Verwijderen</a>';
+	if ($req->isAdmin()){
+		$disabled = (sizeof($transactions)) ? ' disabled="disabled"' : '';
+		echo '<a href="users.php?mode=delete&id='.$req->get('id').'" class="btn btn-danger pull-right"'.$disabled.'>'.$req->getAdminLabel().'Verwijderen</a>';
 	}
 	if ($req->isOwnerOrAdmin()){			
 		echo '<a href="users.php?mode=edit&id='.$req->get('id').'" class="btn btn-primary pull-right">'.$req->getAdminLabel().'Aanpassen</a>';
@@ -400,6 +472,118 @@ if ($req->get('id') && !($edit || $delete || $new)){
 	$class = ($class) ? ' class="bg-'.$class.'"' : '';
 	echo '<div'.$class.'>';
 	echo '<h1>'.trim($user['letscode']).'&nbsp;'.htmlspecialchars($user['fullname'],ENT_QUOTES).'</h1>';
+
+	echo '<div class="row"><div class="col-md-4">';
+	if ($user['PictureFile']){
+		echo '<div class="thumbnail">';
+		echo '<img src="site/images/users/'.$user['PictureFile'].'" alt="foto">';
+		if ($req->isOwnerOrAdmin()){
+			echo '<div class="caption"><p>';		
+			echo '<a href="users.php?mode=image_delete&id='.$req->get('id').'" class="btn btn-danger">';
+			echo $req->getAdminLabel().'Foto verwijderen</a></p></div>';			
+		}
+		echo '</div>';		
+	}
+	if ($req->isOwnerOrAdmin()){
+		$label = ($user['PictureFile']) ? 'Foto vervangen' : $req->getLabel('image_send');	
+		if ($req->isAdmin()){
+			$req->setLabel('image_send', $req->getAdminLabel().$label);
+		}		
+		echo '<form method="post" class="trans form-horizontal" role="form" enctype="multipart/form-data">';
+		$req->set_output('formgroup')->render('image_file');
+		$req->set_output('nolabel')->render(array('image_send', 'id'));
+		echo '</form>';			
+	}
+	echo '</div>';
+	
+	
+	echo '<div class="col-md-4"></div>';
+	echo '<div class="col-md-4"><div>xcwwxcwxc</div></div>';
+	echo '<div class="col-md-4"><div id="chartdiv2"></div><p>Transacties met andere gebruikers het laatste jaar</p></div>';
+	echo '</div>';
+	
+
+			
+	echo '<div class="row">';	
+	echo '<div class="col-md-4"><div id="chartdiv1"></div><p>Saldoverloop het laatste jaar</p></div>';
+	echo '</div>';
+	
+		
+	if (sizeof($images)){
+
+		echo '<div class="col-md-6">';
+		echo '<div id="images-carousel" class="carousel slide" data-ride="carousel">';
+		echo '<ol class="carousel-indicators">';
+		foreach ($images as $key => $image){
+			echo '<li data-target="#images-carousel" data-slide-to="'.$key.'" class="active"></li>';
+		}
+		echo '</ol>';
+		echo '<div class="carousel-inner">';
+		foreach ($images as $key => $image){
+			echo '<div'.(($key) ? ' class="item"' : ' class="item active"').'>';
+			echo '<img src="site/images/messages/'.$image['PictureFile'].'" alt="foto" width="100%"></div>';
+		}	
+		echo '</div>';
+		echo '<a class="left carousel-control" href="#images-carousel" data-slide="prev">';
+		echo '<span class="glyphicon glyphicon-chevron-left"></span></a>';
+		echo '<a class="right carousel-control" href="#images-carousel" data-slide="next">'; 
+		echo '<span class="glyphicon glyphicon-chevron-right"></span></a>';
+		echo '</div></div>';
+	}
+
+	echo '<div class="col-md-6">';
+	
+	$message_description = ($message['description']) ? nl2br(htmlspecialchars($message['description'],ENT_QUOTES)) : 
+		'<p class="text-danger">Er werd geen omschrijving ingegeven</p>';
+	$amount_text = ($message['amount']) ? 'Richtprijs: '.getCurrencyText($message['amount']) : 
+		'<p class="text-danger">Er werd geen richtprijs ingegeven</p>';
+	echo '<div class="panel panel-default"><div class="panel-heading">Omschrijving</div>';
+	echo '<div class="panel-body">'.$message_description.'</div>';
+	echo '<div class="panel-footer">'.$amount_text.'</div></div>';	
+
+	$query = 'select contact.value, type_contact.abbrev
+		from type_contact, contact
+		where contact.id_user='.$req->getOwnerId().'
+		and contact.id_type_contact = type_contact.id
+		and contact.flag_public = 1';
+	$contacts = $db->GetArray($query);
+	
+	$contact_table = new data_table();
+	$contact_table->set_data($contacts)
+		->add_column('abbrev')
+		->add_column('value', array(
+			'href_mail' => true,
+			'href_adr' => true));	
+	
+	$contact_table->render();
+	echo '</div></div>';
+
+	
+
+	if (sizeof($images) && $req->isOwnerOrAdmin()){
+		if ($req->isAdmin()){
+			echo '<div class="row"><div class="col-md-12"><h3>[admin]</h3></div></div>';
+		}
+		echo '<div class="row">';			
+		foreach ($images as $image){
+			echo '<div class="col-md-4"><div class="thumbnail">';
+			echo '<img src="site/images/messages/'.$image['PictureFile'].'" alt="foto">';
+			echo '<div class="caption"><p>';
+			echo '<a href="messages.php?mode=image_delete&id='.$req->get('id').'&image_id='.$image['id'].'" class="btn btn-danger">';
+			echo 'Verwijderen</a></p></div></div></div>';
+		}
+		echo '</div>';
+		if (sizeof($images) > 1){			
+			echo '<div class="row"><div class="col-md-12">';
+			echo '<a href="messages.php?mode=image_delete&id='.$req->get('id').'" class="btn btn-danger">';
+			echo $req->getAdminLabel().'Alle foto\'s verwijderen.</a></div></div>';
+		}
+	}
+
+
+	
+
+
 	
 	
 	echo '<table cellpadding="0" cellspacing="0" border="0" width="99%">';
@@ -423,8 +607,8 @@ if ($req->get('id') && !($edit || $delete || $new)){
 	echo "<td><strong>{$parameters['currency_plural']}stand</strong></td><td></td><td><strong>Transactie-Interacties</strong></td></tr>";
 	echo "<tr><td>";
 	echo "<strong>".$balance."</strong>";
-	echo "</td><td><div id='chartdiv1' style='height:200px;width:300px;'></div></td>";
-	echo "<td><div id='chartdiv2' style='height:200px;width:200px;'></div></td></tr></table>";
+	echo "</td><td><div id='char1' style='height:200px;width:300px;'></div></td>";
+	echo "<td><div id='civ2' style='height:200px;width:200px;'></div></td></tr></table>";
 
 	$query = "SELECT *, ";
 	$query .= " contact.id AS cid, users.id AS uid, type_contact.id AS tcid, ";
@@ -461,6 +645,19 @@ if ($req->get('id') && !($edit || $delete || $new)){
 	echo "<tr><td colspan='3'><p>&#160;</p></td></tr>";
 	echo "</table>";
 
+
+
+	if (empty($mailuser['emailaddress']) || !$req->isUser() || $req->isOwner()){
+		$req->setDisabled(array('mail_send', 'mail_body', 'mail_cc'));
+	}
+	$req->setLabel('mail_body', 'Je bericht naar '.$user['letscode'].' '.$user['name']);	
+	
+	echo '<form method="post" class="trans form-horizontal" role="form">';
+	$req->set_output('formgroup')->render(array('mail_body', 'mail_cc'));
+	echo '<div>';
+	$req->set_output('nolabel')->render(array('mail_send', 'id'));
+	echo '</div></form>';
+		
 	echo '</div>';
 	
 }		

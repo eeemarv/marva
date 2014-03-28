@@ -42,7 +42,10 @@ $support = ($req->getSid()) ? ' support' : '';
 echo '<h1><a href="contact.php">Contact '.$support.'</a></h1>';
 
 $include =  ($req->getSid()) ? 'support' : 'contact';
-include 'site/'.$include.'_content.html';
+
+if (file_exists('site/'.$include.'_content.html')){
+	include 'site/'.$include.'_content.html';
+}
 
 echo '<form method="post" class="trans form-horizontal" role="form">';
 $email = ($req->getSid()) ? 'non_existing_dummy_1' : 'email';

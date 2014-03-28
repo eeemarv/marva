@@ -3,20 +3,20 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "50792e5e4e49d05a2ac0777147d2e1db",
+    "hash": "4eeac41ba2ce51bf406b91547788d18a",
     "packages": [
         {
             "name": "adodb/adodb-php",
             "version": "dev-master",
             "source": {
                 "type": "git",
-                "url": "https://github.com/cvele/adodb.git",
-                "reference": "66f3740cf7718a4cd88bb1a2a05cceaccc98b882"
+                "url": "https://github.com/ADOdb/ADOdb.git",
+                "reference": "e653d56d58dd02fec6bc7f5d6d23aef8e1751879"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/cvele/adodb/zipball/66f3740cf7718a4cd88bb1a2a05cceaccc98b882",
-                "reference": "66f3740cf7718a4cd88bb1a2a05cceaccc98b882",
+                "url": "https://api.github.com/repos/ADOdb/ADOdb/zipball/e653d56d58dd02fec6bc7f5d6d23aef8e1751879",
+                "reference": "e653d56d58dd02fec6bc7f5d6d23aef8e1751879",
                 "shasum": ""
             },
             "require": {
@@ -36,10 +36,20 @@
             "authors": [
                 {
                     "name": "John Lim",
-                    "homepage": "http://adodb.sourceforge.net/#docs"
+                    "email": "jlim@natsoft.com",
+                    "role": "Author"
+                },
+                {
+                    "name": "Damien Regad",
+                    "role": "Current maintainer"
                 }
             ],
-            "time": "2013-01-04 11:54:13"
+            "description": "ADOdb is a PHP database abstraction layer library",
+            "homepage": "http://adodb.sourceforge.net/",
+            "keywords": [
+                "database"
+            ],
+            "time": "2014-03-26 13:17:07"
         },
         {
             "name": "blueimp/jquery-file-upload",
@@ -91,6 +101,62 @@
                 "widget"
             ],
             "time": "2014-03-11 06:27:43"
+        },
+        {
+            "name": "components/bootstrap",
+            "version": "3.1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/components/bootstrap.git",
+                "reference": "839953cfb830aa27e8fd94404a4a6e02fb38a51a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/components/bootstrap/zipball/839953cfb830aa27e8fd94404a4a6e02fb38a51a",
+                "reference": "839953cfb830aa27e8fd94404a4a6e02fb38a51a",
+                "shasum": ""
+            },
+            "require": {
+                "components/jquery": ">=1.9"
+            },
+            "suggest": {
+                "components/bootstrap-default": "Provide a theme for Bootstrap as components/bootstrap only provides the CSS as file assets"
+            },
+            "type": "component",
+            "extra": {
+                "component": {
+                    "scripts": [
+                        "js/bootstrap.js"
+                    ],
+                    "files": [
+                        "js/bootstrap.min.js",
+                        "css/*.css",
+                        "fonts/*",
+                        "less/*"
+                    ],
+                    "shim": {
+                        "deps": [
+                            "jquery"
+                        ]
+                    }
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "Twitter, Inc"
+                }
+            ],
+            "description": "Sleek, intuitive, and powerful front-end framework for faster and easier web development.",
+            "homepage": "http://twitter.github.com/bootstrap/",
+            "keywords": [
+                "bootstrap",
+                "css"
+            ],
+            "time": "2014-02-25 09:50:56"
         },
         {
             "name": "components/font-awesome",
@@ -176,6 +242,40 @@
             "description": "jQuery JavaScript Library",
             "homepage": "http://jquery.com",
             "time": "2014-01-24 21:17:36"
+        },
+        {
+            "name": "eternicode/bootstrap-datepicker",
+            "version": "1.3.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/eternicode/bootstrap-datepicker.git",
+                "reference": "37db99f95ff3a32ccc76b7122b2b73f3b0b9fe42"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/eternicode/bootstrap-datepicker/zipball/37db99f95ff3a32ccc76b7122b2b73f3b0b9fe42",
+                "reference": "37db99f95ff3a32ccc76b7122b2b73f3b0b9fe42",
+                "shasum": ""
+            },
+            "require": {
+                "components/bootstrap": ">=3.0, <4.0",
+                "components/jquery": ">=1.7.1",
+                "robloach/component-installer": "*"
+            },
+            "type": "component",
+            "extra": {
+                "component": {
+                    "scripts": [
+                        "js/bootstrap-datepicker.js"
+                    ],
+                    "styles": [
+                        "css/datepicker.css",
+                        "css/datepicker3.css"
+                    ]
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "time": "2014-01-19 12:18:49"
         },
         {
             "name": "jqplot/jqplot",

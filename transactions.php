@@ -29,7 +29,7 @@ $req->setEntityTranslation('Transactie')
 	->add('from_user_id', $s_id, 'post', array('type' => 'select', 'label' => 'Van', 'option_set' => 'active_users', 'admin' => true), array('not_empty' => true))
 	->add('date', date('Y-m-d'), 'post')
 	->add('cdate', date('Y-m-d H:i:s'), 'post')
-	->add('letscode_to', '', 'post', array('type' => 'text', 'size' => 40, 'maxlength' => 10, 'label' => 'Aan LetsCode', 'autocomplete' => 'off'), array('not_empty' => true))
+	->add('letscode_to', '', 'post', array('type' => 'text', 'size' => 40, 'maxlength' => 10, 'label' => 'Aan LetsCode', 'autocomplete' => 'off', 'class' => 'typeahead-users'), array('not_empty' => true))
 	->add('amount', '', 'post', array('type' => 'text', 'size' => 10, 'maxlength' => 6, 'label' => 'Aantal '.$parameters['currency_plural'] , 'autocomplete' => 'off'), array('not_empty' => true))
 	->add('description', '', 'post', array('type' => 'text', 'size' => 40, 'maxlength' => 60, 'label' => 'Omschrijving', 'autocomplete' => 'off'), array('not_empty' => true))
 	->add('transid', generateUniqueId(), 'post', array('type' => 'hidden'))		
@@ -52,7 +52,7 @@ if ($req->isSuccess()){
 }	
 
 	
-include('./includes/header.php');
+include 'includes/header.php';
 
 echo '<div class="row"><div class="col-md-12">';
 
@@ -76,7 +76,10 @@ if ($new && $req->isUser())
 	$req->set_output('formgroup')->render(array($from_user_id, 'letscode_to',  'amount', 'description', 'confirm_password', 'transid'));
 	echo '<div>';
 	$req->set_output('nolabel')->render(array('create', 'create_plus', 'cancel'));
-	echo '</div></form>';	
+	echo '</div></form>';
+	
+	echo '<script type="text/javascript" src="js/typeahead_users.js"></script>';
+		
 		
 } else {
 

@@ -1,5 +1,4 @@
 <?php
-//error_reporting(0);
 
 if(!isset($rootpath)){
 	$rootpath = "";
@@ -16,7 +15,7 @@ use Symfony\Component\Yaml\Yaml;
 $parameters = array_merge_recursive(Yaml::parse(__DIR__.'/../site/parameters.yml'), $parameters); 
 
 if ($parameters['debug']){
-	error_reporting(E_ALL);
+	error_reporting(E_ALL ^ E_NOTICE);
 } else {
 	error_reporting(0);
 }

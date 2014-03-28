@@ -85,6 +85,7 @@ unset($_users);
 
 $transactions = array_reverse($transactions);
 
+header('Content-type: application/json');
 echo json_encode(array(
 	'user_id' => $user_id,
 	'ticks' => ($req->get('days') == 365) ? 12 : 4,

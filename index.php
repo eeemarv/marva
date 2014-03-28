@@ -29,9 +29,9 @@ $req->setEntity('index');
 	
 require('includes/header.php');
 
-include 'site/index_content.html';
-
-var_dump($parameters, $con);
+if (file_exists('site/index_content.html')){
+	include 'site/index_content.html';
+}
 
 require('./includes/footer.php');
 

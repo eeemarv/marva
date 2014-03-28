@@ -91,7 +91,7 @@ jQuery(document).ready(function($){
 			graph = [[[beginDate, 0], [endDate, 0]], graph];
 
 			$.jqplot('chartdiv1', graph, { 
-				title: 'Laatste Jaar',
+		//		title: 'Laatste Jaar',
 				grid: {shadow: false},
 				cursor: {
 					show: true,
@@ -119,7 +119,7 @@ jQuery(document).ready(function($){
 				fillBetween: {
 					series1: 0,
 					series2: 1,
-					color: 'rgba(0, 0, 255, 0.1)',
+					color: 'rgba(55, 55, 55, 0.1)',
 					baseSeries: 0, 
 					fill: true,
 				},
@@ -129,7 +129,7 @@ jQuery(document).ready(function($){
 					shadow: false,
 				},					
 				series: {
-					1: {color: 'rgb(0, 0, 127)'},
+					1: {color: 'rgb(0, 0, 0)'},
 				},
 			});
 			
@@ -142,12 +142,12 @@ jQuery(document).ready(function($){
 				var transactionData = transactions[graphTrans[pointIndex][1]];
 				var transDate = new Date(transactionData.date * 1000);	
 				var transDateString = transDate.getDate() + '-' + (Number(transDate.getMonth()) + 1) + '-' + transDate.getFullYear();
-
-				var transdiv = '<div class="tooltip"><p>';
+				var sign = (transactionData.out) ? '-' : '+';
+				
+				var transdiv = '<div class="chart-tooltip"><p>';
 				transdiv += transactionData.userCode + ' ' + users[transactionData.userIndex].name;
 				transdiv += '<br/><strong>';
-				transdiv += (transactionData.out) ? '-' : '+';
-				transdiv += '</strong>'+ transactionData.amount + ' ' + data.currency + ' ';
+				transdiv += '</strong>' + sign + ' ' + transactionData.amount + ' ' + data.currency + ' ';
 				transdiv += transDateString;
 				transdiv += '<br/>'+transactionData.desc;
 				transdiv += '</p></div>';
@@ -156,11 +156,11 @@ jQuery(document).ready(function($){
 			});
 			
 			$('#chartdiv1').bind('jqplotDataUnhighlight', function (ev, seriesIndex, pointIndex, evData) {
-				$('div.tooltip').remove();
+				$('div.chart-tooltip').remove();
 			});
 
 			$.jqplot('chartdiv2', [donut] , {
-				title: 'Laatste Jaar',		
+		//		title: 'Laatste Jaar',		
 				grid: {borderWidth: 0, shadow: false, background: 'transparent'},
 				seriesDefaults: {
 				  renderer:$.jqplot.DonutRenderer,
@@ -183,15 +183,15 @@ jQuery(document).ready(function($){
 				if (user.linkable){
 					$(this).css('cursor', 'pointer');
 				}					
-				var dddiv = '<div class="tooltip"><p>'+user.code+' '+user.name;
-				dddiv += (dd.out) ? '<br/><strong>-</strong> '+dd.out+' transacties, '+dd.amountOut+' '+data.currency : '';
-				dddiv += (dd.in) ? '<br/><strong>+</strong> '+dd.in+' transacties, '+dd.amountIn+' '+data.currency : '';
+				var dddiv = '<div class="chart-tooltip"><p>'+user.code+' '+user.name;
+				dddiv += (dd.out) ? '<br/><strong>-</strong> '+dd.out+' transacties, - '+dd.amountOut+' '+data.currency : '';
+				dddiv += (dd.in) ? '<br/><strong>+</strong> '+dd.in+' transacties, + '+dd.amountIn+' '+data.currency : '';
 				dddiv += '</p></div>'; 
 				$(this).append(dddiv);				
 			});
 			
 			$('#chartdiv2').bind('jqplotDataUnhighlight', function(ev, seriesIndex, pointIndex, evdata){
-				$('div.tooltip').remove();
+				$('div.chart-tooltip').remove();
 				$(this).css('cursor', 'default');
 			});			
 			

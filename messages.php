@@ -368,7 +368,7 @@ if ($req->get('id') && !($edit || $delete || $new || $image_delete)){
 	if (sizeof($images)){
 		
 		echo '<div class="col-md-6">';
-		echo '<div id="images-carousel" class="carousel slide" data-ride="carousel">';
+		echo '<div id="images-carousel" class="carousel slide messages-carousel" data-ride="carousel">';
 		echo '<ol class="carousel-indicators">';
 		foreach ($images as $key => $image){
 			echo '<li data-target="#images-carousel" data-slide-to="'.$key.'" class="active"></li>';
@@ -377,7 +377,8 @@ if ($req->get('id') && !($edit || $delete || $new || $image_delete)){
 		echo '<div class="carousel-inner">';
 		foreach ($images as $key => $image){
 			echo '<div'.(($key) ? ' class="item"' : ' class="item active"').'>';
-			echo '<img src="site/images/messages/'.$image['PictureFile'].'" alt="foto" width="100%"></div>';
+			$url = 'site/images/messages/'.$image['PictureFile'];
+			echo '<img src="'.$url.'" alt="foto"></div>';
 		}	
 		echo '</div>';
 		echo '<a class="left carousel-control" href="#images-carousel" data-slide="prev">';

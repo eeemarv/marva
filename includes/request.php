@@ -111,6 +111,9 @@ class request {
 	}
 	
 	public function renameItemParams($renames = array()){
+		if (!is_array($this->item)){
+			return $this;
+		}
 		foreach($renames as $old => $new){
 			if (array_key_exists($old, $this->item) && !array_key_exists($new, $this->item)){
 				$this->item[$new] = $this->item[$old];
@@ -129,6 +132,9 @@ class request {
 	}
 	
 	public function dataTransform(){
+		if (!is_array($this->item)){
+			return $this;
+		}		
 		foreach($this->data_transformers as $param => $transform){
 			if (array_key_exists($param, $this->item) && array_key_exists($this->item[$param], $transform)){
 				$this->item[$param] = $transform[$this->item[$param]];
@@ -430,13 +436,14 @@ class request {
 					$this->parameters[$param_name]['disabled'] = 'disabled';
 				}
 			}
+			return $this;
 		}
-		$this->parameters[$name]['disabled'] = (isset($this->parameters[$name])) ? 'disabled' : null;
+		$this->parameters[$name]['disabled'] = (isset($this->parameters[$name])) ? 'disabled' : '';
 		return $this;
 	}
 
 	public function setLabel($name, $label){
-		$this->parameters[$name]['label'] = (isset($this->parameters[$name])) ? $label : null;
+		$this->parameters[$name]['label'] = (isset($this->parameters[$name])) ? $label : '';
 		return $this;
 	}
 	
@@ -583,7 +590,8 @@ class request {
 		} elseif ($parameter['type'] == 'textarea'){
 			$cols = ($parameter['cols']) ? ' cols="'.$parameter['cols'].'"' : '';
 			$rows = ($parameter['rows']) ? ' rows="'.$parameter['rows'].'"' : '';
-			$out .= '<textarea name="'.$name.'" '.$cols.$rows.'>';
+			$disabled = ($parameter['disabled']) ? ' disabled="'.$parameter['disabled'].'"' : '';
+			$out .= '<textarea name="'.$name.'" '.$cols.$rows.$disabled.'>';
 			$out .= $parameter['value'].'</textarea>';
 		} else {						
 			$out .= '<input name="'.$name.'"';
