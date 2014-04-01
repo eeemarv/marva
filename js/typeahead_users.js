@@ -16,7 +16,7 @@ $('document').ready(function(){
 	{
 		name: 'active-users-oooo',
 		displayKey: function(data){ 
-			return data.c + ' ' + data.n
+			return data.c + ' ' + data.n;
 			},
 		source: engine.ttAdapter()
 	})

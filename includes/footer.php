@@ -22,7 +22,7 @@ if ($req->isAdmin()){
 		'apikeys'	=> 'Apikeys',
 		'type_contact' => 'Contact-types',
 		'eventlog' => 'Logs',
-		'db_backup' => 'Database backup',
+		'database' => 'Database',
 		);	
 		
 	foreach($menu as $entity => $label){

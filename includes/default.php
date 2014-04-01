@@ -37,14 +37,29 @@ $db->setFetchMode(ADODB_FETCH_ASSOC);
 unset($con, $parameters['db']);
 
 
-$mail_addresses = array_intersect_key($parameters['mail'], array(
+$systemMailAddresses = array_intersect_key($parameters['mail'], array(
 	'info' => 'info', 'admin' => 'admin', 'support' => 'support', 'news-admin' => 'news-admin',
 	'noreply' => 'noreply', 'list' => 'list'));
 	
-foreach ($mail_addresses as $key => $val){
+foreach ($systemMailAddresses as $key => $val){
 	$val = (empty($val)) ? $key : $val;
 	$parameters['mail'][$key] = (filter_var($val, FILTER_VALIDATE_EMAIL)) ? $val : $val.'@'.$_SERVER['HTTP_HOST'];
-}	
+}
+
+
+/*
+
+define(STATUS_ACTIVE, 1);
+define(STATUS_SYSTEM, 2);
+define(STATUS_INTERLETS, 4);
+define(STATUS_LEAVING, 64);
+define(STATUS_POSTACTIVE, 128);
+define(STATUS_INFO, 256);
+define(STATUS_INFOMOMENT, 512);
+
+*/
+
+	
 
 
 // Read the full config table to an array
@@ -143,6 +158,12 @@ function getUserClass($user){
 		default:
 			return ($user['unix'] > (time() - ($parameters['new_user_days'] * 86400))) ? 'success' : ''; 	
 	}	
+}
+
+function getLocalLetscode($letscode){	
+	list($letscode) = explode(' ', trim($letscode));
+	list($letscode) = explode('/', trim($letscode));	
+	return trim($letscode);
 }
 
 

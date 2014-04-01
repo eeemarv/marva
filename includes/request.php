@@ -621,6 +621,13 @@ class request {
 					$options[$val['id']]['text'] = $val['letscode'].'&nbsp;&nbsp;'.$val['fullname'];
 				}			
 				break;
+			case 'active_users_without_interlets': 
+				$ary = $this->get_active_users(false);
+				$options[0] = '';
+				foreach ($ary as $val){
+					$options[$val['id']]['text'] = $val['letscode'].'&nbsp;&nbsp;'.$val['fullname'];
+				}			
+				break;					
 			case 'categories':
 				$ary = $this->get_categories();
 				$options[0]['text'] = '';
@@ -726,6 +733,10 @@ class request {
 								$mismatch = true;
 							}
 							break;
+						case 'active_user_without_interlets': if(!$this->active_user($parameter['value'], false)){
+								$mismatch = true;
+							}
+							break;
 					}
 				}
 				if ($mismatch){								
@@ -761,17 +772,19 @@ class request {
 	
 	private function active_letscode($letscode){
 		global $db;
+		$letscode = getLocalLetscode($letscode);
         $query = 'SELECT id FROM users WHERE letscode = "'.$letscode.'"';
-        $query .= 'and (users.status = 1 or users.status = 2 or users.status = 3)';
+        $query .= 'and status in (1, 2, 4, 7)';
         $row = $db->GetRow($query);
 		return	($row['id']) ? true : false;	
 	}	
 	
 	
-	private function get_active_users(){
+	private function get_active_users($include_interlets = true){
 		global $db;
+		$interlets = ($include_interlets) ? ', 7' : '';
         $query = 'SELECT id, fullname, letscode FROM users ';
-		$query .= 'WHERE (status = 1 OR status =2 OR status = 3) AND users.accountrole <> "guest" ';
+		$query .= 'WHERE status in (1, 2, 4'.$interlets.') '.(($interlets) ? '' : 'and users.accountrole <> "guest" ');
 		$query .= 'ORDER BY letscode';
 		return	$db->GetArray($query);	
 	}
@@ -806,15 +819,16 @@ class request {
 			where contact.id_type_contact = type_contact.id 
 			and type_contact.abbrev =\'mail\' 
 			and contact.id_user = users.id
-			and (users.status = 1 or users.status = 2 or users.status = 3)
+			and (users.status = 1 or users.status = 2 or users.status = 4 or users.status = 7)
 			and contact.value = '.$value;
 		return ($db->GetRow($query)) ? true : false;
 	}
 	
-	private function active_user($id){
+	private function active_user($id, $include_interlets = true){
 		global $db;
+		$interlets = ($include_interlets) ? ', 7' : '';
         $query = 'SELECT id FROM users WHERE id = "'.$id.'"';
-        $query .= 'and (users.status = 1 or users.status = 2 or users.status = 3)';
+        $query .= 'and status in (1, 2, 4'.$interlets.') '.(($interlets) ? '' : 'and users.accountrole <> "guest" )');
         $row = $db->GetRow($query);
 		return	($row['id']) ? true : false;	
 	}

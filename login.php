@@ -28,19 +28,12 @@ if ($req->get('cancel')){
 	exit;
 }
 
-
 $location = ltrim(urldecode($req->get('location')), '/');
 $location = ($location) ? $location : 'messages.php';
 $location = ($location == 'login.php') ? 'messages.php' : $location;
 
 $login_redirect = 'login.php?location='.urlencode($location);
 
-/*
-if ($req->getSid()){
-	header('location : '.$location);
-			
-}
-*/ 
 
 if($req->get('token')){
 	if(verify_token($req->get('token'),'guestlogin') == 0){
@@ -77,7 +70,7 @@ if ($req->isPost()){
 				exit;		
 				
 			} else {
-				if(readconfigfromdb("maintenance") == 1 && $myuser["accountrole"] != "admin"){
+				if($parameters['maintenance'] && !$req->isAdmin()){
 					setstatus('eLAS is in onderhoud, probeer later opnieuw', 'info');
 					header('location: '.$login_redirect);
 					exit;
@@ -102,15 +95,7 @@ if ($req->isPost()){
 					log_event($user["id"],"Agent","$browser");				
 					$db->AutoExecute('users', array('lastlogin' => date('Y-m-d H:i:s')), 'UPDATE', 'id='.$s_id);		
 					setstatus($req->get('letscode').' '.$user['name'].' ingelogd.', 'success');
-	
-					if ($user['accountrole'] == 'admin'){				
-						$result = $db->Execute('select * from letsgroups where apimethod = \'internal\'');
-						if ($result->RecordCount()){
-							setstatus('Er bestaat geen LETS groep met type intern voor je eigen groep.  
-								Voeg die toe onder beheer LETS Groepen.', 'warning');
-						}					
-					}
-					
+				
 					header('Location: '.$location);
 					exit;			
 				}
@@ -125,7 +110,7 @@ if ($req->isPost()){
 	}
 }
 
-if(readconfigfromdb("maintenance") == 1){
+if($parameters['maintenance']){
 	setstatus('Marva is niet beschikbaar wegens onderhoud.  Enkel admin gebruikers kunnen inloggen', 'warning');
 }
 

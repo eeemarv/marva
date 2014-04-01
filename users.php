@@ -277,7 +277,7 @@ if (!$req->get('id') && !($new || $edit || $delete || $image_delete)){
 			'where' => 'status = 2 '),
 		'system' => array('text' => 'Systeem', 'class' => 'bg-info',
 			'where' => 'status = 4 '),
-		'interlets' => array('text' => 'Interlets groepen', 'class' => 'bg-warning',
+		'interlets' => array('text' => 'Interlets', 'class' => 'bg-warning',
 			'where' => 'status = 7'),
 		'inactive' => array('text' => '[admin] Inactief', 'class' => 'bg-inactive', 'admin' => true,
 			'tabs' => array(
@@ -446,12 +446,7 @@ if ($req->get('id') && !($edit || $delete || $new || $image_delete)){
 		<script src="vendor/jqplot/jqplot/plugins/jqplot.canvasAxisTickRenderer.min.js"></script>
 		<script src="vendor/jqplot/jqplot/plugins/jqplot.highlighter.min.js"></script>	
 		<script src="js/graph_user_transactions.js"></script>';
-/*
-	$query = 'SELECT * FROM users ';
-	$query .= 'WHERE id='.$req->get('id').' ';
-	$query .= 'AND status in (1, 2, 3, 4, 7)';
-	$user = $db->GetRow($query);	
-*/
+
 	$req->setItemValue('unix', strtotime($req->getItemValue('adate')));
 	$user = $req->getItem();
 	
@@ -463,10 +458,6 @@ if ($req->get('id') && !($edit || $delete || $new || $image_delete)){
 	if ($req->isOwnerOrAdmin()){			
 		echo '<a href="users.php?mode=edit&id='.$req->get('id').'" class="btn btn-primary pull-right">'.$req->getAdminLabel().'Aanpassen</a>';
 	}	
-		
-//		$myurl='messages/upload_picture.php?msgid='.$req->get('id');
-//		echo "<li><a href='#' onclick=window.open('$myurl','upload_picture','width=640,height=480,scrollbars=yes,toolbar=no,location=no,menubar=no')>Foto toevoegen</a></li>";	
-
 
 	$class = getUserClass($user);
 	$class = ($class) ? ' class="bg-'.$class.'"' : '';
@@ -496,50 +487,40 @@ if ($req->get('id') && !($edit || $delete || $new || $image_delete)){
 	}
 	echo '</div>';
 	
+	$want_count = $db->getRow('select count(*) as num from messages where msg_type = 0 and id_user = '.$req->get('id'));
+	$want_count = $want_count['num'];
+	$offer_count = $db->getRow('select count(*) as num from messages where msg_type = 1 and id_user = '.$req->get('id'));
+	$offer_count = $offer_count['num'];
 	
-	echo '<div class="col-md-4"></div>';
-	echo '<div class="col-md-4"><div>xcwwxcwxc</div></div>';
+	echo '<div class="col-md-4">';
+	echo '<div class="panel panel-default"><div class="panel-heading">Saldo</div>';
+	echo '<div class="panel-body"><a href="transactions.php?userid='.$req->get('id').'">';
+	echo getCurrencyText($user['saldo']).'</a> (limiet : +/-'.getCurrencyText($user['maxlimit']).')</div></div>';
+	echo '<div class="panel panel-default"><div class="panel-heading"><a href="messages.php?userid='.$req->get('id').'">';
+	echo ($offer_count + $want_count).' Berichten</a></div>';
+	echo '<div class="panel-body"><p><a href="messages.php?userid='.$req->get('id').'&ow=w">'.$want_count.' Vraag</a></p>';
+	echo '<p><a href="messages.php?userid='.$req->get('id').'&ow=o">'.$offer_count.' Aanbod</a></p></div>';	
+	echo '</div></div>';
+	
+	
 	echo '<div class="col-md-4"><div id="chartdiv2"></div><p>Transacties met andere gebruikers het laatste jaar</p></div>';
-	echo '</div>';
-	
 
-			
-	echo '<div class="row">';	
+	echo '</div>';
+				
+	echo '<div class="row">';
+		
 	echo '<div class="col-md-4"><div id="chartdiv1"></div><p>Saldoverloop het laatste jaar</p></div>';
+	
+	
+	
+	
+	
 	echo '</div>';
 	
 		
-	if (sizeof($images)){
 
-		echo '<div class="col-md-6">';
-		echo '<div id="images-carousel" class="carousel slide" data-ride="carousel">';
-		echo '<ol class="carousel-indicators">';
-		foreach ($images as $key => $image){
-			echo '<li data-target="#images-carousel" data-slide-to="'.$key.'" class="active"></li>';
-		}
-		echo '</ol>';
-		echo '<div class="carousel-inner">';
-		foreach ($images as $key => $image){
-			echo '<div'.(($key) ? ' class="item"' : ' class="item active"').'>';
-			echo '<img src="site/images/messages/'.$image['PictureFile'].'" alt="foto" width="100%"></div>';
-		}	
-		echo '</div>';
-		echo '<a class="left carousel-control" href="#images-carousel" data-slide="prev">';
-		echo '<span class="glyphicon glyphicon-chevron-left"></span></a>';
-		echo '<a class="right carousel-control" href="#images-carousel" data-slide="next">'; 
-		echo '<span class="glyphicon glyphicon-chevron-right"></span></a>';
-		echo '</div></div>';
-	}
 
-	echo '<div class="col-md-6">';
 	
-	$message_description = ($message['description']) ? nl2br(htmlspecialchars($message['description'],ENT_QUOTES)) : 
-		'<p class="text-danger">Er werd geen omschrijving ingegeven</p>';
-	$amount_text = ($message['amount']) ? 'Richtprijs: '.getCurrencyText($message['amount']) : 
-		'<p class="text-danger">Er werd geen richtprijs ingegeven</p>';
-	echo '<div class="panel panel-default"><div class="panel-heading">Omschrijving</div>';
-	echo '<div class="panel-body">'.$message_description.'</div>';
-	echo '<div class="panel-footer">'.$amount_text.'</div></div>';	
 
 	$query = 'select contact.value, type_contact.abbrev
 		from type_contact, contact

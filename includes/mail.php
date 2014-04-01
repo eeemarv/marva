@@ -2,19 +2,13 @@
 /**
  * copyleft 2014 martti <info@martti.be>
  * 
- *
  * Copyright(C) 2009 Guy Van Sanden <guy@vsbnet.be>
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the  * GNU General Public License for more details.
+ * see LICENSE
 */
 
-// require_once($rootpath."contrib/includes/SwiftMail/lib/swift_required.php"); --> is autoloaded
+// require_once($rootpath."contrib/includes/SwiftMail/lib/swift_required.php"); --> Swiftmailer is autoloaded
 
 require_once($rootpath.'includes/inc_eventlog.php');
-
-
 
 function sendemail($from, $to, $subject, $content, $receipt = null){
 	global $parameters;
@@ -26,7 +20,12 @@ function sendemail($from, $to, $subject, $content, $receipt = null){
 		return false;
 	}
 	
-	if(empty($from) || empty($to) || empty($subject) || empty($content)){
+	if (!$from){
+		$from = 'noreply';
+	}	
+	
+	
+	if(!$from || !$to || !$subject || !$content){
 		
 		setstatus('Fout: mail niet verstuurd, ontbrekende velden', 'danger');
 		$logline = 'Mail '.$subject.' not sent, missing fields\n';
@@ -60,6 +59,13 @@ function sendemail($from, $to, $subject, $content, $receipt = null){
 	$message->setSubject($subject);
 
 	$from = ($transport_parameters['from']) ? $transport_parameters['from'] : $from; 
+
+	$from = getEmailAddress($from);
+	if (!$from){
+		setstatus('Mail niet verstuurd. Ongeldig adres van de Afzender.', 'danger');
+		return;
+	}	
+	
 	
 	try {
 		$message->setFrom($from);
@@ -82,6 +88,14 @@ function sendemail($from, $to, $subject, $content, $receipt = null){
 		$to = trim($to, ',');
 		$to_array = explode(',', $to);
 	}
+	
+	foreach ($to as &$address){
+		$address = getEmailAddress($address);
+		if (!$address){
+			setstatus('Mail niet verstuurd. Ongeldig bestemmings-adres.', 'danger');
+			return;
+		}
+	}	
 	
 	try {
 		$message->setTo($to_array);
@@ -118,5 +132,28 @@ function sendemail($from, $to, $subject, $content, $receipt = null){
 
 	return;
 }
+
+function getEmailAddress($mail){
+	global $db, $systemMailAddresses, $parameters;
+	
+	if ($mail && is_int($mail)){
+		$query = 'select value from contact, contact_type 
+			where contact_type.id = contact.id_type_contact 
+				and contact_type.abbrev = \'mail\'
+				and contact.id_user = '.$mail;
+		$row = $db->getRow($query);
+		
+		$mail = $row['value'];		
+	} elseif (is_string($mail) && in_array($mail, $systemMailAddresses)){
+		return $parameters['mail'][$mail];
+	}		
+		
+	if (!filter_var($mail, FILTER_VALIDATE_EMAIL)){
+		return false;
+	}
+		
+	return $mail;
+}	
+
 
 ?>

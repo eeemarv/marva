@@ -12,8 +12,7 @@ $s_name = $_SESSION["name"];
 $s_letscode = $_SESSION["letscode"];
 $s_accountrole = $_SESSION["accountrole"];
 
-include($rootpath."includes/inc_smallheader.php");
-#include($rootpath."includes/inc_nav.php");
+
 include($rootpath."includes/inc_content.php");
 
 if(isset($s_id)){

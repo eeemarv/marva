@@ -10,8 +10,8 @@ require_once 'includes/request.php';
 
 $req = new request('admin');
 
-$req->setEntity('db_backup')
-	->setUrl('db_backup.php')
+$req->setEntity('database')
+	->setUrl('database.php')
 	->add('download', '', 'post', array('type' => 'submit', 'class' => 'btn btn-primary', 'label' => 'Download'))
 	->add('store', '', 'post', array('type' => 'submit', 'class' => 'btn btn-primary', 'label' => 'Bewaar op de server'))
 	->add('gzip', 'checked', 'post', array('type' => 'checkbox', 'label' => 'gzip compressie')) 
@@ -62,10 +62,12 @@ if ($req->isSuccess()){
 }
 
 
-include('includes/header.php');
+include 'includes/header.php';
 
 
-echo '<h1><a href="db_backup.php">Database backup</a></h1>';
+echo '<h1><a href="database.php">Database</a></h1>';
+
+echo '<h1>Backup</h1>';
 
 echo '<form method="post" class="form-horizontal trans" role="form">';
 

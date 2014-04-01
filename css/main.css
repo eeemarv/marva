@@ -369,7 +369,7 @@ ul.pagination li a{
 	
 	
 /* Mootools CSS */
-
+/*
 	#log_res {
 	width: 80%;
 	}
@@ -393,7 +393,7 @@ ul.pagination li a{
         color: black;
         }
 
-
+*/
 
 /* inactive table rows */
 
@@ -472,8 +472,8 @@ div.chart-tooltip {
   background-color: black;
   color: White;
   position: absolute;
-  left: 25px;
-  top: -60px;
+  left: 40px;
+  top: -80px;
   z-index: 1000000;
   width: 300px;
   border-radius: 10px;
