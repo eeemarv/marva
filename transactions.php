@@ -240,9 +240,9 @@ if ($new && $req->isUser())
 	foreach ($table_column_ary as $key => $data){
 	
 		$data['title_params'] = array_merge($req->get(array('userid')), array(
-						'orderby' => $key,
-						'asc' => $data['asc'],
-						));
+			'orderby' => $key,
+			'asc' => $data['asc'],
+			));
 		$table->add_column($key, $data);
 	}
 

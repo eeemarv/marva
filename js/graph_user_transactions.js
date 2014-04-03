@@ -53,7 +53,7 @@ jQuery(document).ready(function($){
 				this[sliceIndex].in += (transaction.out) ? 0 : 1;
 				this[sliceIndex].out += (transaction.out) ? 1 : 0;
 				this[sliceIndex].amountIn += (transaction.out) ? 0 : transaction.amount;
-				this[sliceIndex].amountOut += (transaction.out) ? 1 : transaction.amount;
+				this[sliceIndex].amountOut += (transaction.out) ? transaction.amount : 0;
 				this[sliceIndex].transIndexes.push();
 				this[sliceIndex].userIndex = transaction.userIndex;
 			}			

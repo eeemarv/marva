@@ -214,7 +214,8 @@ $edit = ($req->get('mode') == 'edit') ? true : $edit;
 $delete = ($req->get('mode') == 'delete') ? true : $delete;
 
 if (($req->get('mode') == 'edit') || $delete){
-	$req->resetFromDb(array('letscode', 'name'));
+	$req->resetFromDb(array('letscode', 'name', 'fullname', 'postcode', 'birthday', 'hobbies', 'comments', 'accountrole',
+	'status', 'maxlimit', 'admincomment', 'presharedkey'));
 }
 
 
@@ -357,14 +358,14 @@ if (!$req->get('id') && !($new || $edit || $delete || $image_delete)){
 	$table_column_ary = array(
 		'letscode'	=> array_merge($asc_preset_ary, array(
 			'title' => 'Code',
-			'render' => 'status')),
+			'href_id' => 'id',
+			)),
 		'fullname' => array_merge($asc_preset_ary, array(
 			'title' => 'Naam',
 			'href_id' => 'id',
 			)),
 		'saldo' => array_merge($asc_preset_ary, array(
 			'title' => 'Saldo',
-			'render' => 'limit',
 			'href_id' => 'id',
 			'href_param' => 'userid',
 			'href_base' => 'transactions.php',
@@ -382,7 +383,6 @@ if (!$req->get('id') && !($new || $edit || $delete || $image_delete)){
 		$table->add_column($key, array(
 			'title' => $data['title'],
 			'title_suffix' => $data['indicator'],
-			//'title_href' => '',
 			'title_params' => array_merge($req->get(array('q', 'postcode')), array(
 				'orderby' => $key,
 				'asc' => $data['asc'],
@@ -390,14 +390,11 @@ if (!$req->get('id') && !($new || $edit || $delete || $image_delete)){
 			'href_id' => $data['href_id'],
 			'href_base' => $data['href_base'],
 			'href_param' => $data['href_param'],
-			'code'		=> $data['code'],
-			'render'	=> $data['render'],
 			));
 	}
 	
 	
 	$table->setRenderRowOptions(function ($row){
-		global $parameters;
 		$class = getUserClass($row);		
 		return ($class) ? ' class="'.$class.'"' : '';
 	});
@@ -491,14 +488,17 @@ if ($req->get('id') && !($edit || $delete || $new || $image_delete)){
 	$want_count = $want_count['num'];
 	$offer_count = $db->getRow('select count(*) as num from messages where msg_type = 1 and id_user = '.$req->get('id'));
 	$offer_count = $offer_count['num'];
+	$message_count = $want_count + $offer_count;
 	
 	echo '<div class="col-md-4">';
 	echo '<div class="panel panel-default"><div class="panel-heading">Saldo</div>';
 	echo '<div class="panel-body"><a href="transactions.php?userid='.$req->get('id').'">';
 	echo getCurrencyText($user['saldo']).'</a> (limiet : +/-'.getCurrencyText($user['maxlimit']).')</div></div>';
-	echo '<div class="panel panel-default"><div class="panel-heading"><a href="messages.php?userid='.$req->get('id').'">';
-	echo ($offer_count + $want_count).' Berichten</a></div>';
-	echo '<div class="panel-body"><p><a href="messages.php?userid='.$req->get('id').'&ow=w">'.$want_count.' Vraag</a></p>';
+	
+	echo '<div class="panel panel-default"><div class="panel-heading">';
+	echo '<a href="messages.php?userid='.$req->get('id').'">';
+	echo ($message_count).' Berichten</a></div><div class="panel-body">';
+	echo '<p><a href="messages.php?userid='.$req->get('id').'&ow=w">'.$want_count.' Vraag</a></p>';
 	echo '<p><a href="messages.php?userid='.$req->get('id').'&ow=o">'.$offer_count.' Aanbod</a></p></div>';	
 	echo '</div></div>';
 	
@@ -506,129 +506,89 @@ if ($req->get('id') && !($edit || $delete || $new || $image_delete)){
 	echo '<div class="col-md-4"><div id="chartdiv2"></div><p>Transacties met andere gebruikers het laatste jaar</p></div>';
 
 	echo '</div>';
-				
-	echo '<div class="row">';
-		
-	echo '<div class="col-md-4"><div id="chartdiv1"></div><p>Saldoverloop het laatste jaar</p></div>';
 	
-	
-	
-	
-	
-	echo '</div>';
-	
-		
-
-
-	
-
-	$query = 'select contact.value, type_contact.abbrev
+	$query = 'select contact.value, flag_public, type_contact.abbrev
 		from type_contact, contact
-		where contact.id_user='.$req->getOwnerId().'
-		and contact.id_type_contact = type_contact.id
-		and contact.flag_public = 1';
+		where contact.id_user='.$req->get('id').'
+		and contact.id_type_contact = type_contact.id';
+	$query .= ($req->isOwnerOrAdmin()) ? '' : ' and contact.flag_public = 1';
 	$contacts = $db->GetArray($query);
 	
 	$contact_table = new data_table();
+
+	$adr = '';
+	$mail = '';
+	foreach ($contacts as $key => $val){
+		if ($val['abbrev'] == 'adr'){
+			$adr = $val['value'];
+			$adr = str_replace(',', '', $adr);
+			$adr = str_replace(' ', '+', $adr);			
+			continue;
+		}
+		if ($val['abbrev'] == 'mail'){
+			$mail = $val['value'];
+			continue;
+		}		
+	}	
+		
+	$contact_table->setRenderRowOptions(function ($row){
+		return ($row['flag_public']) ? '' : ' class="inactive"';		
+	});
+	
 	$contact_table->set_data($contacts)
 		->add_column('abbrev')
 		->add_column('value', array(
 			'href_mail' => true,
 			'href_adr' => true));	
 	
+	echo '<div class="row">';
+		
+	echo '<div class="col-md-4"><div id="chartdiv1"></div><p>Saldoverloop het laatste jaar</p></div>';
+	echo '<div class="col-md-8">';
+	echo '<div class="panel panel-default"><div class="panel-heading">Contact info</div>';
 	$contact_table->render();
-	echo '</div></div>';
-
 	
+	if ($adr){
+		echo '<iframe frameborder="0" style="border:0" width="100%" heigth="450"
+			src="https://www.google.com/maps/embed/v1/place?key='.$parameters['google_maps_api_key'].'&q='.$adr.'"></iframe>';
+	}
+	
+	echo '</div></div></div>';	
 
-	if (sizeof($images) && $req->isOwnerOrAdmin()){
-		if ($req->isAdmin()){
-			echo '<div class="row"><div class="col-md-12"><h3>[admin]</h3></div></div>';
-		}
-		echo '<div class="row">';			
-		foreach ($images as $image){
-			echo '<div class="col-md-4"><div class="thumbnail">';
-			echo '<img src="site/images/messages/'.$image['PictureFile'].'" alt="foto">';
-			echo '<div class="caption"><p>';
-			echo '<a href="messages.php?mode=image_delete&id='.$req->get('id').'&image_id='.$image['id'].'" class="btn btn-danger">';
-			echo 'Verwijderen</a></p></div></div></div>';
-		}
+		
+	echo '<div class="row">';
+	
+	$col = ($req->isOwnerOrAdmin()) ? '8' : '12';
+	
+	echo '<div class="col-md-'.$col.'">';
+
+	echo '<div class="panel panel-default"><div class="panel-heading">Interesses en hobbies</div>';
+	echo '<div class="panel-body">'.$user['hobbies'].'</div></div>';	
+	
+	echo '<div class="panel panel-default"><div class="panel-heading">Commentaar</div>';
+	echo '<div class="panel-body">'.$user['comments'].'</div></div></div>';		
+	
+	if ($req->isOwnerOrAdmin()){
+		echo '<div class="col-md-4"><div class="panel panel-default">';
+		echo '<div class="panel-heading">'.$req->getAdminLabel().'Geboortedatum</div>';
+		echo '<div class="panel-body">'.$user['birthday'].'</div></div>';
+		echo '<div class="panel panel-default">';
+		echo '<div class="panel-heading">'.$req->getAdminLabel().'Postcode</div>';
+		echo '<div class="panel-body">'.$user['postcode'].'</div></div>';
 		echo '</div>';
-		if (sizeof($images) > 1){			
-			echo '<div class="row"><div class="col-md-12">';
-			echo '<a href="messages.php?mode=image_delete&id='.$req->get('id').'" class="btn btn-danger">';
-			echo $req->getAdminLabel().'Alle foto\'s verwijderen.</a></div></div>';
-		}
 	}
 
-
+	echo '</div>';
 	
-
-
-	
-	
-	echo '<table cellpadding="0" cellspacing="0" border="0" width="99%">';
-	echo '<tr class="even_row">';
-	echo '<td colspan="2" valign="top"><strong>';
-	echo ($user['status'] == 2) ? ' <font color="#F56DB5">Uitstapper </font>' : '';	
-	echo '</strong></td></tr>';
-	echo '<tr><td width="170" align="left"><img src="' .$rootpath;
-	echo ($user['picturefile']) ? 'sites/'.$dirbase.'/userpictures/' .$user['picturefile'] : 'gfx/nouser.png';
-    echo '" width="150"></img></td>';
-	echo '<td>';
-	echo '<table cellpadding="0" cellspacing="0" border="0" width="100%">';
-	echo '<tr><td width="50%" valign="top">Naam: </td><td width="50%" valign="top">'.$user['fullname'].'</td></tr>';
-	echo '<tr><td width="50%" valign="top">Postcode: </td><td width="50%" valign="top">'.$user['postcode'].'</td></tr>';
-	echo ($user['birthday']) ? '<tr><td width="50%" valign="top">Geboortedatum:  </td><td width="50%" valign="top">'.$user['birthday'].'</td></tr>' : '';
-	echo '</table></td></table>';
-
-
-	echo "<table  cellpadding='0' cellspacing='0' border='0'  width='99%'>";
-	echo "<tr class='even_row'>";
-	echo "<td><strong>{$parameters['currency_plural']}stand</strong></td><td></td><td><strong>Transactie-Interacties</strong></td></tr>";
-	echo "<tr><td>";
-	echo "<strong>".$balance."</strong>";
-	echo "</td><td><div id='char1' style='height:200px;width:300px;'></div></td>";
-	echo "<td><div id='civ2' style='height:200px;width:200px;'></div></td></tr></table>";
-
-	$query = "SELECT *, ";
-	$query .= " contact.id AS cid, users.id AS uid, type_contact.id AS tcid, ";
-	$query .= " type_contact.name AS tcname, users.name AS uname ";
-	$query .= " FROM users, type_contact, contact ";
-	$query .= " WHERE users.id=".$req->get('id');
-	$query .= " AND contact.id_type_contact = type_contact.id ";
-	$query .= " AND users.id = contact.id_user ";
-	$query .= " AND contact.flag_public = 1";
-	$contact = $db->GetArray($query);
-
-	/*
-	$contact_table = new data_table();
-	$contact_table->set_data($contact)->enable_no_results_message();
-	$contact_table->add_column('', array();
-	*/
-
-	echo "<table cellpadding='0' cellspacing='0' border='0' width='99%'>";
-	echo "<tr ><td colspan='3'><p>&#160;</p></td></tr>";
-	echo "<tr class='even_row'><td colspan='3'><p><strong>Contactinfo</strong></p></td></tr>";
-	foreach($contact as $key => $value){
-		echo "<tr><td>".$value["name"].": </td>";
-		if($value["abbrev"] == "mail"){
-			echo "<td><a href='mailto:".$value["value"]."'>".$value["value"]."</a></td>";
-		}elseif($value["abbrev"] == "adr"){
-			echo "<td><a href='http://maps.google.be/maps?f=q&source=s_q&hl=nl&geocode=&q=".$value["value"]."' target='new'>".$value["value"]."</a></td>";
-		} else {
-			echo "<td>".$value["value"]."</td>";
-		}
-
-		echo "<td></td>";
-		echo "</tr>";
+	if ($req->isAdmin() && $user['admincomment']){
+		echo '<div class="row"><div class="col-md-12">';
+		echo '<div class="panel panel-default"><div class="panel-heading">[admin] Commentaar van de Admin</div>';
+		echo '<div class="panel-body">'.$user['admincomment'].'</div></div>';	
+		echo '</div></div>';
 	}
-	echo "<tr><td colspan='3'><p>&#160;</p></td></tr>";
-	echo "</table>";
+		
 
-
-
-	if (empty($mailuser['emailaddress']) || !$req->isUser() || $req->isOwner()){
+	if (empty($mail) || !$req->isUser() || $req->isOwner()){
 		$req->setDisabled(array('mail_send', 'mail_body', 'mail_cc'));
 	}
 	$req->setLabel('mail_body', 'Je bericht naar '.$user['letscode'].' '.$user['name']);	
@@ -645,7 +605,6 @@ if ($req->get('id') && !($edit || $delete || $new || $image_delete)){
 
 include 'includes/footer.php';
 
-	
 
 
 ?>
