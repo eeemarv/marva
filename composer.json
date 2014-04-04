@@ -5,9 +5,7 @@
 
 
     "require": {
-		"symfony/yaml": "v2.4.1",
-		"monolog/monolog": "1.7.*",
-        "swiftmailer/swiftmailer": ">=4.1.2,<4.2-dev",  
+ 
         "adodb/adodb-php": "dev-master",
         "nusoap/nusoap": "0.9.5",
         "jqplot/jqplot": "1.0.8",
@@ -17,9 +15,28 @@
         "blueimp/jquery-file-upload": "9.5.7",
         "components/jquery": "1.11.*",
         "components/font-awesome": "4.0.*",
-        "eternicode/bootstrap-datepicker": "1.3.0"
-        
+        "eternicode/bootstrap-datepicker": "1.3.0",
+
+        "silex/silex": "~1.1",
+        "twig/twig": ">=1.8,<2.0-dev",
+        "symfony/twig-bridge": "~2.3",
+        "symfony/translation": "~2.3",
+		"symfony/config": "~2.3",
+		"symfony/yaml": "~2.3",
+		"symfony/validator": "~2.3",
+		"symfony/form": "~2.3",		        
+		"symfony/locale": "~2.3",       
+        "doctrine/dbal": "2.2.*",
+        "monolog/monolog": ">=1.0.0",
+        "swiftmailer/swiftmailer": ">=4.1.2,<4.2-dev",
+        "symfony/security": "~2.3"
+ 
     },
+
+    "autoload": {
+        "psr-0": { "Marva": "src" }
+    },
+
     
    	"config": {
         "component-dir": "vendor"

@@ -5,7 +5,7 @@ $rootpath="../";
 
 require_once($rootpath.'includes/default.php');
 
-require_once($rootpath."includes/inc_elassoap.php");
+// require_once($rootpath."includes/inc_elassoap.php");  non-existing file  // //////////////// 
 require_once($rootpath."includes/inc_userinfo.php");
 
 // Create the server instance

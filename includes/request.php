@@ -759,7 +759,9 @@ class request {
         global $db;
         $query = 'SELECT password FROM users WHERE id = '.$this->s_id;
         $row = $db->GetRow($query);
-        $pass = ($row['password'] == hash('sha512', $confirm_password) || $row['password'] == md5($confirm_password) || $row['password'] == sha1($confirm_password)) ? true : false;
+        $pass = ($row['password'] == hash('sha512', $confirm_password) 
+			|| $row['password'] == md5($confirm_password) 
+			|| $row['password'] == sha1($confirm_password)) ? true : false;
 		return	$pass;
 	}
 

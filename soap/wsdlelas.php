@@ -1,7 +1,7 @@
 <?php
 $rootpath="../";
 // Pull in the NuSOAP code
-//require_once '../vendor/nusoap/nusoap/lib/nusoap.php';
+//require_once '../vendor/nusoap/nusoap/lib/nusoap.php'; --> is autoloaded
 
 require_once($rootpath.'includes/default.php');
 
@@ -109,7 +109,7 @@ function dopayment($apikey,$from,$real_from,$to,$description,$amount,$transid,$s
 		return "DUPLICATE";
 	}
 
-        if(check_apikey($apikey,"interlets") == 1){
+    if(check_apikey($apikey,"interlets") == 1){
 		if(readconfigfromdb("maintenance") == 1){ 
 			log_event("","Soap","Transaction $transid deferred (offline)");
 			return "OFFLINE";
@@ -173,17 +173,17 @@ function userbyletscode($apikey, $letscode){
 }
 
 function userbyname($apikey, $name){
-        log_event("","debug","Lookup request for user $name");
-        if(check_apikey($apikey,"interlets") == 1){
-                $user = get_user_by_name($name);
-                if($user["fullname"] == ""){
-                        return "Onbekend";
-                } else {
-                        return $user["letscode"];
-                }
-        } else {
-                return "---";
-        }
+	log_event("","debug","Lookup request for user $name");
+	if(check_apikey($apikey,"interlets") == 1){
+		$user = get_user_by_name($name);
+		if($user["fullname"] == ""){
+				return "Onbekend";
+		} else {
+				return $user["letscode"];
+		}
+	} else {
+		return "---";
+	}
 }
 
 function getstatus($apikey){
@@ -207,20 +207,20 @@ function apiversion($apikey){
 }
 
 function messagesearch($term){
-        global $db;
-        $query = "SELECT *, ";
-        $query .= " messages.id AS msgid, ";
-        $query .= " users.id AS userid, ";
-        $query .= " categories.id AS catid, ";
-        $query .= " categories.fullname AS catname, ";
-        $query .= " users.name AS username, ";
-        $query .= " users.letscode AS letscode, ";
-        $query .= " DATE_FORMAT(messages.validity, '%d-%m-%Y') AS valdate, ";
-        $query .= " DATE_FORMAT(messages.cdate, '%d-%m-%Y') AS date ";
-        $query .= " FROM messages, users, categories ";
-        $query .= "  WHERE messages.id_user = users.id ";
-        $query .= " AND messages.id_category = categories.id";
-	$query .= " AND messages.content LIKE '%$term%'";
+	global $db;
+	$query = "SELECT *,
+		messages.id AS msgid, 
+		users.id AS userid, 
+		categories.id AS catid,
+		categories.fullname AS catname,
+		users.name AS username,
+		users.letscode AS letscode,
+		DATE_FORMAT(messages.validity, '%d-%m-%Y') AS valdate, 
+		DATE_FORMAT(messages.cdate, '%d-%m-%Y') AS date 
+		FROM messages, users, categories
+		WHERE messages.id_user = users.id 
+		AND messages.id_category = categories.id
+		AND messages.content LIKE '%$term%'";
 	$messages = $db->GetArray($query);
 	return $messages;
 }

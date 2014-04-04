@@ -20,11 +20,6 @@ contrib/*
 soap/lib/*
 
 
-web/sites/default/config/elas.xml
-web/config.php
-web/images/*
-web/cache/*
-
 components/*
 vendor/*
 composer.phar
@@ -32,11 +27,21 @@ composer.phar
 web/bundles/
 web/js/*
 web/css/*
+
+web/sites/default/config/elas.xml
+web/config.php
+web/images/*
+web/cache/*
+
 app/cache/*
 app/logs/*
 app/bootstrap.php.cache
 app/app.sqlite
 app/app.db
 app/config/parameters.yml
+app/config/parameters.php
 app/config/config.yml
 app/parameters.php
+
+app/site/*
+!app/site/*.dist
