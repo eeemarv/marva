@@ -1,10 +1,7 @@
 <?php
 //Write log entry
 function log_event($id,$type,$event){
-    	global $db;
-	global $elasdebug;
-	global $dirbase;
-	global $rootpath;
+    global $db, $elasdebug, $dirbase, $rootpath;
 	
 	$ip = $_SERVER['REMOTE_ADDR'];
  
@@ -14,13 +11,16 @@ function log_event($id,$type,$event){
         $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
     }
     
-   	$ts = date("Y-m-d H:i:s");
+   	$ts = new \DateTime();
 	$mytype = strtolower($type);	
-   	$query = sprintf("INSERT INTO eventlog (userid,type,timestamp,event,ip) VALUES (%d, '%s','%s', '%s', '%s')", $id, $mytype, $ts, $event, $ip);
-	if($mytype == "debug" && $elasdebug == 0){
-		// Do nothing
-	} else {
-		$db->Execute($query);
+
+	$id = ($id) ? $id : 0;
+	
+	if($mytype != "debug" && $elasdebug != 0){
+		$db->insert('eventlog', 
+			array('userid' => $id, 'type' => $mytype, 'timestamp' => $ts, 'event' => $event, 'ip' => $ip),
+			array(\PDO::PARAM_INT, \PDO::PARAM_STR, 'datetime', \PDO::PARAM_STR, \PDO::PARAM_STR)
+		); //
 	}
 }
 

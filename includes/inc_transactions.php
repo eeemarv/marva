@@ -27,7 +27,7 @@
 
 // Enable logging
 global $rootpath;
-require_once($rootpath."includes/inc_eventlog.php");
+
 require_once($rootpath."includes/inc_saldofunctions.php");
 require_once($rootpath."includes/inc_userinfo.php");
 require_once $rootpath.'includes/mail.php';

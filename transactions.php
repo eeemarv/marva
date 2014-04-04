@@ -188,7 +188,7 @@ if ($new && $req->isUser())
 		
 	$pagination = new Pagination($req);
 	$where = ($userid) ? ' where id_to ='.$userid.' or id_from ='.$userid : '';
-	$pagination->set_query('transactions'.$where);
+	$pagination->setQuery('transactions'.$where);
 	$query = 'SELECT *, 
 		fromusers.id AS fromuserid, tousers.id AS touserid, 
 		fromusers.name AS fromusername, tousers.name AS tousername, 

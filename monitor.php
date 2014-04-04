@@ -3,19 +3,8 @@
 // Copyleft(C) 2013 martti <info@martti.be>
 
 // Copyright(C) 2009 Guy Van Sanden <guy@vsbnet.be>
-//
-//    This program is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 3 of the License, or
-//    (at your option) any later version.
-//
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// see LICENSE
+
  
  
 ob_start();
@@ -23,7 +12,7 @@ ob_start();
 require_once($rootpath."includes/default.php");
 
 require_once($rootpath."includes/inc_userinfo.php");
-require_once($rootpath."includes/inc_eventlog.php");
+
 session_start(); 
 global $_SESSION;
 

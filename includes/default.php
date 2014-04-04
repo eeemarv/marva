@@ -26,15 +26,29 @@ if ($parameters['redirect']){
 	exit();
 }	 
 
-
+/*
 $con = $parameters['db'];
 $port = ($con['port']) ? ':'.$con['port'] : '';
 
 $db = NewADOConnection($con['driver']);
 $db->Connect($con['host'].$port, $con['user'], $con['password'], $con['dbname']); 
 $db->setFetchMode(ADODB_FETCH_ASSOC);
+*/
+
+$config = new \Doctrine\DBAL\Configuration();
+$connectionParams = array(
+    'dbname' => $parameters['db']['dbname'],
+    'user' => $parameters['db']['user'],
+    'password' => $parameters['db']['password'],
+    'host' => $parameters['db']['host'],
+    'driver' => $parameters['db']['driver'],
+);
+$db = \Doctrine\DBAL\DriverManager::getConnection($connectionParams, $config);
+
+
 
 unset($con, $parameters['db']);
+
 
 
 $systemMailAddresses = array_intersect_key($parameters['mail'], array(
@@ -62,10 +76,10 @@ define(STATUS_INFOMOMENT, 512);
 	
 
 
-// Read the full config table to an array
-$query = "SELECT * FROM config";
-$dbconfig = $db->GetArray($query);
-//var_dump ($dbconfig);
+
+
+$dbconfig = $db->fetchAll('SELECT * FROM config');  //
+
 
 
 // Fetch configuration keys from the database
@@ -165,6 +179,33 @@ function getLocalLetscode($letscode){
 	list($letscode) = explode('/', trim($letscode));	
 	return trim($letscode);
 }
+
+
+
+function log_event($id,$type,$event){
+    global $db, $elasdebug, $dirbase, $rootpath;
+	
+	$ip = $_SERVER['REMOTE_ADDR'];
+ 
+    if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+        $ip = $_SERVER['HTTP_CLIENT_IP'];
+    } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+        $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+    }
+    
+   	$ts = new \DateTime();
+	$mytype = strtolower($type);	
+
+	$id = ($id) ? $id : 0;
+	
+	if($mytype != "debug" && $elasdebug != 0){
+		$db->insert('eventlog', 
+			array('userid' => $id, 'type' => $mytype, 'timestamp' => $ts, 'event' => $event, 'ip' => $ip),
+			array(\PDO::PARAM_INT, \PDO::PARAM_STR, 'datetime', \PDO::PARAM_STR, \PDO::PARAM_STR)
+		); //
+	}
+}
+
 
 
 ?>

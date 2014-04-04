@@ -5,7 +5,7 @@ $rootpath = './';
 
 require_once($rootpath.'includes/default.php');
 
-require_once($rootpath.'includes/inc_eventlog.php');
+
 require_once($rootpath.'includes/inc_userinfo.php');
 require_once($rootpath.'includes/inc_tokens.php');
 
@@ -59,7 +59,7 @@ if($req->get('token')){
 if ($req->isPost()){
 	if (!$req->errors){
 		$user = get_user_by_letscode($req->get('letscode'));
-		
+	
 		if ($user['password'] == hash('sha512', $_POST['password']) 
 			|| $user['password'] == md5($_POST['password']) 
 			|| $user["password"] == sha1($_POST['password'])){
@@ -92,8 +92,9 @@ if ($req->isPost()){
 
 					$browser = $_SERVER['HTTP_USER_AGENT'];
 					log_event($user["id"],"Login","User logged in");
-					log_event($user["id"],"Agent","$browser");				
-					$db->AutoExecute('users', array('lastlogin' => date('Y-m-d H:i:s')), 'UPDATE', 'id='.$s_id);		
+					log_event($user["id"],"Agent","$browser");
+									
+					$db->update('users', array('lastlogin' => date('Y-m-d H:i:s')), array('id', $user['id']));		//
 					setstatus($req->get('letscode').' '.$user['name'].' ingelogd.', 'success');
 				
 					header('Location: '.$location);

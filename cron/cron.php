@@ -12,7 +12,6 @@ require_once($rootpath."cron/inc_upgrade.php");
 require_once($rootpath."includes/inc_userinfo.php");
 require_once($rootpath."includes/inc_saldofunctions.php");
 
-require_once($rootpath."includes/inc_eventlog.php");
 session_start();
 
 header('Content-type: text/plain');

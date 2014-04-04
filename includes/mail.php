@@ -8,7 +8,6 @@
 
 // require_once($rootpath."contrib/includes/SwiftMail/lib/swift_required.php"); --> Swiftmailer is autoloaded
 
-require_once($rootpath.'includes/inc_eventlog.php');
 
 function sendemail($from, $to, $subject, $content, $receipt = null){
 	global $parameters;
@@ -137,13 +136,14 @@ function getEmailAddress($mail){
 	global $db, $systemMailAddresses, $parameters;
 	
 	if ($mail && is_int($mail)){
-		$query = 'select value from contact, contact_type 
-			where contact_type.id = contact.id_type_contact 
-				and contact_type.abbrev = \'mail\'
-				and contact.id_user = '.$mail;
-		$row = $db->getRow($query);
-		
-		$mail = $row['value'];		
+		$qb = $db->createQueryBuilder(); //
+		$qb->select('c.value')
+			->from('contact', 'c')
+			->join('c', 'type_contact', 't', 't.id = c.id_type_contact')
+			->where($qb->expr()->eq('c.id_user', $mail))
+			->andWhere('t.abbrev = \'mail\'')
+			->setParameter('id', $userid);
+		$mail = $db->fetchColumn($qb);    	
 	} elseif (is_string($mail) && in_array($mail, $systemMailAddresses)){
 		return $parameters['mail'][$mail];
 	}		

@@ -155,7 +155,7 @@ class request {
 	public function query(){
 		global $db;
 		if ($this->get('id')){
-			$this->item = $db->GetRow('select * from '.$this->entity.' where id = '.$this->get('id'));
+			$this->item = $db->fetchAssoc('select * from '.$this->entity.' where id = ?', array($this->get('id')));
 			if (!$this->item){
 				header('HTTP/1.0 404 Not Found', true, 404);
 				include '404.html';
@@ -169,7 +169,7 @@ class request {
 	public function delete(){
 		global $db;
 		if ($this->get('id') && $this->entity){
-			$this->success = $db->Execute('delete from '.$this->entity.' where id = ' .$this->get('id'));
+			$this->success = $db->delete($this->entity, array('id' => $this->get('id')));
 			$this->renderStatusMessage('delete')->reset('id');
 		}
 		return $this;		
@@ -178,10 +178,9 @@ class request {
 	public function create($params = array()){
 		global $db;
 		if ($this->entity){
-			$this->success = $db->AutoExecute($this->entity, $this->dataReverseTransform($this->get($params)), 'INSERT');
-			$new_id = $db->Insert_ID();
-			if ($new_id){
-				$this->set('id', $new_id);
+			$this->success = $db->insert($this->entity, $this->dataReverseTransform($this->get($params)));
+			if ($this->success){
+				$this->set('id', $db->LastInsertId());
 			} 
 			$this->renderStatusMessage('create');
 		}
@@ -191,7 +190,7 @@ class request {
 	public function update($params = array()){
 		global $db;
 		if ($this->get('id') && $this->entity){
-			$this->success = $db->AutoExecute($this->entity, $this->dataReverseTransform($this->get($params)), 'UPDATE', 'id = '.$this->get('id'));
+			$this->success = $db->update($this->entity, $this->dataReverseTransform($this->get($params)), array('id' => $this->get('id')));
 			$this->renderStatusMessage('update');
 		}
 		return $this;			
@@ -307,8 +306,8 @@ class request {
 		if (!($this->item || $this->owner_param)){
 			return $this;
 		}
-		$this->owner =  $db->GetRow('select * from users 
-			where id = '.$this->item[$this->owner_param]);
+		$this->owner =  $db->fetchAssoc('select * from users 
+			where id = ?', array($this->item[$this->owner_param]));  //
 		return $this;
 	}
 	
@@ -679,7 +678,7 @@ class request {
 			if($parameter['not_empty'] && empty($parameter['value'])){
 				$parameter['error'] = $this->error_messages['empty'];
 				
-			} else if ($parameter['unique'] && !$this->isUnique($parameter)){
+			} else if ($parameter['unique'] && !$this->isUnique($param_name)){
 				$parameter['error'] = $this->error_messages['not_unique'];
 				
 			} else if ($parameter['email'] && !filter_var($parameter['value'], FILTER_VALIDATE_EMAIL)){
@@ -757,43 +756,36 @@ class request {
 
 	private function confirm_password($confirm_password){  
         global $db;
-        $query = 'SELECT password FROM users WHERE id = '.$this->s_id;
-        $row = $db->GetRow($query);
-        $pass = ($row['password'] == hash('sha512', $confirm_password) 
-			|| $row['password'] == md5($confirm_password) 
-			|| $row['password'] == sha1($confirm_password)) ? true : false;
+        $password = $db->fetchColumn('select password from users where id = ?', array($this->s_id)); //
+        $pass = ($password == hash('sha512', $confirm_password) 
+			|| $password == md5($confirm_password) 
+			|| $password == sha1($confirm_password)) ? true : false;
 		return	$pass;
 	}
 
 	private function existing_letscode($letscode){
 		global $db;
-        $query = 'SELECT id FROM users WHERE letscode = "'.$letscode.'"';
-        $row = $db->GetRow($query);
-		return	($row['id']) ? true : false;	
+        $id = $db->fetchColumn('select id from users where letscode = ?', array($letscode)); //
+		return	($id) ? true : false;	
 	}
 	
 	private function active_letscode($letscode){
 		global $db;
 		$letscode = getLocalLetscode($letscode);
-        $query = 'SELECT id FROM users WHERE letscode = "'.$letscode.'"';
-        $query .= 'and status in (1, 2, 4, 7)';
-        $row = $db->GetRow($query);
-		return	($row['id']) ? true : false;	
+        $id = $db->fetchColumn('select id from users where letscode = ? and status in (1, 2, 4, 7)', array($letscode));  	//
+		return	($id) ? true : false;	
 	}	
 	
 	
 	private function get_active_users($include_interlets = true){
 		global $db;
-		$interlets = ($include_interlets) ? ', 7' : '';
-        $query = 'SELECT id, fullname, letscode FROM users ';
-		$query .= 'WHERE status in (1, 2, 4'.$interlets.') '.(($interlets) ? '' : 'and users.accountrole <> "guest" ');
-		$query .= 'ORDER BY letscode';
-		return	$db->GetArray($query);	
+		$status = '1, 2, 4'.(($include_interlets) ? ', 7' : '');
+		return $db->fetchAll('select id, fullname, letscode from users where status in ('.$status.')');
 	}
 	
 	private function get_categories(){
 		global $db;
-		$rows = $db->GetArray('SELECT * FROM categories ORDER BY name');
+		$rows = $db->fetchAll('select * from categories order by name');	//
 		$cats = $cat_children = array();
 		foreach ($rows as $cat){
 			$cat_children[$cat['id_parent']][] = $cat;	
@@ -817,22 +809,28 @@ class request {
 	
 	private function email_active_user($value){
 		global $db;
-		$query = 'select * from users, type_contact, contact
-			where contact.id_type_contact = type_contact.id 
-			and type_contact.abbrev =\'mail\' 
-			and contact.id_user = users.id
-			and (users.status = 1 or users.status = 2 or users.status = 4 or users.status = 7)
-			and contact.value = '.$value;
-		return ($db->GetRow($query)) ? true : false;
+		$qb = $db->createQueryBuilder();
+			$qb->select('u.id')
+				->from('users', 'u')
+				->join('u', 'contact', 'c', 'u.id = c.id_user')
+				->join('c', 'type_contact', 't', 'c.id_type_contact = t.id')
+				->where($qb->expr()->eq('c.value', $value))
+				->andWhere('t.abbrev = \'mail\'')
+				->andWhere('u.status in (1, 2, 4, 7)');
+				
+		return ($db->fetchColumn($query)) ? true : false;
 	}
 	
 	private function active_user($id, $include_interlets = true){
 		global $db;
-		$interlets = ($include_interlets) ? ', 7' : '';
-        $query = 'SELECT id FROM users WHERE id = "'.$id.'"';
-        $query .= 'and status in (1, 2, 4'.$interlets.') '.(($interlets) ? '' : 'and users.accountrole <> "guest" )');
-        $row = $db->GetRow($query);
-		return	($row['id']) ? true : false;	
+		$status_array = array(1, 2, 4);
+		if ($include_interlets){
+			$status_arry[] = 7;
+		} 
+        $id = $db->fetchColumn('select id from users where id = ? and status in (?)',  	//
+			array($id, $status_array),
+			array(\PDO::PARAM_STR, \Doctrine\DBAL\Connection::PARAM_INT_ARRAY));
+		return	($id) ? true : false;	
 	}
 	
 	private function subcategory($id){
@@ -840,24 +838,19 @@ class request {
 		if (!$id){
 			return false;
 		}		
-		$row = $db->GetRow('SELECT id FROM categories WHERE id = '.$id.' AND id_parent <> 0');
-		return	($row['id']) ? true : false;
+		$id = $db->fetchColumn('SELECT id FROM categories WHERE id = ? AND id_parent <> 0', array($id)); //
+		return	($id) ? true : false;
 	}
 	
-	private function isUnique($parameter){
-		$val = $parameter['value'];		
-		$query = 'select id from '.$this->entity.' where '.$param.' = ';
-		$query .= ($parameter['type_value'] == 'string') ? '\''.$val.'\'' : $val;
-		return (count($db->GetArray($query)) == 0) ? true : false;		
+	private function isUnique($param_name){
+		global $db;
+		$val = $parameter['value'];
+		$qb = $db->createQueryBuilder();
+		$qb->select('count(id)')
+			->from($this->entity)
+			->where($qb->expr()->eq($param_name, $this->parameters[$param_name]['value']));
+		return ($db->fetchColumn($qb) == 0) ? true : false;		
 	}
-	
-	private function isEmailAddress($parameter){
-		$val = $parameter['value'];		
-		$query = 'select id from '.$this->entity.' where '.$param.' = ';
-		$query .= ($parameter['type_value'] == 'string') ? '\''.$val.'\'' : $val;
-		return (count($db->GetArray($query)) == 0) ? true : false;		
-	}	
-	
 
 	function isDate($date){
 		if(preg_match("/^(\d{4})-(\d{2})-(\d{2})$/", $date, $matches)){

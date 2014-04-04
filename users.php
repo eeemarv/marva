@@ -346,6 +346,11 @@ if (!$req->get('id') && !($new || $edit || $delete || $image_delete)){
 	}
 	$users = $db->GetArray($query); 
 
+
+
+
+
+
 	$table = new data_table();
 
 	$table->set_data($users)

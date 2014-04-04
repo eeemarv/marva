@@ -2,7 +2,7 @@
 
 // Enable logging
 $rootpath = "../";
-//require_once($rootpath."inc_eventlog.php");
+
 
 function mail_transaction($posted_list, $timestamp){
 	global $configuration;

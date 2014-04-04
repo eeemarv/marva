@@ -9,7 +9,7 @@ require_once($rootpath."includes/inc_userinfo.php");
 require_once($rootpath."includes/inc_transactions.php");
 require_once($rootpath."includes/apikeys.php");
 require_once($rootpath."includes/inc_tokens.php");
-require_once($rootpath."includes/inc_eventlog.php");
+
 
 // Create the server instance
 $server = new soap_server();

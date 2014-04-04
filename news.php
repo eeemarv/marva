@@ -100,7 +100,7 @@ if (($new && $req->isUser()) || (($edit || $delete) && $req->isOwnerOrAdmin()))
 
 if (!$req->get('id') && !($new || $edit || $delete)){
 	$pagination = new Pagination($req);
-	$pagination->set_query('news');
+	$pagination->setQuery('news');
 
 	$query = 'select id, itemdate, DATE_FORMAT(itemdate, \'%d-%m-%Y\') AS idate, headline 
 		from news ';

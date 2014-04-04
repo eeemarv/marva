@@ -6,7 +6,7 @@ require_once($rootpath."includes/inc_adoconnection.php");
 require_once($rootpath."includes/inc_userinfo.php");
 require_once $rootpath.'includes/mail.php';
 require_once($rootpath."includes/inc_passwords.php");
-require_once($rootpath."includes/inc_eventlog.php");
+
 require_once($rootpath."includes/request.php");
 
 $req = new request('admin');

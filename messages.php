@@ -63,12 +63,12 @@ $req->setEntityTranslation('Bericht')
 
 $images = array();
 if ($req->get('image_id')){
-	$image = $db->GetRow('select * from msgpictures where id = '.$req->get('image_id'));
+	$image = $db->fetchAssoc('select * from msgpictures where id = ?', array($req->get('image_id')));
 	if ($image){
 		$images[] = $image;
 	}
 } else {
-	$images = $db->GetArray('select * from msgpictures where msgid = '.$req->get('id'));	
+	$images = $db->fetchAll('select * from msgpictures where msgid = ?', array($req->get('id')));	
 }	
 
 
@@ -101,7 +101,7 @@ if ($req->get('delete') && $req->get('id') && $req->isOwnerOrAdmin()){
 		
 		$user = get_user($req->getItemValue('id_user'));
 		$me = get_user($req->getSid());
-		$contact = get_contact($req->getSid());
+		$contacts = get_contacts($req->getSid());
 		$usermail = get_user_maildetails($req->getItemValue('id_user'));
 		$my_mail = get_user_maildetails($req->getSid());
 
@@ -116,7 +116,7 @@ if ($req->get('delete') && $req->get('id') && $req->isOwnerOrAdmin()){
 			* Om te antwoorden kan je gewoon reply kiezen of de contactgegevens hieronder gebruiken\n
 			* Contactgegevens van '.$me['fullname'] .':\n';
 		
-		foreach($contact as $key => $value){
+		foreach($contacts as $key => $value){
 			$content .= '* '.$value['abbrev'] .'\t' .$value['value'] .'\n';
 		}
 		
@@ -254,32 +254,43 @@ if (!$req->get('id') && !($new || $edit || $delete || $image_delete)){
 
 	$pagination = new Pagination($req);
 
-	$where_user = ($userid) ? 'and users.id = '.$userid.' ' : '';
-	$where_q = ($q) ? 'AND messages.content like \'%' .$q .'%\' ' : '';
-	$where_cat = ($catid) ? 'and (messages.id_category = '.$catid.' OR categories.id_parent = '.$catid .') ' : '';
-	$where_ow = ($ow == 'ow') ? '' : ' and messages.msg_type = '.(($ow == 'w') ? '0' : '1');
-	$where_postcode = ($postcode) ? 'and users.postcode = '.$postcode.' ' : '';
+	$qb = $db->createQueryBuilder();
+	
+	$qb->select('m.msg_type', 'm.content', 'm.cdate', 'm.id', 
+		'date_format(m.cdate,\'%d-%m-%Y\') as date', 
+		'u.name as username', 'u.id as userid', 'u.letscode')
+		->from('messages', 'm')
+		->join('m', 'users', 'u', 'u.id = m.id_user');
+	if ($catid){
+		$qb->join('m', 'categories', 'c', 'c.id = m.id_category');
+	} 
+	$qb->where('u.status in (1, 2, 4)');
+	if ($userid){
+		$qb->andWhere($qb->expr()->eq('u.id', $userid));	
+	}
+	if ($q){
+		$qb->andWhere($qb->expr()->like('m.content', '\'%'.$q.'%\''));
+	}
+	if ($postcode){
+		$qb->andWhere($qb->expr()->eq('u.postcode', $postcode));
+	}
+	if ($ow != 'ow'){
+		$qb->andWhere($qb->expr()->eq('m.msg_type',  ($ow == 'w') ? 0 : 1));
+	}	
+	if ($catid){
+		$qb->andWhere($qb->expr()->orX(
+			$qb->expr()->eq('c.id', $catid), 
+			$qb->expr()->eq('c.id_parent', $catid)
+			));
+	}
 
-	$query_1 = 'select messages.msg_type, messages.content, messages.cdate, 
-		messages.id AS mid, DATE_FORMAT(messages.cdate, \'%d-%m-%Y\') AS date, 
-		users.name AS username, users.id AS userid, users.letscode ';
-	$query_1 .= ($catid) ? ', categories.id_parent AS parent_id ' : '';
-	$query_1 .= 'from ';
-
-	$query_2 = 'messages, users'.(($catid) ? ', categories ' : ' ');
-	$query_2 .= 'where messages.id_user = users.id ';
-	$query_2 .= ($catid) ? 'and messages.id_category = categories.id ' : '';
-	$query_2 .= 'and (users.status = 1 OR users.status = 2 OR users.status = 3) ';
-	$query_2 .= $where_cat . $where_user . $where_q . $where_ow . $where_postcode;
+	$pagination->setQuery($qb);
 		
-	$pagination->set_query($query_2);
+	$qb->orderBy($req->get('orderby'), ($req->get('asc')) ? 'asc ' : 'desc ')
+		->setFirstResult($pagination->getStart())
+		->setMaxResults($pagination->getLimit());
 
-	$query = $query_1.$query_2.' ';
-	$query .= 'order by '.$req->get('orderby'). ' ';
-	$query .= ($req->get('asc')) ? 'asc ' : 'desc ';
-	$query .= $pagination->get_sql_limit();
-
-	$messages = $db->GetArray($query);
+	$messages = $db->fetchAll($qb);
 
 	$table = new data_table();
 	$table->set_data($messages)->enable_no_results_message();
@@ -295,7 +306,7 @@ if (!$req->get('id') && !($new || $edit || $delete || $image_delete)){
 			)),
 		'content' => array_merge($asc_preset_ary, array(
 			'title' => 'Omschrijving',
-			'href_id' => 'mid',
+			'href_id' => 'id',
 			)),				
 		'username' => array_merge($asc_preset_ary, array(
 			'title' => 'Wie',
@@ -336,7 +347,7 @@ if (!$req->get('id') && !($new || $edit || $delete || $image_delete)){
 if ($req->get('id') && !($edit || $delete || $new || $image_delete)){
 	$message = $req->getItem();
 	$owner = $req->getOwner();
-	$category = $db->GetRow('select name from categories where id = '.$message['id_category']);
+	$category = $db->fetchAssoc('select name from categories where id = ?', array($message['id_category']));
 	
 	if ($req->isOwnerOrAdmin()){
 		echo '<a href="messages.php?mode=delete&id='.$req->get('id').'" class="btn btn-danger pull-right">'.$req->getAdminLabel().'Verwijderen</a>';
@@ -345,7 +356,7 @@ if ($req->get('id') && !($edit || $delete || $new || $image_delete)){
 		
 	$title = $message["content"];
 	
-	$contact = get_contact($owner['id']);
+	$contacts = get_contacts($owner['id']);
 	
 	$mailuser = get_user_maildetails($owner['id']);	
 	
@@ -398,13 +409,6 @@ if ($req->get('id') && !($edit || $delete || $new || $image_delete)){
 	echo '<div class="panel-body">'.$message_description.'</div>';
 	echo '<div class="panel-footer">'.$amount_text.'</div></div>';	
 
-	$query = 'select contact.value, type_contact.abbrev
-		from type_contact, contact
-		where contact.id_user='.$req->getOwnerId().'
-		and contact.id_type_contact = type_contact.id
-		and contact.flag_public = 1';
-	$contacts = $db->GetArray($query);
-	
 	$contact_table = new data_table();
 	$contact_table->set_data($contacts)
 		->add_column('abbrev')
