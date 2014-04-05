@@ -8,31 +8,39 @@ require_once 'includes/mail.php';
 
 require_once 'includes/request.php';
 require_once 'includes/data_table.php';
+require_once 'includes/pagination.php';
 
 $accountrole_options = array(
 	'user' => array('text' => 'user'),
 	'admin' => array('text' => 'admin'),
-	'interlets' => array('text' => 'interlets'),
 	);
+//	'interlets' => array('text' => 'interlets'),
+	
 	
 $status_options = array(
-	'inactive' => array('text' => 'inactief'),
-	'info' => array('text' => 'infopakket'),
-	'infomoment' => array('text' => 'infomoment'), 	
+	'new' => array('text' => 'nieuw (inactief)'), 
+	'info' => array('text' => 'infopakket (inactief)'),
+	'infomoment' => array('text' => 'infomoment (inactief)'), 	
 	'active' => array('text' => 'actief'),
-	'leaving' => array('text' => 'uitstapper'),
-	'interlets_group' => array('text' => 'interlets groep'));
+	'leaving' => array('text' => 'uitstapper (actief)'),	
+	'inactive' => array('text' => 'gedesactiveerd (inactief)'),	
+	);
+//	'interlets_group' => array('text' => 'interlets groep')
 
 $req = new request('user');
 
 $req->setEntityTranslation('Gebruiker')
 	->setEntity('users')
 	->setUrl('users.php')
-	
-	->add('q', '', 'get', array('type' => 'text', 'size' => 25, 'maxlength' => 20, 'label' => 'Code of Naam'))
-	->add('postcode_filter', '', 'get', array('type' => 'text', 'size' => 25, 'maxlength' => 8, 'label' => 'Postcode' ))
+		
 	->add('orderby', 'letscode', 'get')
 	->add('asc', 1, 'get')
+	->add('limit', 25, 'get')
+	->add('start', 0, 'get')	
+
+	->add('q', '', 'get', array('type' => 'text', 'size' => 25, 'maxlength' => 20, 'label' => 'Code of Naam'))
+	->add('postcode_filter', '', 'get', array('type' => 'text', 'size' => 25, 'maxlength' => 8, 'label' => 'Postcode' ))
+	
 	->add('show', 'active', 'get', array('type' => 'hidden'))
 	->add('view', 'account', 'get')
 	->add('id', 0, 'get|post', array('type' => 'hidden'))	
@@ -51,14 +59,14 @@ $req->setEntityTranslation('Gebruiker')
 	->add('admincomment', '', 'post', array('type' => 'text', 'size' => 50, 'maxlength' => 200, 'label' => 'Commentaar vd admin', 'admin' => true))	
 	->add('login', sha1(uniqid().microtime()), 'post')
 	->add('accountrole', 'user', 'post', array('type' => 'select', 'label' => 'Rechten', 'options' => $accountrole_options, 'admin' => true), array('not_empty' => true))
-	->add('status', 0, 'post', array('type' => 'select', 'label' => 'Status', 'options' => $status_options, 'admin' => true), array('not_empty' => true))
+	->add('status', 'new', 'post', array('type' => 'select', 'label' => 'Status', 'options' => $status_options, 'admin' => true), array('not_empty' => true))
 //	->add('minlimit', , 'post', array('type' => 'text', 'label' => 'Min limiet', 'size' => 10, 'admin' => true), array())
-	->add('maxlimit', $parameters['default_limit'], 'post', array('type' => 'text', 'label' => 'Limiet +/-', 'size' => 10, 'admin' => true), array())
+	->add('maxlimit', $parameters['default_limit'], 'post', array('type' => 'text', 'label' => 'Limiet +/-', 'size' => 10, 'admin' => true), array('match' => 'positive_or_zero'))
 	->add('mail', '', 'post', array('type' => 'text', 'label' => 'E-mail', 'size' => 50, 'maxlength' => 100), array('not_empty' => true, 'email' => true))
 	->add('adr', '', 'post', array('type' => 'text', 'label' => 'Adres', 'size' => 50, 'maxlength' => 100, 'placeholder' => 'Voorbeeldstraat 86, 4572 Voorbeeldplaatsnaam'), array('not_empty' => true))
 	->add('tel', '', 'post', array('type' => 'text', 'label' => 'Telefoon', 'size' => 50, 'maxlength' => 20))
 	->add('gsm', '', 'post', array('type' => 'text', 'label' => 'Gsm', 'size' => 50, 'maxlength' => 20))
-	->add('web', 'http://', 'post', array('type' => 'text', 'label' => 'Website', 'size' => 50, 'maxlength' => 100, 'placeholder' => 'http://voorbeeld.com'))
+	->add('web', '', 'post', array('type' => 'text', 'label' => 'Website', 'size' => 50, 'maxlength' => 100, 'placeholder' => 'http://voorbeeld.com'))
 	->add('presharedkey', '', 'post', array('type' => 'text', 'label' => 'Preshared Key', 'size' => 50, 'maxlength' => 80, 'admin' => true, 'placeholder' => 'enkel voor interlets groepen'))
 	->add('creator', $req->getSid(), 'post')
 	->add('password', '', 'post')
@@ -81,7 +89,7 @@ if ($req->get('mode') == 'new'){
 }
 
 if ($req->get('id')){
-	$transactions = $db->GetArray('select id from transactions where id_from = '.$req->get('id').' or id_to = '.$req->get('id'));
+	$transactions = $db->fetchAll('select id from transactions where id_from = ? or id_to = ?', array($req->get('id'), $req->get('id')));
 }
 
 $user = $req->getItem();
@@ -96,28 +104,35 @@ if ($req->get('delete') && $req->get('id') && $req->isAdmin()){
 		if ($user['PictureFile']){
 			unlink('site/images/users/'.$user['PictureFile']);
 		}
-		$db->Execute('delete from contact where id_user = '.$req->get('id'));
-		$messages = $db->getArray('select * from messages where id_user = '.$req->get('id'));
+		$db->delete('contact', array('id_user' => $req->get('id')));
+		$messages = $db->fetchAll('select * from messages where id_user = ?', array($req->get('id')));
 		foreach ($messages as $message){
-			$db->Execute('update categories set '.$column.' = '.$column.' - 1 where id = '.$message['id_category']);
+			$db->update('categories', array($column => $column.' - 1'),  array('id' => $message['id_category']));
 			$message_images = $db->GetArray('select * from msgpictures where msgid = '.$message['id']);
 			foreach ($message_images as $image){
 				unlink('site/images/messages/'.$image['PictureFile']);
 			}
-			$db->Execute('delete from msgpictures where msgid = '.$message['id']);
+			$db->delete('msgpictures', array('msgid' => $message['id']));
 		}
-		$db->Execute('delete from messages where id_user = '.$req->get('id'));
-		$db->Execute('delete from news where id_user = '.$req->get('id'));
+		$db->delete('messages', array('id_user' => $req->get('id')));
+		$db->delete('news', array('id_user' => $req->get('id')));
 	}
 	
 } else if (($req->get('create') || $req->get('create_plus')) && $req->isAdmin()){
-	
-	$new = $req->errors();
+	$params = array('cdate', 'mdate', 'creator', 'comments', 'hobbies', 'name', 'birthday', 
+			'letscode', 'postcode', 'login', 'accountrole', 'status', 'minlimit', 'maxlimit', 'fullname', 'admincomment',
+			'adate');
+	$contact_params = array('mail', 'tel', 'gsm', 'adr', 'web');
+	$new = $req->errors(array_merge($params, $contact_params);
 	
 	if (!$new){
+		
+		
+		
+		
 		$req->create(array('cdate', 'mdate', 'creator', 'comments', 'hobbies', 'name', 'birthday', 
 			'letscode', 'postcode', 'login', 'accountrole', 'status', 'minlimit', 'maxlimit', 'fullname', 'admincomment',
-			'presharedkey', 'adate'));
+			'adate'));
 		if ($req->get('id')){ 
 			
 			$req->create_contact(array('mail', 'tel', 'gsm', 'adr'));
@@ -229,7 +244,7 @@ if (($new && $req->isAdmin()) || (($edit && $req->isOwnerOrAdmin()) || ($delete 
 		$id_user = ($req->isAdmin()) ? 'id_user' : 'non_existing_dummy';
 		$req->set_output('formgroup')->render(array($id_user, 'name', 'fullname', 
 			'letscode', 'postcode', 'birthday', 'hobbies',  'comments', 
-			'accountrole', 'status', 'maxlimit', 'admincomment', 'presharedkey',
+			'accountrole', 'status', 'maxlimit', 'admincomment', 
 			'mail', 'adr', 'tel', 'gsm', 'web'));
 	}
 	echo '<div>';
@@ -312,43 +327,34 @@ if (!$req->get('id') && !($new || $edit || $delete || $image_delete)){
 	$postcode = $req->get('postcode_filter');
 	$show = $req->get('show');
 	
-	switch ($show){
-		case 'new': $where_show = 'UNIX_TIMESTAMP(adate) > '.(time() - 86400*$parameters['new_user_days']).' and status = 1 ';
-			break;
-		case 'leaving': $where_show = 'status = 2 ';
-			break;
-		case 'system': $where_show = 'status = 4 ';
-			break;
-		case 'interlets': $where_show = 'status = 7 ';
-			break;
-		case 'inactive': 
-			if (!$req->isAdmin()){
-				break;
-			}
-			switch ($inactive){
-				//case 'new': $where_show 
-			
-				default: $where_show = 'status in (0, 3, 5, 6, 8, 9) ';
-			}
-			break;	
-		default: $where_show = 'status in (1, 2, 4, 7) ';
-			break;
-	}	
 	
-	$query = 'select id, letscode, fullname, saldo, postcode, status, 
-		unix_timestamp(adate) as unix from users 
-		where '.$where_show.'and accountrole <> \'guest\' ';
-	$query .= ($q) ? 'and (fullname like \'%' .$q .'%\' or name like \'%'.$q.'%\' or letscode like \'%'.$q.'%\') ' : '';
-	$query .= ($postcode) ? 'and postcode = \''.$postcode.'\' ' : '';
-	if ($orderby){
-		$query .= 'order by ' .$orderby.' ';
-		$query .= ($asc) ? 'asc ' : 'desc '; 
+	$where = ($tabs[$show]['where']) ? $tabs[$show]['where'] : '1 = 1';	
+
+	$pagination = new Pagination($req);
+
+	$qb = $db->createQueryBuilder();
+	
+	$qb->select('id, letscode, fullname, saldo, postcode, status, 
+			unix_timestamp(adate) as unix')
+		->from('users', 'u')
+		->where($where);
+	if ($q){
+		$qb->andWhere($qb->expr()->orX(
+			$qb->expr()->like('u.fullname', '\'%'.$q.'%\''), 
+			$qb->expr()->like('u.name', '\'%'.$q.'%\''),
+			$qb->expr()->like('u.letscode', '\'%'.$q.'%\'')));
+	}	
+	if ($postcode){
+		$qb->andWhere($qb->expr()->eq('u.postcode', $postcode));
 	}
-	$users = $db->GetArray($query); 
+	
+	$pagination->setQuery($qb);	
 
+	$qb->orderBy('u.'.$req->get('orderby'), ($req->get('asc')) ? 'asc ' : 'desc ')
+		->setFirstResult($pagination->getStart())
+		->setMaxResults($pagination->getLimit());
 
-
-
+	$users = $db->fetchAll($qb);
 
 
 	$table = new data_table();
@@ -404,7 +410,9 @@ if (!$req->get('id') && !($new || $edit || $delete || $image_delete)){
 		return ($class) ? ' class="'.$class.'"' : '';
 	});
 	
+	$pagination->render();
 	$table->render();
+	$pagination->render();
 
 /*
 	$views = array(	
@@ -429,7 +437,7 @@ if (!$req->get('id') && !($new || $edit || $delete || $image_delete)){
 	if (sizeof($users) == 1){
 		$req->set('id', $users[0]['id'])
 			->query();
-		$transactions = $db->GetArray('select id from transactions where id_from = '.$req->get('id').' or id_to = '.$req->get('id'));	
+		$transactions = $db->fetchAll('select id from transactions where id_from = ? or id_to = ?', array($req->get('id'), $req->get('id')));	
 	}	
 }
 	
@@ -489,10 +497,8 @@ if ($req->get('id') && !($edit || $delete || $new || $image_delete)){
 	}
 	echo '</div>';
 	
-	$want_count = $db->getRow('select count(*) as num from messages where msg_type = 0 and id_user = '.$req->get('id'));
-	$want_count = $want_count['num'];
-	$offer_count = $db->getRow('select count(*) as num from messages where msg_type = 1 and id_user = '.$req->get('id'));
-	$offer_count = $offer_count['num'];
+	$want_count = $db->fetchColumn('select count(*) from messages where msg_type = 0 and id_user = ?', array($req->get('id')));
+	$offer_count = $db->fetchColumn('select count(*) from messages where msg_type = 1 and id_user = ?', array($req->get('id')));
 	$message_count = $want_count + $offer_count;
 	
 	echo '<div class="col-md-4">';
@@ -512,12 +518,7 @@ if ($req->get('id') && !($edit || $delete || $new || $image_delete)){
 
 	echo '</div>';
 	
-	$query = 'select contact.value, flag_public, type_contact.abbrev
-		from type_contact, contact
-		where contact.id_user='.$req->get('id').'
-		and contact.id_type_contact = type_contact.id';
-	$query .= ($req->isOwnerOrAdmin()) ? '' : ' and contact.flag_public = 1';
-	$contacts = $db->GetArray($query);
+	$contacts = get_contacts($req->get('id'), !$req->isOwnerOrAdmin());
 	
 	$contact_table = new data_table();
 

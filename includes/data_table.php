@@ -123,11 +123,11 @@ class data_table{
 			foreach ($this->columns as &$td){
 				echo '<td';
 				if ($td['options_func']){
-					echo call_user_func($td['options_func'], $td, $row);	
+					echo call_user_func($td['options_func'], $row);	
 				}	
 				echo '>';
 				if ($td['func']){
-					echo call_user_func($td['func'], $td, $row).'</td>';
+					echo call_user_func($td['func'], $row).'</td>';
 					continue;
 				} 
 

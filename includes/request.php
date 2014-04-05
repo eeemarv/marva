@@ -704,10 +704,14 @@ class request {
 					}	
 				} else {	 				
 					switch ($parameter['match']){
-						case 'positive': if (!eregi('^[0-9]+$', $parameter['value'])){
+						case 'positive': if (!(in_array($parmeter['value'], array(0, '0', '')) || ctype_digit($parameter['value']))){
 								$mismatch = true;
 							}
 							break;
+						case 'positive_and_not_zero': if (!ctype_digit($parameter['value'])){
+								$mismatch =true;
+						 
+							}
 						case 'password': if (!$this->confirm_password($parameter['value'])){
 								$mismatch = true;
 							}
@@ -823,13 +827,8 @@ class request {
 	
 	private function active_user($id, $include_interlets = true){
 		global $db;
-		$status_array = array(1, 2, 4);
-		if ($include_interlets){
-			$status_arry[] = 7;
-		} 
-        $id = $db->fetchColumn('select id from users where id = ? and status in (?)',  	//
-			array($id, $status_array),
-			array(\PDO::PARAM_STR, \Doctrine\DBAL\Connection::PARAM_INT_ARRAY));
+		$interlets = ($include_interlets) ? ', 7' : '';
+        $id = $db->fetchColumn('select id from users where id = ? and status in (1, 2, 4'.$interlets.')', array($id)); 	
 		return	($id) ? true : false;	
 	}
 	
@@ -847,8 +846,8 @@ class request {
 		$val = $parameter['value'];
 		$qb = $db->createQueryBuilder();
 		$qb->select('count(id)')
-			->from($this->entity)
-			->where($qb->expr()->eq($param_name, $this->parameters[$param_name]['value']));
+			->from($this->entity, 'x')
+			->where($qb->expr()->eq($param_name, '\''.$this->parameters[$param_name]['value'].'\''));
 		return ($db->fetchColumn($qb) == 0) ? true : false;		
 	}
 

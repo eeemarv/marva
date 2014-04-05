@@ -16,11 +16,11 @@ $s_accountrole = $_SESSION["accountrole"];
 include($rootpath."includes/inc_content.php");
 
 if(isset($s_id)){
-        if($s_accountrole == "user" || $s_accountrole == "admin"){
- 		show_ptitle();
-        } else {
-                echo "<script type='text/javascript'>self.close();</script>";
-        }
+	if($s_accountrole == "user" || $s_accountrole == "admin"){
+		show_ptitle();
+	} else {
+			echo "<script type='text/javascript'>self.close();</script>";
+	}
 
 	$user = get_user($s_id);
 	$balance = $user["saldo"];

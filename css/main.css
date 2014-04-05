@@ -319,19 +319,12 @@ ul.pagination li.details{
 }
 
 ul.pagination li a{
-	color:#fff;
-}
-
-ul.pagination li a
-{
-	color:#555;
 	border:solid 1px #bbb;
 	padding:6px 9px 6px 9px;
-	background:#eee;
+	background:#ddd;
 }	
 
 
-	
 ul.pagination li a:hover,
 ul.pagination li a.current{
 	background:#fff;

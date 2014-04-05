@@ -141,8 +141,7 @@ function getEmailAddress($mail){
 			->from('contact', 'c')
 			->join('c', 'type_contact', 't', 't.id = c.id_type_contact')
 			->where($qb->expr()->eq('c.id_user', $mail))
-			->andWhere('t.abbrev = \'mail\'')
-			->setParameter('id', $userid);
+			->andWhere('t.abbrev = \'mail\'');
 		$mail = $db->fetchColumn($qb);    	
 	} elseif (is_string($mail) && in_array($mail, $systemMailAddresses)){
 		return $parameters['mail'][$mail];

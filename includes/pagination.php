@@ -22,7 +22,7 @@ class pagination{
 	public function setQuery($query){
 		global $db;
 
-		$query = 'select count(*) '.substr($query, stripos($query, 'from'));
+		$query = 'select count(*) '.substr($query, stripos($query, ' from ') + 1);
 		$this->row_count = (int) $db->fetchColumn($query);  //
 		
 		$this->page_num = ceil($this->row_count / $this->limit);
@@ -61,7 +61,8 @@ class pagination{
 
 		echo '<div class="row"><div class="col-md-12">';
 		echo '<ul class="pagination">';
-		echo '<li class="details">Pagina ' . ($this->page + 1).' van ' . $this->page_num.'</li>';
+		$result_str = ($this->row_count == 1) ? 'Resultaat' : 'Resultaten';
+		echo '<li class="details">'.$this->row_count.' '.$result_str.'. Pagina ' . ($this->page + 1).' van ' . $this->page_num.'</li>';
 
 		if ($this->page){
 			echo $this->addLink($this->page - 1, '&#9668;');

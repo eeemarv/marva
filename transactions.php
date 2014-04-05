@@ -19,13 +19,18 @@ $req->setEntityTranslation('Transactie')
 	->setEntity('transactions')
 	->setUrl('transactions.php')
 	
-	->add('orderby', 'date', 'get')
+	->add('orderby', 'cdate', 'get')
 	->add('asc', 0, 'get')
-	->add('userid', 0, 'get', array('type' => 'select', 'label' => 'Gebruiker', 'option_set' => 'active_users'))
-	->add('filter', '', 'get', array('type' => 'submit', 'label' => 'Toon'))
 	->add('limit', 25, 'get')
-	->add('start', 0, 'get')
+	->add('start', 0, 'get')	
+	
+	->add('q', '', 'get', array('type' => 'text', 'label' => 'Trefwoord', 'size' => 25, 'maxlength' => 25))	
+	->add('postcode', '', 'get', array('type' => 'text', 'size' => 25, 'maxlength' => 8, 'label' => 'Postcode' ))	
+	->add('userid', 0, 'get', array('type' => 'select', 'label' => 'Gebruiker', 'option_set' => 'active_users'))	
+	->add('filter', '', 'get', array('type' => 'submit', 'label' => 'Toon'))
+
 	->add('show', 'all', 'get', array('type' => 'hidden'))
+	
 	->add('mode', '', 'get')
 	->add('id_from', $req->getSid(), 'post', array('type' => 'select', 'label' => 'Van', 'option_set' => 'active_users_without_interlets', 'admin' => true), array('not_empty' => true))
 	->add('id_to', 0, 'post')
@@ -37,18 +42,14 @@ $req->setEntityTranslation('Transactie')
 	->add('transid', generateUniqueId(), 'post', array('type' => 'hidden'))
 			
 	->addSubmitButtons()
-	
 	->cancel();
-	
-/*	->setOwnerParam('from_user_id')
-	->query()
-	->queryOwner(); */
+
 	
 $new = false;	
 	
 if (($req->get('create') || $req->get('create_plus')) && $req->isUser()){
 	list($letscode_to) = explode(' ', trim($req->get('letscode_to')));
-	$user_from = $db->getRow('select * from users where id = '.$req->get('id_from').' and status in (1, 2, 4)');
+	$user_from = $db->fetchAssoc('select * from users where id = ? and status in (1, 2, 4)', array($req->get('id_from')));
 	$max_from = $user_from['maxlimit'] + $user_from['saldo'];
 	if (!$user_from){
 		setstatus('Uitschrijvende gebruiker niet gevonden.', 'danger');
@@ -65,11 +66,14 @@ if (($req->get('create') || $req->get('create_plus')) && $req->isUser()){
 		
 	} else {	// local transaction
 		$letscode_to = getLocalLetscode($letscode_to);
-		$user_to = $db->getRow('select * from users where letscode = '.$letscode_to.' and status in (1, 2, 4)');
-		$max_to = $user_to['maxlimit'] - $user_from['maxlimit'];
+		$user_to = $db->fetchAssoc('select * from users where letscode = ? and status in (1, 2, 4)', array($letscode_to));
+		$max_to = $user_to['maxlimit'] - $user_to['saldo'];
 		
 		if (!$user_to){
 			setstatus('Gebruiker niet gevonden. (ongeldig letscode)', 'danger');
+			
+		} else if ($user_to['id'] == $user_from['id']){
+			setstatus('Uitschrijver en bestemmeling kunnen niet dezelfde zijn.', 'danger');
 			
 		} else if ($req->get('amount') > $max_to){
 			setstatus('Het bedrag overschrijdt de limiet van de bestemmeling. De bestemmeling kan maximaal '.$max_to.
@@ -78,25 +82,39 @@ if (($req->get('create') || $req->get('create_plus')) && $req->isUser()){
 		} else {
 		
 			$req->set('id_to', $user_to['id']);
-			$new = $req->errorsCreate(array('id_from', 'id_to', 'amount', 'description', 'cdate', 'date', 'transid'));	
+			$params = array('id_from', 'id_to', 'amount', 'description', 'cdate', 'date', 'transid');
+			$new = $req->errors($params);	
 			if (!$new){
-				$db->Execute('update users set saldo = saldo + '.$req->get('amount').' where id = '.$req->get('id_to'));
-				$db->Execute('update users set saldo = saldo - '.$req->get('amount').' where id = '.$req->get('id_from'));
-				$mail_description = '\n\r
-					Omschrijving: '.$req->get('description').'\n\r	
-					transactie-id: '.$req->get('transid').'\n\r\n\r';
-				sendemail(null, $req->get('id_to'),
-					'['.$parameters['letsgroup_code'].'] Nieuwe Transactie ontvangen',
-					'Dit is een automatisch bericht, niet antwoorden aub. \n\r\n\r'.
-					$user_from['letscode'].' '.$user_from['name'].' schreef '.$req->get('amount').' '.$parameters['currency_plural'].' naar je over. \n\r
-					Je nieuwe saldo bedraagt nu '.($user_to['saldo'] + $req->get('amount')).' '.$parameters['currency_plural'].
-					$mail_descriiption);
-				sendemail(null, $req->get('id_from'), 
-					'['.$parameters['letsgroup_code'].'] Nieuwe Transactie uitgeschreven', 
-					'Dit is een automatisch bericht, niet antwoorden aub. \n\r\n\r
-					Je schreef '.$req->get('amount').' '.$parameters['currency_plural'].' naar '.$user_to['letscode'].' '.$user_to['name'].' over. \n\r
-					Je nieuwe saldo bedraagt nu '.($user_to['saldo'] - $req->get('amount')).' '.$parameters['currency_plural'].
-					$mail_description);
+				$db->beginTransaction(); 
+				try {
+					$db->insert('transactions', $req->get($params));
+					$db->update('users', array('saldo' => 'saldo + '.$req->get('amount')), array('id' => $req->get('id_to'))); 
+					$db->update('users', array('saldo' => 'saldo - '.$req->get('amount')), array('id' => $req->get('id_from'))); 
+					$db->commit(); 
+					$req->setSuccess();
+					
+				} catch (Exception $e) {
+					$db->rollback();
+					throw $e;
+				}
+				$req->renderStatusMessage('create');
+				if ($req->isSuccess()){
+					$mail_description = '\n\r
+						Omschrijving: '.$req->get('description').'\n\r	
+						transactie-id: '.$req->get('transid').'\n\r\n\r';
+					sendemail(null, $req->get('id_to'),
+						'['.$parameters['letsgroup_code'].'] Nieuwe Transactie ontvangen',
+						'Dit is een automatisch bericht, niet antwoorden aub. \n\r\n\r'.
+						$user_from['letscode'].' '.$user_from['name'].' schreef '.$req->get('amount').' '.$parameters['currency_plural'].' naar je over. \n\r
+						Je nieuwe saldo bedraagt nu '.($user_to['saldo'] + $req->get('amount')).' '.$parameters['currency_plural'].
+						$mail_descriiption);
+					sendemail(null, $req->get('id_from'), 
+						'['.$parameters['letsgroup_code'].'] Nieuwe Transactie uitgeschreven', 
+						'Dit is een automatisch bericht, niet antwoorden aub. \n\r\n\r
+						Je schreef '.$req->get('amount').' '.$parameters['currency_plural'].' naar '.$user_to['letscode'].' '.$user_to['name'].' over. \n\r
+						Je nieuwe saldo bedraagt nu '.($user_to['saldo'] - $req->get('amount')).' '.$parameters['currency_plural'].
+						$mail_description);
+				}
 			} 				
 		}
 	}
@@ -108,9 +126,6 @@ if ($req->isSuccess()){
 	header('location: transactions.php'.$param);
 	exit;	
 }
-
-
-
 
 
 	
@@ -134,7 +149,7 @@ if ($new && $req->isUser())
 {
 	echo '<h1>Toevoegen</h1>';
 	echo '<form method="post" class="trans form-horizontal" role="form">';
-	$from_user_id = ($req->isAdmin()) ? 'from_user_id' : 'non_existing_dummy';
+	$from_user_id = ($req->isAdmin()) ? 'id_from' : 'non_existing_dummy';
 	$req->set_output('formgroup')->render(array($from_user_id, 'letscode_to',  'amount', 'description', 'confirm_password', 'transid'));
 	echo '<div>';
 	$req->set_output('nolabel')->render(array('create', 'create_plus', 'cancel'));
@@ -147,23 +162,25 @@ if ($new && $req->isUser())
 
 
 	echo '<form method="GET" class="trans form-horizontal" role="form">';
-	$req->set_output('formgroup')->render('userid');
+	$req->set_output('formgroup')->render(array('q', 'postcode', 'userid'));
 	echo '<div>';
 	$req->set_output('nolabel')->render('filter');
 	echo '</div></form>';
 
 	$orderby = $req->get('orderby');
+	$q = $req->get('q');
+	$postcode = $req->get('postcode');
 	$userid = $req->get('userid');
 	$asc = $req->get('asc');
 	$show = $req->get('show');
 
 	$tabs = array(
 		'all' => array('text' => 'Alle', 'class' => 'bg-white', 
-			'where' => ''),	
+			'where' => '1 = 1'),	
 		'system' => array('text' => 'Systeem', 'class' => 'bg-info',
-			'where' => '= 4'),
+			'where' => 'ut.status = 4 or uf.status = 4'),
 		'interlets' => array('text' => 'Interlets', 'class' => 'bg-warning',
-			'where' => '= 7'),
+			'where' => 'ut.status = 7 or uf.status = 7'),
 /*		'active' => array('text' => 'Actief', 'class' => 'bg-white', 
 			'where' => 'UNIX_TIMESTAMP(adate) > '.(time() - 86400*$parameters['new_user_days']).' and status = 1 '),						
 		'inactive' => array('text' => 'Inactief', 'class' => 'bg-inactive',
@@ -181,28 +198,43 @@ if ($new && $req->isUser())
 	}		
 	echo '</ul><p></p>';
 
-	$query_show = ($tabs[$show]['where']) ? ' and (fromusers.status '.$tabs[$show]['where'].' or tousers.status '.$tabs[$show]['where'].') ' : '';
-	$query_userid = ($userid) ?  ' and (fromusers.id = '.$userid.' OR tousers.id = '.$userid.' )' : '';
+	$where = ($tabs[$show]['where']) ? $tabs[$show]['where'] : '1 = 1';	
 
-	$orderby = ($orderby == 'fromusername' || $orderby == 'tousername') ? $orderby : 'transactions.'.$orderby;
-		
 	$pagination = new Pagination($req);
-	$where = ($userid) ? ' where id_to ='.$userid.' or id_from ='.$userid : '';
-	$pagination->setQuery('transactions'.$where);
-	$query = 'SELECT *, 
-		fromusers.id AS fromuserid, tousers.id AS touserid, 
-		fromusers.name AS fromusername, tousers.name AS tousername, 
-		fromusers.letscode AS fromletscode, tousers.letscode AS toletscode, 
-		fromusers.status as fromstatus, tousers.status as tostatus,
-		DATE_FORMAT(transactions.date, \'%d-%m-%Y\') AS date
-		FROM transactions, users  AS fromusers, users AS tousers
-		WHERE transactions.id_to = tousers.id
-		AND transactions.id_from = fromusers.id ';
-	$query .= $query_userid.$query_show;
-	$query .= ' ORDER BY '.$orderby. ' ';
-	$query .= ($asc) ? 'ASC ' : 'DESC ';
-	$query .= $pagination->get_sql_limit();
-	$transactions = $db->GetArray($query);
+	
+	$qb = $db->createQueryBuilder();
+	
+	$qb->select('t.id', 't.amount', 't.cdate', 't.id_from', 't.id_to', 't.real_from', 't.real_to', 't.description',
+		'ut.name as username_to', 'ut.letscode as letscode_to', 
+		'uf.name as username_from', 'uf.letscode as letscode_from') 
+		->from('transactions', 't')
+		->join('t', 'users', 'ut', 'ut.id = t.id_from')
+		->join('t', 'users', 'uf', 'uf.id = t.id_to')
+		->where($where);
+	if ($userid){
+		$qb->andWhere($qb->expr()->orX(
+			$qb->expr()->eq('ut.id', $userid),
+			$qb->expr()->eq('uf.id', $userid)
+		));	
+	}
+	if ($q){
+		$qb->andWhere($qb->expr()->like('t.description', '\'%'.$q.'%\''));
+	}
+	if ($postcode){
+		$qb->andWhere($qb->expr()->orX(
+			$qb->expr()->eq('ut.postcode', $postcode),
+			$qb->expr()->eq('uf.postcode', $postcode)
+			));
+	}
+
+	$pagination->setQuery($qb);
+		
+	$qb->orderBy('t.'.$req->get('orderby'), ($req->get('asc')) ? 'asc ' : 'desc ')
+		->setFirstResult($pagination->getStart())
+		->setMaxResults($pagination->getLimit());
+
+	$transactions = $db->fetchAll($qb);
+
 
 	$table = new data_table();
 	$table->set_data($transactions)->enable_no_results_message();
@@ -212,27 +244,33 @@ if ($new && $req->isUser())
 		'indicator' => '');
 
 	$table_column_ary = array(
-		'date'	=> array_merge($asc_preset_ary, array(
-			'title' => 'Datum')),
-		'fromusername' => array_merge($asc_preset_ary, array(
-			'title' => 'Van',
-			'href_id' => 'fromuserid',
-			'href_base' => './users.php',
-			'prefix' => 'fromletscode', 
+		'cdate'	=> array_merge($asc_preset_ary, array(
+			'title' => 'Datum',
+			'func' => function($row){ 
+				return date('d-m-Y', strtotime($row['cdate']));
+			}, 
 			)),
-		'tousername' => array_merge($asc_preset_ary, array(
+		'username_from' => array_merge($asc_preset_ary, array(
+			'title' => 'Van',
+			'href_id' => 'id_from',
+			'href_base' => 'users.php',
+			'prefix' => 'letscode_from', 
+			)),
+		'username_to' => array_merge($asc_preset_ary, array(
 			'title' => 'Aan',
-			'href_id' => 'touserid',
-			'href_base' => './users.php',
-			'prefix'     => 'toletscode',
+			'href_id' => 'id_to',
+			'href_base' => 'users.php',
+			'prefix'     => 'letscode_to',
 			)),	
 		'amount' => array_merge($asc_preset_ary, array(
 			'title' => 'Bedrag',
 			'cond_td_class' => 'right',
-			'cond_param' => 'touserid',
-			'cond_equals' => $req->get('userid'))),
+			'cond_param' => 'id_to',
+			'cond_equals' => $req->get('userid'),
+			)),
 		'description' => array_merge($asc_preset_ary, array(
-			'title' => 'Omschrijving')));
+			'title' => 'Omschrijving',
+			)));
 
 	$table_column_ary[$req->get('orderby')]['asc'] = ($req->get('asc')) ? 0 : 1;
 	$table_column_ary[$req->get('orderby')]['title_suffix'] = ($req->get('asc')) ? '&nbsp;&#9650;' : '&nbsp;&#9660;';

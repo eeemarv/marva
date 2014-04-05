@@ -75,19 +75,28 @@ if ($req->get('image_id')){
 $new = $edit = $delete = false;
 
 if ($req->get('delete') && $req->get('id') && $req->isOwnerOrAdmin()){
-	$req->delete();
-	$column = ($req->get('msg_type') == 'w') ? 'stat_msgs_wanted' : 'stat_msgs_offers'; 
-	$db->Execute('update categories set '.$column.' = '.$column.' - 1 where id = '.$req->get('id_category'));
-	$db->Execute('delete from msgpictures where msgid = '.$req->get('id'));
-	foreach($images as $image){
-		unlink('site/images/messages/'.$image['PictureFile']);
+	$db->beginTransaction();
+	try{
+		$db->delete('messages', array('id' => $req->get('id')));
+		$column = ($req->get('msg_type') == 'w') ? 'stat_msgs_wanted' : 'stat_msgs_offers'; 
+		$db->update('categories', array($column => $column.' - 1'), array('id' => $req->get('id_category')));
+		$db->delete('msgpictures', array('msgid' => $req->get('id')));		
+		$db->commit();
+		foreach($images as $image){
+			unlink('site/images/messages/'.$image['PictureFile']);
+		}
+		$req->setSuccess();  
+	} catch(Exception $e) {
+		setstatus('Fout, bericht niet verwijderd.', 'danger');
+		$conn->rollback();
+		throw $e;
 	}
 	
 } else if (($req->get('create') || $req->get('create_plus')) && $req->isUser()){
 	$new = $req->errorsCreate(array('id_user', 'msg_type', 'id_category', 'content', 'description', 'amount', 'cdate', 'mdate'));
 	if (!$new){
 		$column = ($req->get('msg_type') == 'w') ? 'stat_msgs_wanted' : 'stat_msgs_offers';
-		$db->Execute('update categories set '.$column.' = '.$column.' + 1 where id = '.$req->get('id_category'));
+		$db->update('categories', array($column => $column.' + 1'), array('id' => $req->get('id_category')));
 	}	
 	
 } else if ($req->get('edit') && $req->get('id') && $req->isOwnerOrAdmin()){
@@ -97,22 +106,25 @@ if ($req->get('delete') && $req->get('id') && $req->isOwnerOrAdmin()){
 	
 	if (!$req->errors(array('mail_body', 'mail_cc', 'id'))){
 
-		$systemtag = $parameters['letsgroup_code'];
+		$letsgroup_code = $parameters['letsgroup_code'];
 		
-		$user = get_user($req->getItemValue('id_user'));
+		$owner = $req->getOwner();
 		$me = get_user($req->getSid());
 		$contacts = get_contacts($req->getSid());
-		$usermail = get_user_maildetails($req->getItemValue('id_user'));
-		$my_mail = get_user_maildetails($req->getSid());
 
-		$subject .= '[Marva-'.$systemtag .'] - Reactie op je V/A ' .$req->getItemValue('content');
-		$from = $my_mail['emailaddress'];
+		$subject .= '['.$letsgroup_code .'] - Reactie op je V/A ' .$req->getItemValue('content');
+		$from = $req->getSid();
 
-		$to =  $usermail['emailaddress'];
-		$to .= ($req->get('mailcc')) ? ', '.$my_mail['emailaddress'] : '';
-
-		$content = 'Beste ' .$user['fullname'] .'\r\n\n
-			-- '.$me['fullname'].' heeft een reactie op je vraag/aanbod verstuurd via Marva --\r\n\n'.$reactie.'\n\n
+		$to =  $req->getOwnerId();
+		if ($req->get('mailcc')){
+			$to[] = ($req->get('mailcc'));
+		} 
+		$ow = ($req->getItemValue('msg_type') == 'w') ? 'vraag' : 'aanbod';
+		$content = 'Beste ' .$owner['fullname'] .'\r\n\n
+			-- '.$me['fullname'].' heeft een reactie op je <a href="http://'.$_SERVER['HTTP_HOST'].
+			'/messages.php?id='.$req->get('id').'">
+			'.$ow.' '.$req->getItemValue('content').'</a> 
+			verstuurd via Marva --\r\n\n'.$reactie.'\n\n
 			* Om te antwoorden kan je gewoon reply kiezen of de contactgegevens hieronder gebruiken\n
 			* Contactgegevens van '.$me['fullname'] .':\n';
 		
@@ -144,8 +156,8 @@ if ($req->get('delete') && $req->get('id') && $req->isOwnerOrAdmin()){
 	} else {
 		$filename = generateUniqueId().'-'.$req->get('id').'.'.strtolower($ext);			
 		if (move_uploaded_file($tmp_name, $_SERVER[DOCUMENT_ROOT].'/site/images/messages/'.$filename)){
-			$db->Execute('insert into msgpictures (msgid, PictureFile) values (\''.$req->get('id').'\', \''.$filename.'\')');
-			log_event($userid,'Pict','Message-Picture '. $filename.' uploaded');
+			$db->insert('msgpictures', array('msgid' => $req->get('id'), 'PictureFile' =>  $filename));
+			log_event($userid, 'Pict', 'Message-Picture '. $filename.' uploaded');
 			setstatus('Foto toegevoegd.', 'success');				
 			$req->setSuccess();	
 		} else {
@@ -155,9 +167,9 @@ if ($req->get('delete') && $req->get('id') && $req->isOwnerOrAdmin()){
 			
 } else if ($req->get('image_delete') && $req->get('id') && $req->isOwnerOrAdmin()){
 	if ($req->get('image_id')){
-        $result = $db->Execute('delete from msgpictures where id = '.$req->get('image_id'));
+        $result = $db->delete('msgpictures', array('id' => $req->get('image_id')));
 	} else {
-		$result = $db->Execute('delete from msgpictures where msgid = '.$req->get('id'));
+		$result = $db->delete('msgpictures', array('msgid' => $req->get('id')));
 	}
 	if (!$result){
 		setstatus('Fout bij het verwijderen.', 'danger');
@@ -355,11 +367,10 @@ if ($req->get('id') && !($edit || $delete || $new || $image_delete)){
 	}
 		
 	$title = $message["content"];
-	
+
 	$contacts = get_contacts($owner['id']);
 	
-	$mailuser = get_user_maildetails($owner['id']);	
-	
+	$emailOwner = getEmailAddressFromUserId($owner['id']);
 
 	echo '<h1>'.(($message['msg_type'] == 'o') ? 'Aanbod' : 'Vraag').': '.htmlspecialchars($message['content']).'</h1>';
 	echo '<p>Ingegeven door: '; 
@@ -455,7 +466,7 @@ if ($req->get('id') && !($edit || $delete || $new || $image_delete)){
 	}
 	
 
-	if (empty($mailuser['emailaddress']) || !$req->isUser() || $req->isOwner()){
+	if (empty($emailOwner) || !$req->isUser() || $req->isOwner()){
 		$req->setDisabled(array('mail_send', 'mail_body', 'mail_cc'));
 	}
 	$req->setLabel('mail_body', 'Je reactie naar '.$owner['letscode'].' '.$owner['name']);	

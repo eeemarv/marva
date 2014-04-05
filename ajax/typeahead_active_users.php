@@ -18,7 +18,7 @@ $query = 'select letscode as c,
 	from users 
 	where status in (1, 2, 4, 7)';
 	
-$typeahead_users = $db->getArray($query); 
+$typeahead_users = $db->fetchAll($query); 
 	
 
 $newUserTime = time() - 86400 * $parameter['new_user_days'];

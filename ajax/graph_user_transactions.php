@@ -15,28 +15,29 @@ if (!$user_id){
 	exit;
 }	
 
-$user = $db->GetRow('SELECT saldo FROM users WHERE id = '.$user_id);
+$balance = $db->fetchColumn('SELECT saldo FROM users WHERE id = ?', array($user_id));
 
-if (!$user){
+if (!isset($balance)){
 	exit;
 }
-
-$balance = (int) $user['saldo'];
 
 $begin_date = date('Y-m-d H:i:s', time() - (86400 * $req->get('days')));
 $end_date = date('Y-m-d H:i:s');
 
-$query = 'SELECT transactions.amount, transactions.id_from, transactions.id_to, ';
-$query .= 'transactions.real_from, transactions.real_to, transactions.date, transactions.description, ';
-$query .= 'users.id, users.name, users.letscode, users.accountrole, users.status ';
-$query .= 'FROM transactions, users ';
-$query .= 'WHERE (transactions.id_to = '.$user_id.' OR transactions.id_from = '.$user_id.') ';
-$query .= 'AND (users.id = transactions.id_to OR users.id = transactions.id_from) ';
-$query .= 'AND users.id <> '.$user_id.' ';
-$query .= 'AND transactions.date >= \''.$begin_date.'\' ';
-$query .= 'AND transactions.date <= \''.$end_date.'\' ';
-$query .= 'ORDER BY transactions.date DESC'; 
-$trans = $db->GetArray($query);
+$qb = $db->createQueryBuilder();
+
+$qb->select('t.amount, t.id_from, t.id_to, t.real_from, t.real_to, t.date, t.description, 
+	u.id, u.name, u.letscode, u.accountrole, u.status')
+	->from('transactions', 't')
+	->join('t', 'users', 'u', 'u.id = t.id_to or u.id = t.id_from')
+	->where($qb->expr()->gte('t.date', '\''.$begin_date.'\''))
+	->andWhere($qb->expr()->lte('t.date', '\''.$end_date.'\''))
+	->andWhere($qb->expr()->neq('u.id', $user_id))
+	->andWhere($qb->expr()->orX(
+		$qb->expr()->eq('t.id_from', $user_id),
+		$qb->expr()->eq('t.id_to', $user_id)))
+	->orderBy('t.date', 'desc');	
+$trans = $db->fetchAll($qb); 
 
 $begin_date = strtotime($begin_date);
 $end_date = strtotime($end_date);
