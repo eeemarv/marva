@@ -22,6 +22,33 @@
  * get_letsgroup($id)			Get the letsgroup by id
 */
 
+function getTypeAheadUsers($include_interlets = true){
+	global $db, $parameters;	
+	$query = 'select letscode as c, 
+		name as n, 
+		maxlimit as l,
+		saldo as b,
+		unix_timestamp(adate) as a,
+		status
+		from users 
+		where status in (1, 2, 4'.(($include_interlets) ? ', 7' : '').')';
+		
+	$typeahead_users = $db->fetchAll($query); 
+
+	$newUserTime = time() - 86400 * $parameters['new_user_days'];
+
+	foreach ($typeahead_users as &$row){
+		$row['a'] = ($row['a'] > $newUserTime) ? 1 : 0;
+		$row['le'] = ($row['le'] == 2) ? 1 : 0;
+		$row['s'] = ($row['status'] == 4) ? 1 : 0;
+		$row['e'] = ($row['status'] == 7) ? 1 : 0;
+	//	$row['c'] .= ($row['e']) ? '/' : '';
+		unset($row['status']);						
+	}	
+	return $typeahead_users;
+}
+
+
 function get_letsgroups(){
 	global $db;
 	return $db->fetchAll('select * from letsgroups'); //
@@ -36,8 +63,8 @@ function get_contact_by_email($email){
         global $db;
         return $db->fetchAssoc('select * from contact where value = ?', array($email));  //
  }
-
-function get_contact($user){ // review where is this function used?
+/*
+function get_contact($user_id, $abbrev){ // review where is this function used?
         global $db;
         $query = "SELECT *, ";
         $query .= " contact.id AS cid, users.id AS uid, type_contact.id AS tcid, ";
@@ -49,6 +76,19 @@ function get_contact($user){ // review where is this function used?
         $query .= " AND contact.flag_public = 1";
         $contact = $db->GetArray($query);
         return $contact;
+}
+*/
+function get_contact($user_id, $abbrev){
+	global $db;
+	
+	$qb = $db->createQueryBuilder();
+	
+	$qb->select('c.value')
+		->from('contact', 'c')
+		->join('c', 'type_contact', 't', 't.id = c.id_type_contact')
+		->where($qb->expr()->eq('c.id_user', $user_id))
+		->andWhere($qb->expr()->eq('t.abbrev', $abbrev));
+	return $db->fetchColumn($qb);
 }
 
 function get_contacts($user_id, $public_only = true){

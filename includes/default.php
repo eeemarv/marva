@@ -119,9 +119,9 @@ $configuration["mail"]["from_address_transactions"] = readconfigfromdb("from_add
 
 // removed release.xml version was eLAS 2.5.16
 // What schema version to expect  
-$schemaversion =  2207;
-$soapversion = 1200;
-$restversion = 1;
+//$schemaversion =  2207;
+//$soapversion = 1200;
+//$restversion = 1;
 
 
 //date_default_timezone_set($parameters['timezone']);

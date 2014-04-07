@@ -12,6 +12,9 @@ class pagination{
 	private $row_count = 0;
 	private $page_num = 0;
 	private $base_url = '';
+	private $sum = 0;
+	private $render_sum = false;
+	private $text_sum = '';
 	
 	public function __construct($req){
 		$this->req = $req;
@@ -27,7 +30,16 @@ class pagination{
 		
 		$this->page_num = ceil($this->row_count / $this->limit);
 		$this->page = floor($this->start / $this->limit);		
-	}	
+	}
+	
+	public function setSum($query, $column, $text = ''){
+		global $db;
+
+		$query = 'select sum('.$column.') '.substr($query, stripos($query, ' from ') + 1);
+		$this->sum = $db->fetchColumn($query);  //
+		$this->render_sum = true;
+		$this->text_sum = $text;
+	}		
 	
 	public function setUrl($url = ''){
 		$this->base_url = $url;
@@ -86,7 +98,7 @@ class pagination{
 			echo $this->addLink($page);
 		}
 		
-		if ($max_adjacent < $this->page_num-3){
+		if ($max_adjacent < $this->page_num - 3){
 			echo '<li class="dots">...</li>';
 		}
 		
@@ -98,7 +110,13 @@ class pagination{
 			echo $this->addLink($this->page + 1, '&#9658;');
 		}
 		
-		echo '</li></div></div>';
+		echo '</ul>';
+		
+		if ($this->render_sum && $this->row_count){
+			echo '<div class="pull-right">'.$this->text_sum.$this->sum.'</div>';
+		}	
+		
+		echo '</div></div>';
 	}
 	
 	public function addLink($page, $text = ''){

@@ -7,13 +7,15 @@ require_once($rootpath.'includes/data_table.php');
 
 $req = new request('admin');
 
+//sha1(uniqid().microtime())
+
 $req->setEntityTranslation('Apikey')
 	->setEntity('apikeys')
 	->setUrl('apikeys.php')
 	
 	->add('id', 0, 'get|post', array('type' => 'hidden'))
 	->add('mode', '', 'get')
-	->add('apikey', sha1(uniqid().microtime()), 'post', array('type' => 'text', 'label' => 'Apikey', 'size' => 50, 'maxlength' => 40), array('not_empty' => true, 'min_length' => 30))
+	->add('apikey', generateUniqueId(), 'post', array('type' => 'text', 'label' => 'Apikey', 'size' => 50, 'maxlength' => 40), array('not_empty' => true, 'min_length' => 30))
 	->add('comment', '', 'post', array('type' => 'text', 'label' => 'commentaar', 'size' => 50, 'maxlength' => 60), array('not_empty' => true))
 	->add('type', 'interlets', 'post', array('type' => 'hidden'))
 	->addSubmitButtons()	
@@ -50,7 +52,7 @@ if ($req->get('mode') == 'delete' && $req->get('id')){
 	echo '</tr></table></form>';
 		
 } else {
-	$apikeys = $db->GetArray('select * from apikeys');
+	$apikeys = $db->fetchAll('select * from apikeys');
 
 	$table = new data_table();
 

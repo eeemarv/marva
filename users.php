@@ -365,7 +365,8 @@ if (!$req->get('id') && !($new || $edit || $delete || $image_delete)){
 		$qb->andWhere($qb->expr()->eq('u.postcode', $postcode));
 	}
 	
-	$pagination->setQuery($qb);	
+	$pagination->setQuery($qb);
+	$pagination->setSum($qb, 'saldo', 'Totaal saldo: ');	
 
 	$qb->orderBy('u.'.$req->get('orderby'), ($req->get('asc')) ? 'asc ' : 'desc ')
 		->setFirstResult($pagination->getStart())
@@ -428,8 +429,7 @@ if (!$req->get('id') && !($new || $edit || $delete || $image_delete)){
 	});
 	
 	$pagination->render();
-	
-	echo '<div class="pull-right">fsdlkfsklsflksfkl</div>';
+
 	$table->render();
 	$pagination->render();
 

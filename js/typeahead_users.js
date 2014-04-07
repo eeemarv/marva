@@ -1,6 +1,6 @@
 var engine = new Bloodhound({
 	name: 'active-users-oooo',
-	prefetch: 'ajax/typeahead_active_users.php',
+	prefetch: 'ajax/typeahead_users.php',
 	datumTokenizer: function(d) { 
 		  return Bloodhound.tokenizers.whitespace(d.c); 
 	  },

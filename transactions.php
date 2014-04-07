@@ -80,26 +80,47 @@ if (($req->get('create') || $req->get('create_plus')) && $req->isUser()){
 		if (!$new){
 			$db->beginTransaction(); 
 			try {
+				// local
+				if ($db->fetchColumn('select id where transid = ?', array($req->get('transid')))){
+					throw new Exception('Dubbele boeking van een transactie werd voorkomen.');
+				}
 				$db->insert('transactions', $req->get($params));
-				
 				$db->update('users', array('saldo' => $user_to['saldo'] + $req->get('amount')), array('id' => $req->get('id_to'))); 
 				$db->update('users', array('saldo' => $user_from['saldo'] - $req->get('amount')), array('id' => $req->get('id_from'))); 
-				
+				// interlets
 				if ((substr_count($letscode_to, '/'))){
+					if ($user_to['status'] != 7){  // eLAS soap
+						throw new Exception('Bestemmeling is geen interlets.');
+					}
+					$soap_url = get_contact($req->get('id_to'), 'web').'/soap/wsdlelas.php?wsdl';
+
+					$apikey = $myletsgroup["remoteapikey"];
+					$from_letscode = $parameters['letsgroup_code'];
+					$client = new nusoap_client($soap_url, true);
+					$error = $client->getError();
+					if ($error){
+						throw new Exception('Er kon geen verbinding worden gemaakt met de interlets groep.');
+					}
+					$result = $client->call('dopayment', array(
+						'apikey' => "$myapikey", 
+						'from' => "$from", 
+						'real_from' => "$real_from", 
+						'to' => "$letscode_to", 
+						'description' => "$description", 
+						'amount' => $amount, 
+						'transid' => "$transid", 
+						'signature' => "$signature"));
 					
-					
-					
-		// interlets
+		
 				}
 
-				
-				
 				$db->commit(); 
 				$req->setSuccess();
 				
 			} catch (Exception $e) {
 				$db->rollback();
-				throw $e;
+				setstatus($e->getMessage(), 'danger');
+				//throw $e;
 			}
 			$req->renderStatusMessage('create');
 			if ($req->isSuccess()){

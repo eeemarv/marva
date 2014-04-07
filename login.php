@@ -7,7 +7,6 @@ require_once($rootpath.'includes/default.php');
 
 
 require_once($rootpath.'includes/inc_userinfo.php');
-require_once($rootpath.'includes/inc_tokens.php');
 
 require_once($rootpath.'includes/request.php');
 
@@ -35,8 +34,9 @@ $location = ($location == 'login.php') ? 'messages.php' : $location;
 $login_redirect = 'login.php?location='.urlencode($location);
 
 
+
 if($req->get('token')){
-	if(verify_token($req->get('token'),'guestlogin') == 0){
+	if ($db->fetchColumn('select token from tokens where token = ? and validity > ?', array($req->get('token'), time()))){
 		$_SESSION['id'] = 0;
 		$_SESSION['name'] = 'letsguest';
 		$_SESSION['letscode'] = 'X000';
@@ -46,12 +46,12 @@ if($req->get('token')){
 		log_event($_SESSION['id'],'Login','Guest login using token succeeded');
 		setstatus($_SESSION['name'] .' ingelogd', 'success');
 		setstatus('Je bent ingelogd als LETS-gast, je kan informatie raadplegen maar niets wijzigen of transacties invoeren.  
-			Als guest kan je ook niet rechtstreeks reageren op V/A of andere mails versturen uit Marva', 'info');
+			Als guest kan je ook niet rechtstreeks reageren op V/A of andere mails versturen.', 'info');
 		header('location : '.$location);
 		exit;
 	} else {
-		setstatus('Interlets login is mislukt', 'error');
-		log_event("","LogFail", "Token login failed ($token)");
+		setstatus('Interlets login is mislukt.', 'danger');
+		log_event('','LogFail', 'Token login failed ('.$req->get('token').')');
 	}
 }
 

@@ -1,22 +1,17 @@
 <?php
 $rootpath="../";
-// Pull in the NuSOAP code
+
 //require_once '../vendor/nusoap/nusoap/lib/nusoap.php'; --> is autoloaded
 
-require_once($rootpath.'includes/default.php');
+require_once $rootpath.'includes/default.php';
 
-require_once($rootpath."includes/inc_userinfo.php");
-require_once($rootpath."includes/inc_transactions.php");
-require_once($rootpath."includes/apikeys.php");
-require_once($rootpath."includes/inc_tokens.php");
+require_once $rootpath.'includes/inc_userinfo.php';
+require_once $rootpath.'includes/inc_transactions.php';
+require_once $rootpath.'includes/mail.php';
 
-
-// Create the server instance
 $server = new soap_server();
-// Initialize WSDL support
 $server->configureWSDL('interletswsdl', 'urn:interletswsdl');
 
-// Register the method to expose
 $server->register('gettoken',                // method name
     array('apikey' => 'xsd:string'),        // input parameters
     array('return' => 'xsd:string'),      // output parameters
@@ -37,8 +32,8 @@ $server->register('userbyletscode',                // method name
     'encoded',                            // use
     'Get the user'            // documentation
 );
-
-$server->register('userbylogin',                // method name
+/*
+$server->register('userbylogin',                // method name    // not Implemented in Marva
     array('apikey' => 'xsd:string', 'login' => 'xsd:string', 'hash' => 'xsd:string'),        // input parameters
     array('return' => 'xsd:string'),      // output parameters
     'urn:interletswsdl',                      // namespace
@@ -47,7 +42,7 @@ $server->register('userbylogin',                // method name
     'encoded',                            // use
     'Get the user'            // documentation
 );
-
+*/
 $server->register('userbyname',                // method name
     array('apikey' => 'xsd:string', 'name' => 'xsd:string', 'hash' => 'xsd:string'),        // input parameters
     array('return' => 'xsd:string'),      // output parameters
@@ -58,7 +53,7 @@ $server->register('userbyname',                // method name
     'Get the user'            // documentation
 );
 
-$server->register('getstatus',                // method name
+$server->register('getstatus',      // method name
    array('apikey' => 'xsd:string'),
    array('return' => 'xsd:string'),
    'urn:interletswsdl',                      // namespace
@@ -88,11 +83,21 @@ $server->register('dopayment',
    'Commit an interlets transaction'
 );
 
+$server->register('gettypeaheadusers',
+   array('apikey' => 'xsd:string')
+);
+
+function gettypeaheadusers($apikey){
+	$typeahead_users = (checkApikey($apikey)) ? getTypeAheadUsers(false) : array();
+	return json_encode($typeahead_users);
+}
+
 
 function gettoken($apikey){
 	log_event("","debug","Token request");
-	if(check_apikey($apikey,"interlets") == 1){
-		$token = generate_token("guestlogin");
+	if(checkApikey($apikey)){
+		$token = generateUniqueId();
+		$db->insert('tokens', array('token' => $token, 'validity' => date('Y-m-d H:i:s', time() + 600), 'type' => 'guestlogin'));
 		log_event("","Soap","Token $token generated");
 	} else {
 		$token = "---";
@@ -101,139 +106,124 @@ function gettoken($apikey){
 	return $token;
 }
 
-function dopayment($apikey,$from,$real_from,$to,$description,$amount,$transid,$signature){
+
+function dopayment($apikey, $from, $real_from, $to, $description, $amount, $transid, $signature){
+	global $parameters;
+	
 	// Possible status values are SUCCESS, FAILED, DUPLICATE and OFFLINE
+	
 	log_event("","debug","Transaction request");
-	if(check_duplicate_transaction($transid) == 1) {
+	if (!check_apikey($apikey)){
+		return "APIKEYFAIL";
+		log_event("","Soap","APIKEY failed for Transaction $transid");		
+	}
+		
+	if (check_duplicate_transaction($transid)) {
 		log_event("","Soap","Transaction $transid is a duplicate");
 		return "DUPLICATE";
 	}
 
-    if(check_apikey($apikey,"interlets") == 1){
-		if(readconfigfromdb("maintenance") == 1){ 
-			log_event("","Soap","Transaction $transid deferred (offline)");
-			return "OFFLINE";
-		} else {
-			$posted_list["transid"] = $transid;
-			$posted_list["date"] = date("Y-m-d H:i:s");
-			$posted_list["description"] = $description;
-			$fromuser = get_user_by_letscode($from);
-			$posted_list["id_from"] = $fromuser["id"];
-			$posted_list["real_from"] = $real_from;
-			$touser = get_user_by_letscode($to);
-			$posted_list["id_to"] = $touser["id"];
-			$posted_list["amount"] = $amount;
-			$posted_list["letscode_to"] = $touser["letscode"];
+	if($parameters['maintenance']){ 
+		log_event("","Soap","Transaction $transid deferred (offline)");
+		return "OFFLINE";
+	}
+	 
+	$user_from => get_user_by_letscode($from);
+	$user_to = get_user_by_letscode($to);
 
-			// Stop already if the user doesn't exist
-			if(empty($touser["letscode"]) || ($touser["status"] != 1 && $touser["status"] != 2)) {
-				log_event("","Soap","Transaction $transid, unknown user");
-                                return "NOUSER";
-			}
+	if(empty($user_to['letscode']) 
+		|| !in_array($user_to['status'], array(1, 2))) {
+		log_event('','Soap','Transaction '.$transid.', unknown user');
+		return "NOUSER";
+	}
+	
+	$amount = $parameters['currency_rate'] * $amount;
+	
+	$params = array(
+		'transid' => $transid,
+		'date' => date('Y-m-d H:i:s'),
+		'description' => $description,
+		'id_from' => $user_from['id'],
+		'real_from' => $real_from,
+		'id_to' => $user_to['id'],
+		'amount' => $amount,
+		'letscode_to' => $user_to['letscode'],
+		'amount' => $amount,
+		'creator' => $user_from['id'],
+	)
 
-			// Check the signature first
-			$sigtest = sign_transaction($posted_list,$fromuser["presharedkey"]);
-			if($sigtest != $signature){
-				log_event("","Soap","Transaction $transid, invalid signature");
-				return "SIGFAIL";
-			}
+	if(sign_transaction($params, $fromuser["presharedkey"]) != $signature){
+		log_event("","Soap","Transaction $transid, invalid signature");
+		return "SIGFAIL";
+	}
 
-			$posted_list["amount"] = $amount * readconfigfromdb("currencyratio");
+	try{
+		$db->insert('transactions', $req->get($params));
+		$db->update('users', array('saldo' => $user_to['saldo'] + $amount, array('id' => $user_to['id'])); 
+		$db->update('users', array('saldo' => $user_from['saldo'] - $amount, array('id' => $user_from['id']));
+		
+	} catch (Exception $e) {
+		$db->rollback();
+		log_event('','Soap','Transaction '.$transid.' FAILED, message:'.$e->getMessage());
+		return 'FAILED';
+	}
 
-			$mytransid = insert_transaction($posted_list, $transid);
+	
+			
 			if($mytransid == $transid){
 				$result = "SUCCESS";
 				log_event("","Soap","Transaction $transid processed");
 				$posted_list["amount"] = round($posted_list["amount"]);
 				mail_transaction($posted_list, $transid);
 			} else {
-				log_event("","Soap","Transaction $transid FAILED");
+				
 				$result = "FAILED";	
 			}
 			return $result;
 		}
-	} else {
-		return "APIKEYFAIL";
-		log_event("","Soap","APIKEY failed for Transaction $transid");
-	}
+
 }
 
 function userbyletscode($apikey, $letscode){
 	log_event("","debug","Lookup request for $letscode");
-	if(check_apikey($apikey,"interlets") == 1){
-		$user = get_user_by_letscode($letscode);
-		if($user["fullname"] == ""){
-			return "Onbekend";
-		} else {
-			return $user["fullname"];
-		}
-	} else {
-		return "---";
+	if(!checkApikey($apikey)){
+		return '---';			
 	}
+	$user = get_user_by_letscode($letscode);
+	return ($user['name']) ? $user['name'] : 'Onbekend';
 }
 
 function userbyname($apikey, $name){
 	log_event("","debug","Lookup request for user $name");
-	if(check_apikey($apikey,"interlets") == 1){
-		$user = get_user_by_name($name);
-		if($user["fullname"] == ""){
-				return "Onbekend";
-		} else {
-				return $user["letscode"];
-		}
-	} else {
+	if(!checkApikey($apikey)){
 		return "---";
 	}
+	$user = get_user_by_name($name);
+	return ($user['name']) ? $user['letscode'] : 'Onbekend';
 }
 
 function getstatus($apikey){
-	global $elasversion;
-	if(check_apikey($apikey,"interlets") == 1){
-		if(readconfigfromdb("maintenance") == 1){
-			return "OFFLINE";
-		} else {
-			return "OK - eLAS $elasversion";
-		}
-	} else {
-		return "APIKEYFAIL";
+	global $parameters;
+	if(!checkApikey($apikey)){
+		return 'APIKEYFAIL';		
 	}
+	return ($parameters['maintenance']) ? 'OFFLINE' : 'OK - Marva '.exec('git describe --long --abbrev=10 --tags');
 }
 
 function apiversion($apikey){
-	if(check_apikey($apikey,"interlets") == 1){
-		global $soapversion;
-		return $soapversion;
+	if(checkApikey($apikey)){
+		return 1200; // was global variable $soapversion
 	}
 }
 
-function messagesearch($term){
+function checkApikey($apikey, $type){
 	global $db;
-	$query = "SELECT *,
-		messages.id AS msgid, 
-		users.id AS userid, 
-		categories.id AS catid,
-		categories.fullname AS catname,
-		users.name AS username,
-		users.letscode AS letscode,
-		DATE_FORMAT(messages.validity, '%d-%m-%Y') AS valdate, 
-		DATE_FORMAT(messages.cdate, '%d-%m-%Y') AS date 
-		FROM messages, users, categories
-		WHERE messages.id_user = users.id 
-		AND messages.id_category = categories.id
-		AND messages.content LIKE '%$term%'";
-	$messages = $db->GetArray($query);
-	return $messages;
+	if (!$apikey){
+		return false;
+	}
+	return $db->fetchColumn('select id from apikeys where apikey = ?', array($apikey)) ? true : false;
 }
 
-function messagedetails($msgid){
-	global $db, $parameters;
-        $query = "SELECT * FROM messages WHERE id=$msgid";
-	$message = $db->GetRow($query);
-	$currency = $parameters['currency_plural'];
-	$currencyratio = $parameters['currency_rate'];
-	$return = $message['id_user'] ."," .$message['content'] ."," .$message['Description'] ."," .$message['amount'] ."," .$currency ."," .$currencyratio ."," .$message['units'] ."," .$message['validity'];
-	return $return;
-}
 
 // Use the request to (try to) invoke the service
 $HTTP_RAW_POST_DATA = isset($HTTP_RAW_POST_DATA) ? $HTTP_RAW_POST_DATA : '';
