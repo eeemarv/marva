@@ -123,14 +123,31 @@ if ($req->get('delete') && $req->get('id') && $req->isAdmin()){
 			'letscode', 'postcode', 'login', 'accountrole', 'status', 'minlimit', 'maxlimit', 'fullname', 'admincomment',
 			'adate');
 	$contact_params = array('mail', 'tel', 'gsm', 'adr', 'web');
-	$new = $req->errors(array_merge($params, $contact_params);
+	$new = $req->errors(array_merge($params, $contact_params));
 	
 	if (!$new){
+		$db->transactionBegin();
+		try{
+			$db->insert('users', $req->get($params));
+			foreach($contact_params as $param => $value){
+				if (!$value){
+					continue;
+				}
+				$type_id = $db->fetchColumn('select id from type_contact where abbrev = \'?\'', array($param));
+				$db->insert('contact', array('id_type_conact' => $type_id, 'value' => $value));
+			}
+			$req->setSuccess();
+					
+		} catch (Exception $e) {
+			$db->rollback();
+			throw $e;
+		}
+		$req->renderStatusMessage('create');	
+			
+	}
 		
 		
-		
-		
-		$req->create(array('cdate', 'mdate', 'creator', 'comments', 'hobbies', 'name', 'birthday', 
+/*		$req->create(array('cdate', 'mdate', 'creator', 'comments', 'hobbies', 'name', 'birthday', 
 			'letscode', 'postcode', 'login', 'accountrole', 'status', 'minlimit', 'maxlimit', 'fullname', 'admincomment',
 			'adate'));
 		if ($req->get('id')){ 
@@ -149,7 +166,7 @@ if ($req->get('delete') && $req->get('id') && $req->isAdmin()){
 		}
 	}	
 	
-
+*/
 		
 	
 	
@@ -161,7 +178,7 @@ if ($req->get('delete') && $req->get('id') && $req->isAdmin()){
 		
 } else if ($req->get('edit') && $req->get('id') && $req->isOwner()){
 	
-	$edit = $req->errorsUpdate(array('mdate', 'comments', 'hobbies', 'login'));
+	$edit = $req->errorsUpdate(array('mdate', 'comments', 'hobbies'));
 	
 } else if ($req->get('image_send') && $req->get('id') && $req->isOwnerOrAdmin()){
 	$filename = $_FILES['image_file']['name'];
@@ -411,6 +428,8 @@ if (!$req->get('id') && !($new || $edit || $delete || $image_delete)){
 	});
 	
 	$pagination->render();
+	
+	echo '<div class="pull-right">fsdlkfsklsflksfkl</div>';
 	$table->render();
 	$pagination->render();
 

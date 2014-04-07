@@ -3,10 +3,8 @@
 ob_start();
 require 'includes/default.php';
 
-
-require_once $rootpath.'includes/inc_transactions.php';
-require_once $rootpath.'includes/inc_userinfo.php'; 
-
+require_once 'includes/inc_transactions.php';
+require_once 'includes/inc_userinfo.php'; 
 
 require 'includes/request.php';
 require 'includes/data_table.php';
@@ -33,6 +31,7 @@ $req->setEntityTranslation('Transactie')
 	
 	->add('mode', '', 'get')
 	->add('id_from', $req->getSid(), 'post', array('type' => 'select', 'label' => 'Van', 'option_set' => 'active_users_without_interlets', 'admin' => true), array('not_empty' => true))
+	->add('creator', $req->getSid(), 'post')
 	->add('id_to', 0, 'post')
 	->add('date', date('Y-m-d'), 'post')
 	->add('cdate', date('Y-m-d H:i:s'), 'post')
@@ -51,71 +50,75 @@ if (($req->get('create') || $req->get('create_plus')) && $req->isUser()){
 	list($letscode_to) = explode(' ', trim($req->get('letscode_to')));
 	$user_from = $db->fetchAssoc('select * from users where id = ? and status in (1, 2, 4)', array($req->get('id_from')));
 	$max_from = $user_from['maxlimit'] + $user_from['saldo'];
+	$local_letscode_to = getLocalLetscode($letscode_to);
+	$user_to = $db->fetchAssoc('select * from users where letscode = ? and status in (1, 2, 4, 7)', array($local_letscode_to));
+	$max_to = $user_to['maxlimit'] - $user_to['saldo'];	
+	
 	if (!$user_from){
 		setstatus('Uitschrijvende gebruiker niet gevonden.', 'danger');
 		
 	} else if ($req->get('amount') > $max_from){
-		setstatus('Het bedrag overschrijdt de limiet van de uitschrijvende rekening. Maximaal '.
-			$max_from.' '.$parameters['currency_plural'].' kunnen uitgeschreven worden.' , 'danger');	
+		setstatus('Het bedrag overschrijdt de limiet van de uitschrijvende rekening. 
+			Maximaal '.$max_from.' '.$parameters['currency_plural'].' kunnen uitgeschreven worden.
+			Saldo: '.$user_from['saldo'].', limiet: '.$user_from['maxlimit'] , 'danger');	
 		
-	} else if ((substr_count($letscode_to, '/'))){
-		// interlets
-
-
-
-		
-	} else {	// local transaction
-		$letscode_to = getLocalLetscode($letscode_to);
-		$user_to = $db->fetchAssoc('select * from users where letscode = ? and status in (1, 2, 4)', array($letscode_to));
-		$max_to = $user_to['maxlimit'] - $user_to['saldo'];
-		
-		if (!$user_to){
-			setstatus('Gebruiker niet gevonden. (ongeldig letscode)', 'danger');
+	} else if (!$user_to){
+		setstatus('Bestemmeling niet gevonden. (ongeldig letscode)', 'danger');
 			
-		} else if ($user_to['id'] == $user_from['id']){
-			setstatus('Uitschrijver en bestemmeling kunnen niet dezelfde zijn.', 'danger');
+	} else if ($user_to['id'] == $user_from['id']){
+		setstatus('Uitschrijver en bestemmeling kunnen niet dezelfde zijn.', 'danger');
 			
-		} else if ($req->get('amount') > $max_to){
-			setstatus('Het bedrag overschrijdt de limiet van de bestemmeling. De bestemmeling kan maximaal '.$max_to.
-				' '.$parameters['currency_plural'].' ontvangen.', 'danger');
+	} else if ($req->get('amount') > $max_to){
+		setstatus('Het bedrag overschrijdt de limiet van de (locale) bestemmeling. De bestemmeling kan maximaal '.$max_to.
+			' '.$parameters['currency_plural'].' ontvangen. Saldo: '.
+			$user_to['saldo'].' limiet: '.$user_to['maxlimit'], 'danger');
 		
-		} else {
-		
-			$req->set('id_to', $user_to['id']);
-			$params = array('id_from', 'id_to', 'amount', 'description', 'cdate', 'date', 'transid');
-			$new = $req->errors($params);	
-			if (!$new){
-				$db->beginTransaction(); 
-				try {
-					$db->insert('transactions', $req->get($params));
-					$db->update('users', array('saldo' => 'saldo + '.$req->get('amount')), array('id' => $req->get('id_to'))); 
-					$db->update('users', array('saldo' => 'saldo - '.$req->get('amount')), array('id' => $req->get('id_from'))); 
-					$db->commit(); 
-					$req->setSuccess();
+	} else {
+		$req->set('id_to', $user_to['id']);
+		$params = array('id_from', 'id_to', 'amount', 'description', 'cdate', 'date', 'transid', 'creator');
+		$new = $req->errors($params);	
+		if (!$new){
+			$db->beginTransaction(); 
+			try {
+				$db->insert('transactions', $req->get($params));
+				
+				$db->update('users', array('saldo' => $user_to['saldo'] + $req->get('amount')), array('id' => $req->get('id_to'))); 
+				$db->update('users', array('saldo' => $user_from['saldo'] - $req->get('amount')), array('id' => $req->get('id_from'))); 
+				
+				if ((substr_count($letscode_to, '/'))){
 					
-				} catch (Exception $e) {
-					$db->rollback();
-					throw $e;
+					
+					
+		// interlets
 				}
-				$req->renderStatusMessage('create');
-				if ($req->isSuccess()){
-					$mail_description = '\n\r
-						Omschrijving: '.$req->get('description').'\n\r	
-						transactie-id: '.$req->get('transid').'\n\r\n\r';
-					sendemail(null, $req->get('id_to'),
-						'['.$parameters['letsgroup_code'].'] Nieuwe Transactie ontvangen',
-						'Dit is een automatisch bericht, niet antwoorden aub. \n\r\n\r'.
-						$user_from['letscode'].' '.$user_from['name'].' schreef '.$req->get('amount').' '.$parameters['currency_plural'].' naar je over. \n\r
-						Je nieuwe saldo bedraagt nu '.($user_to['saldo'] + $req->get('amount')).' '.$parameters['currency_plural'].
-						$mail_descriiption);
-					sendemail(null, $req->get('id_from'), 
-						'['.$parameters['letsgroup_code'].'] Nieuwe Transactie uitgeschreven', 
-						'Dit is een automatisch bericht, niet antwoorden aub. \n\r\n\r
-						Je schreef '.$req->get('amount').' '.$parameters['currency_plural'].' naar '.$user_to['letscode'].' '.$user_to['name'].' over. \n\r
-						Je nieuwe saldo bedraagt nu '.($user_to['saldo'] - $req->get('amount')).' '.$parameters['currency_plural'].
-						$mail_description);
-				}
-			} 				
+
+				
+				
+				$db->commit(); 
+				$req->setSuccess();
+				
+			} catch (Exception $e) {
+				$db->rollback();
+				throw $e;
+			}
+			$req->renderStatusMessage('create');
+			if ($req->isSuccess()){
+				$mail_description = '\n\r
+					Omschrijving: '.$req->get('description').'\n\r	
+					transactie-id: '.$req->get('transid').'\n\r\n\r';
+				sendemail(null, $req->get('id_to'),
+					'['.$parameters['letsgroup_code'].'] Nieuwe Transactie ontvangen',
+					'Dit is een automatisch bericht, niet antwoorden aub. \n\r\n\r'.
+					$user_from['letscode'].' '.$user_from['name'].' schreef '.$req->get('amount').' '.$parameters['currency_plural'].' naar je over. \n\r
+					Je nieuwe saldo bedraagt nu '.($user_to['saldo'] + $req->get('amount')).' '.$parameters['currency_plural'].
+					$mail_descriiption);
+				sendemail(null, $req->get('id_from'), 
+					'['.$parameters['letsgroup_code'].'] Nieuwe Transactie uitgeschreven', 
+					'Dit is een automatisch bericht, niet antwoorden aub. \n\r\n\r
+					Je schreef '.$req->get('amount').' '.$parameters['currency_plural'].' naar '.$user_to['letscode'].' '.$user_to['name'].' over. \n\r
+					Je nieuwe saldo bedraagt nu '.($user_to['saldo'] - $req->get('amount')).' '.$parameters['currency_plural'].
+					$mail_description);
+			}				
 		}
 	}
 }	
@@ -208,8 +211,8 @@ if ($new && $req->isUser())
 		'ut.name as username_to', 'ut.letscode as letscode_to', 
 		'uf.name as username_from', 'uf.letscode as letscode_from') 
 		->from('transactions', 't')
-		->join('t', 'users', 'ut', 'ut.id = t.id_from')
-		->join('t', 'users', 'uf', 'uf.id = t.id_to')
+		->join('t', 'users', 'ut', 'ut.id = t.id_to')
+		->join('t', 'users', 'uf', 'uf.id = t.id_from')
 		->where($where);
 	if ($userid){
 		$qb->andWhere($qb->expr()->orX(

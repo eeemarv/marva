@@ -1,11 +1,11 @@
 <?php
 
 ob_start();
-require('./includes/default.php');
+require 'includes/default.php';
 
-require('./includes/request.php');
-require('./includes/data_table.php');
-require('./includes/pagination.php');
+require 'includes/request.php';
+require 'includes/data_table.php';
+require 'includes/pagination.php';
 
 $req = new request('guest');
 
@@ -99,17 +99,22 @@ if (($new && $req->isUser()) || (($edit || $delete) && $req->isOwnerOrAdmin()))
 }	
 
 if (!$req->get('id') && !($new || $edit || $delete)){
+	
 	$pagination = new Pagination($req);
-	$pagination->setQuery('news');
-
-	$query = 'select id, itemdate, DATE_FORMAT(itemdate, \'%d-%m-%Y\') AS idate, headline 
-		from news ';
-	$query .= 'order by '.$req->get('orderby'). ' ';
-	$query .= ($req->get('asc')) ? 'asc ' : 'desc ';
-	$query .= $pagination->get_sql_limit();
+	
+	$qb = $db->createQueryBuilder();
+	
+	$qb->select('id, itemdate, itemdate, headline')
+		->from('news', 'n');
 		
-	$news = $db->GetArray($query);
+	$pagination->setQuery($qb);
+		
+	$qb->orderBy($req->get('orderby'), ($req->get('asc')) ? 'asc ' : 'desc ')
+		->setFirstResult($pagination->getStart())
+		->setMaxResults($pagination->getLimit());
 
+	$news = $db->fetchAll($qb);
+	
 	$table = new data_table();
 	$table->set_data($news)->enable_no_results_message();
 
@@ -120,7 +125,10 @@ if (!$req->get('id') && !($new || $edit || $delete)){
 	$table_column_ary = array(
 		'itemdate'	=> array_merge($asc_preset_ary, array(
 			'title' => 'Datum',
-			'replace_by' => 'idate')),
+			'func' => function($row){ 
+				return date('d-m-Y', strtotime($row['itemdate']));
+			},			
+			)),
 		'headline' => array_merge($asc_preset_ary, array(
 			'title' => 'Titel',
 			'href_id' => 'id')),
