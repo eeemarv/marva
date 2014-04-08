@@ -104,7 +104,7 @@ if (!$req->get('id') && !($new || $edit || $delete)){
 	
 	$qb = $db->createQueryBuilder();
 	
-	$qb->select('id, itemdate, itemdate, headline')
+	$qb->select('id, itemdate, headline')
 		->from('news', 'n');
 		
 	$pagination->setQuery($qb);
@@ -128,7 +128,7 @@ if (!$req->get('id') && !($new || $edit || $delete)){
 			'func' => function($row){ 
 				return date('d-m-Y', strtotime($row['itemdate']));
 			},			
-			)),
+			)),			
 		'headline' => array_merge($asc_preset_ary, array(
 			'title' => 'Titel',
 			'href_id' => 'id')),
@@ -144,7 +144,7 @@ if (!$req->get('id') && !($new || $edit || $delete)){
 			'title' => $data['title'],
 			'title_suffix' => $data['indicator'],
 			'href_id' => $data['href_id'],
-			'replace_by' => $data['replace_by'],
+			'func' => $data['func'],
 			'title_params' => array(
 				'orderby' => $key,
 				'asc' => $data['asc'],

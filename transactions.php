@@ -5,6 +5,7 @@ require 'includes/default.php';
 
 require_once 'includes/inc_transactions.php';
 require_once 'includes/inc_userinfo.php'; 
+require_once 'includes/mail.php'; 
 
 require 'includes/request.php';
 require 'includes/data_table.php';
@@ -81,7 +82,7 @@ if (($req->get('create') || $req->get('create_plus')) && $req->isUser()){
 			$db->beginTransaction(); 
 			try {
 				// local
-				if ($db->fetchColumn('select id where transid = ?', array($req->get('transid')))){
+				if ($db->fetchColumn('select id from transactions where transid = ?', array($req->get('transid')))){
 					throw new Exception('Dubbele boeking van een transactie werd voorkomen.');
 				}
 				$db->insert('transactions', $req->get($params));
@@ -110,8 +111,9 @@ if (($req->get('create') || $req->get('create_plus')) && $req->isUser()){
 						'amount' => $amount, 
 						'transid' => "$transid", 
 						'signature' => "$signature"));
-					
-		
+					if ($result != 'SUCCESS'){
+						throw new Exception('De interlets transactie werd afgebroken met bericht: '.$result);	
+					}
 				}
 
 				$db->commit(); 
@@ -120,23 +122,25 @@ if (($req->get('create') || $req->get('create_plus')) && $req->isUser()){
 			} catch (Exception $e) {
 				$db->rollback();
 				setstatus($e->getMessage(), 'danger');
+				log_event("","Soap","APIKEY failed for Transaction $transid");						
 				//throw $e;
 			}
 			$req->renderStatusMessage('create');
 			if ($req->isSuccess()){
-				$mail_description = '\n\r
-					Omschrijving: '.$req->get('description').'\n\r	
-					transactie-id: '.$req->get('transid').'\n\r\n\r';
+				$n = "\r\n";
+				$mail_description = $n.$n.'
+					Omschrijving: '.$req->get('description').$n.'	
+					transactie-id: '.$req->get('transid').$n.$n;
 				sendemail(null, $req->get('id_to'),
 					'['.$parameters['letsgroup_code'].'] Nieuwe Transactie ontvangen',
-					'Dit is een automatisch bericht, niet antwoorden aub. \n\r\n\r'.
-					$user_from['letscode'].' '.$user_from['name'].' schreef '.$req->get('amount').' '.$parameters['currency_plural'].' naar je over. \n\r
+					'Dit is een automatisch bericht, niet antwoorden aub.'.$n.$n.
+					$user_from['letscode'].' '.$user_from['name'].' schreef '.$req->get('amount').' '.$parameters['currency_plural'].' naar je over. '.$n.'
 					Je nieuwe saldo bedraagt nu '.($user_to['saldo'] + $req->get('amount')).' '.$parameters['currency_plural'].
-					$mail_descriiption);
+					$mail_description);
 				sendemail(null, $req->get('id_from'), 
 					'['.$parameters['letsgroup_code'].'] Nieuwe Transactie uitgeschreven', 
-					'Dit is een automatisch bericht, niet antwoorden aub. \n\r\n\r
-					Je schreef '.$req->get('amount').' '.$parameters['currency_plural'].' naar '.$user_to['letscode'].' '.$user_to['name'].' over. \n\r
+					'Dit is een automatisch bericht, niet antwoorden aub.'.$n.$n.'
+					Je schreef '.$req->get('amount').' '.$parameters['currency_plural'].' naar '.$user_to['letscode'].' '.$user_to['name'].' over. '.$n.'
 					Je nieuwe saldo bedraagt nu '.($user_to['saldo'] - $req->get('amount')).' '.$parameters['currency_plural'].
 					$mail_description);
 			}				

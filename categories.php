@@ -23,16 +23,18 @@ $req->setEntityTranslation('Categorie')
 $new = $edit = $delete = false;
 
 if ($req->get('delete') && $req->get('id')){
-	if (sizeof($db->GetArray('select id from messages where id_category = '.$req->get('id')))){
-		setstatus('De categorie kan niet worden verwijderd want ze bevat berichten.', 'error');
+	if ($db->fetchColumn('select id from messages where id_category = ?', array($req->get('id')))){
+		setstatus('De categorie kan niet worden verwijderd want ze bevat berichten.', 'danger');
+	} else if ($db->fetchColumn('select id from categories where id_parent = ?', array($req->get('id'))){
+		setstatus('De categorie kan niet worden verwijderd want ze bevat subcategorieën.', 'danger');
 	} else {
 		$req->delete();
 	}
 } else if ($req->get('create') || $req->get('create_plus')){
 	$new = $req->errorsCreate(array('id_parent', 'cdate', 'id_creator', 'name'));	
 } else if ($req->get('edit') && $req->get('id')){
-	if ($req->get('id_parent') && sizeof($db->GetArray('select id from messages where id_category = '.$req->get('id')))){
-		setstatus('De categorie kan geen oudercategory worden want ze bevat berichten.', 'error');	
+	if ($req->get('id_parent') && ($db->fetchColumn('select id from messages where id_category = ?', array($req->get('id'))))){
+		setstatus('De categorie kan geen oudercategory worden want ze bevat berichten.', 'danger');	
 	} else {
 		$edit = $req->errorsUpdate(array('id_parent', 'name'));
 	}
@@ -67,7 +69,7 @@ if (($new || $edit || $delete) && $req->isAdmin()){
 
 	if ($delete){
 		if ($req->get('id_parent')){
-			$parent = $db->getOne('select name from categories where id = '.$req->get('id_parent')). ': ';
+			$parent = $db->fetchColumn('select name from categories where id = ?', array($req->get('id_parent')));
 		} else {
 			$parent = '';
 		}
@@ -84,16 +86,9 @@ if (($new || $edit || $delete) && $req->isAdmin()){
 
 
 
-
-
-
-
-
-
-
 if (!$req->get('id') && !($new || $edit || $delete)){
 
-	$rows = $db->GetArray('SELECT * FROM categories ORDER BY name');
+	$rows = $db->fetchAll('select * from categories order by name');
 	$cats = $cat_children = array();
 	foreach ($rows as $cat){
 		$cat_children[$cat['id_parent']][] = $cat;	

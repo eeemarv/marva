@@ -83,11 +83,11 @@ $server->register('dopayment',
    'Commit an interlets transaction'
 );
 
-$server->register('gettypeaheadusers',
+$server->register('gettypeaheadusers',    // marva
    array('apikey' => 'xsd:string')
 );
 
-function gettypeaheadusers($apikey){
+function gettypeaheadusers($apikey){  // marva
 	$typeahead_users = (checkApikey($apikey)) ? getTypeAheadUsers(false) : array();
 	return json_encode($typeahead_users);
 }
@@ -110,10 +110,10 @@ function gettoken($apikey){
 function dopayment($apikey, $from, $real_from, $to, $description, $amount, $transid, $signature){
 	global $parameters;
 	
-	// Possible status values are SUCCESS, FAILED, DUPLICATE and OFFLINE
+	// APIKEYFAIL, NOUSER, SUCCESS, FAILED, DUPLICATE and OFFLINE
 	
 	log_event("","debug","Transaction request");
-	if (!check_apikey($apikey)){
+	if (!checkApikey($apikey)){
 		return "APIKEYFAIL";
 		log_event("","Soap","APIKEY failed for Transaction $transid");		
 	}
@@ -138,6 +138,12 @@ function dopayment($apikey, $from, $real_from, $to, $description, $amount, $tran
 	}
 	
 	$amount = $parameters['currency_rate'] * $amount;
+	
+	if (($amount + $user['saldo']) > $user_to['max_limit']
+		|| ($amount - $user['saldo']) > $user_from['max_limit']){	
+		log_event('', 'Soap', 'Transaction '.$transid.' failed: limit.');
+		return 'LIMIT';
+	}
 	
 	$params = array(
 		'transid' => $transid,
@@ -164,24 +170,17 @@ function dopayment($apikey, $from, $real_from, $to, $description, $amount, $tran
 		
 	} catch (Exception $e) {
 		$db->rollback();
-		log_event('','Soap','Transaction '.$transid.' FAILED, message:'.$e->getMessage());
+		log_event('','Soap','Transaction '.$transid.' FAILED, message: '.$e->getMessage());
 		return 'FAILED';
 	}
-
-	
-			
-			if($mytransid == $transid){
-				$result = "SUCCESS";
-				log_event("","Soap","Transaction $transid processed");
-				$posted_list["amount"] = round($posted_list["amount"]);
-				mail_transaction($posted_list, $transid);
-			} else {
-				
-				$result = "FAILED";	
-			}
-			return $result;
-		}
-
+	$n = "\r\n";
+	sendemail(null, $user_to['id'],
+		'['.$parameters['letsgroup_code'].'] Nieuwe (Interlets) Transactie ontvangen',
+		'Dit is een automatisch bericht, niet antwoorden aub.'.$n.$n.
+		$user_from['letscode'].' '.$user_from['name'].' schreef '.$amount.' '.$parameters['currency_plural'].' naar je over. '.$n.'
+		Je nieuwe saldo bedraagt nu '.$user_to['saldo'] + $amount.' '.$parameters['currency_plural'].$n.$n.'
+		Omschrijving: '.$description.$n.'Transactie-id: '.$transid.$n.$n);
+	return 'SUCCESS';
 }
 
 function userbyletscode($apikey, $letscode){

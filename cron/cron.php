@@ -39,9 +39,6 @@ echo ' *** Cron system running [' .$parameters['letsgroup_code'].'] ***\n\n';
 
 
 
-
-
-
 // Auto mail saldo on request
 $frequency = readconfigfromdb("saldofreqdays") * 1440;
 if(check_timestamp("saldo", $frequency) == 1) {
@@ -49,17 +46,7 @@ if(check_timestamp("saldo", $frequency) == 1) {
 }
 
 
-// Update counts for each message category
-$frequency = 1440;
-if(check_timestamp("cat_update_count", $frequency) == 1) {
-        cat_update_count();
-}
 
-// Update the cached saldo
-$frequency = 1440;
-if(check_timestamp("saldo_update", $frequency) == 1) {
-	saldo_update();
-}
 
 // Clean up expired news items
 $frequency = 1440;  
@@ -86,50 +73,6 @@ echo "\nCron run finished\n";
 
 
 // functions 
-
-
-
-
-
-
-
-
-
-
-
-function cat_update_count() {
-	echo "Running cat_update_count\n";
-	
-	
-        $catlist = get_cat();
-        
-        
-        
-        foreach ($catlist AS $key => $value){
-                $cat_id = $value["id"];
-                update_stat_msgs($cat_id);
-        }
-
-	write_timestamp("cat_update_count");
-}
-
-function saldo_update(){
-	global $db;
-	echo "Running saldo_update ...";
-
-	$query = "SELECT * FROM users"; 
-	$userrows = $db->GetArray($query);
-
-	foreach ($userrows AS $key => $value){
-		//echo $value["id"] ." ";
-		update_saldo($value["id"]);	
-	}
-	echo "\n";
-	write_timestamp("saldo_update");
-}
-
-
- 
 
 
 function cleanup_tokens(){

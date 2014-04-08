@@ -179,6 +179,10 @@ if ($req->get('delete') && $req->get('id') && $req->isAdmin()){
 } else if ($req->get('edit') && $req->get('id') && $req->isOwner()){
 	
 	$edit = $req->errorsUpdate(array('mdate', 'comments', 'hobbies'));
+
+} else if ($req->get('create_letsgroup')){
+
+
 	
 } else if ($req->get('image_send') && $req->get('id') && $req->isOwnerOrAdmin()){
 	$filename = $_FILES['image_file']['name'];
@@ -189,22 +193,27 @@ if ($req->get('delete') && $req->get('id') && $req->isAdmin()){
 	$tmp_name = $_FILES['image_file']['tmp_name'];	
 	if (!$filename){
 		setstatus('Selecteer eerst een foto-bestand alvorens op te laden.', 'danger');
+		
 	} elseif (!in_array($ext, array('jpg', 'JPG', 'jpeg', 'JPEG'))){
 		setstatus('Ongeldige bestands-extensie. De bestands-extensie moet jpg of jpeg zijn.', 'danger');
+		
 	} elseif (!in_array($type, array('image/jpeg', 'image/jpg', 'image/pjpeg'))) {
 		setstatus('Ongeldig bestands-type.', 'danger');
+		
 	} elseif ($size > 300){
 		setstatus('Te groot bestand. De maximum grootte is 300 kB.', 'danger');
+		
 	} elseif ($error) { 
 		setstatus('Bestands-fout: '.$error, 'danger');
+		
 	} else {
 		if ($user['PictureFile']){
 			unlink('site/images/users/'.$user['PictureFile']);
 		}	
 		$filename = generateUniqueId().'-'.$req->get('id').'.'.strtolower($ext);			
 		if (move_uploaded_file($tmp_name, $_SERVER[DOCUMENT_ROOT].'/site/images/users/'.$filename)){
-			$db->AutoExecute('users', array('PictureFile' => $filename), 'UPDATE', 'id = '.$req->get('id'));
-//			log_event($req->get('id'),'Pict','User-Picture '. $filename.' uploaded');
+			$db->update('users', array('PictureFile' => $filename), array('id' => $req->get('id')));
+			log_event($req->get('id'),'Pict','User-Picture '. $filename.' uploaded');
 			setstatus('Foto toegevoegd.', 'success');				
 			$req->setSuccess();	
 		} else {
@@ -213,7 +222,7 @@ if ($req->get('delete') && $req->get('id') && $req->isAdmin()){
 	}
 			
 } else if ($req->get('image_delete') && $req->get('id') && $req->isOwnerOrAdmin()){
-	$result = $db->AutoExecute('users', array('PictureFile' => null), 'UPDATE', 'id = '.$req->get('id'));
+	$result = $db->update('users', array('PictureFile' => null), array('id' => $req->get('id')));
 	if ($result){
 		unlink('site/images/users/'.$user['PictureFile']);		
 		setstatus('Foto verwijderd', 'success');
@@ -449,10 +458,6 @@ if (!$req->get('id') && !($new || $edit || $delete || $image_delete)){
 	echo '</ul></div>';
 */
 
-
-
-
-	
 	if (sizeof($users) == 1){
 		$req->set('id', $users[0]['id'])
 			->query();

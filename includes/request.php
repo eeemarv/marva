@@ -356,6 +356,7 @@ class request {
 	}	
 
 	public function add($name, $default = null, $method = null, $rendering = array(), $validators = array()) {
+		$method = strtolower($method);
 		if (!in_array($method, array('post', 'get', 'post|get', 'get|post'))){
 			return $this;
 		}
@@ -377,6 +378,8 @@ class request {
 		if ($this->isPost() && in_array($method, array('post', 'get|post', 'post|get'))){
 			$value = $_POST[$name];
 		}
+		$this->parameters[$name]['method'] = $method;
+		
 		if ($this->parameters[$name]['type'] == 'checkbox'){
 			
 					
@@ -470,6 +473,9 @@ class request {
 		if (sizeof($this->parameters)){
 			$param_string = '?';
 			foreach ($this->parameters as $name => $data){
+				if ($data['method'] != 'get'){
+					continue;
+				}
 				$param_string .= $name.'=';
 				$param_string .= (array_key_exists($name, $overwrite_params)) ? $overwrite_params[$name] : $this->parameters[$name]['value'];
 				$param_string .= '&';
@@ -594,7 +600,7 @@ class request {
 			$out .= '<input name="'.$name.'"';
 			$out .= ($parameter['type'] == 'submit' && $parameter['label']) ? ' value="'.$parameter['label'].'"' : '';	
 			foreach($this->render_keys as $val){		
-				if (!$parameter[$val] || in_array($val, array('label', 'options', 'option_set', 'entity_id', 'admin'))){
+				if (!$parameter[$val] || in_array($val, array('label', 'options', 'option_set', 'entity_id', 'admin', 'method'))){
 					continue;
 				}
 				$out .= ' '.$val.'="'.$parameter[$val].'"';

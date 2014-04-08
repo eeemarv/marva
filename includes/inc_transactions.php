@@ -29,20 +29,7 @@ function sign_transaction($posted_list, $sharedsecret) {
 
 
 
-function update_balance($userid){
-	global $db;
-	
-	$balance = $db->fetchColumn('select saldo from users where id = ?', array($user_id));
-	$min = $db->fetchColumn('select sum(amount) from transactions where id_from = ?', array($user_id));
-	$plus = $db->fetchColumn('select sum(amount) from transactions where id_to = ?', array($user_id));
-	
-	$new_balance = $plus - $min;
 
-	if ($new_balance != $balance){
-		$db->update('users', array('saldo' => $new_balance), array('id' => $userid));	
-	}
-
-}
 
 
 ?>

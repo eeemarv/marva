@@ -54,9 +54,7 @@ function show_all_contacttypes($contacttypes){
 
 function get_all_contacttypes(){
 	global $db;
-	$query = "SELECT * FROM type_contact";
-	$contacttypes = $db->GetArray($query);
-	return $contacttypes;
+	return $db->fetchAll('select * from type_contact');;
 }
 
 
