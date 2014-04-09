@@ -19,23 +19,36 @@ $req->setEntityTranslation('Nieuwsbericht')
 	->add('asc', 0, 'get')
 	->add('id', 0, 'get|post', array('type' => 'hidden', 'entity_id' => true))	
 	->add('mode', '', 'get')
-	->add('itemdate', date('Y-m-d'), 'post', array('type' => 'text', 'label' => 'Datum', 'size' => 10, 'placeholder' => 'jjjj-mm-dd'), array('not_empty' => true, 'date' => true))
-	->add('headline', '', 'post', array('type' => 'text', 'size' => 40, 'label' => 'Titel'), array('not_empty' => true))
-	->add('newsitem', '', 'post', array('type' => 'textarea', 'cols' => 60, 'rows' => 15, 'label' => 'Inhoud'), array('not_empty' => true))
+	->add('itemdate', date('d-m-Y'), 'post', 
+		array('type' => 'text', 'label' => 'Datum', 'size' => 10, 'placeholder' => 'dd-mm-jjjj', 
+			'data-provide'=> 'datepicker', 'data-date-format' => 'dd-mm-yyyy', 'data-date-week-start' => '1',
+			'data-date-language' => 'nl'), 
+		array('not_empty' => true, 'date' => true))
+	->add('headline', '', 'post', 
+		array('type' => 'text', 'size' => 40, 'label' => 'Titel'), 
+		array('not_empty' => true))
+	->add('newsitem', '', 'post', 
+		array('type' => 'textarea', 'cols' => 60, 'rows' => 15, 'label' => 'Inhoud'), 
+		array('not_empty' => true))
 	->add('sticky', '', 'post', array('type' => 'checkbox', 'label' => 'Niet vervallen'))
 	->set('sticky', ($req->get('sticky')) ? 1 : 0)
 	->add('cdate', date('Y-m-d H:i:s'), 'post')
 	->add('id_user', $req->getSid(), 'post')
-	->addSubmitButtons()
 	
+	->addSubmitButtons()
 	->cancel()
+	->setDataTransform('itemdate', function ($in, $reverse = false){
+			return dateFormatTransform($in, $reverse);
+		})
+
 	->setOwnerParam('id_user')
 	->query()
-	->queryOwner();	
-	
+	->queryOwner();
+//	->dataTransform();	
+/*	
 $itemdate = new Datetime($req->getItemValue('itemdate'));
 $req->setItemValue('itemdate', $itemdate->format('Y-m-d'));  
-
+*/
 $new = $edit = $delete = false;
 
 if ($req->get('delete') && $req->get('id') && $req->isOwnerOrAdmin()){
@@ -95,7 +108,7 @@ if (($new && $req->isUser()) || (($edit || $delete) && $req->isOwnerOrAdmin()))
 	$submit = ($new) ? 'create' : (($edit) ? 'edit' : 'delete');
 	$create_plus = ($new) ? 'create_plus' : 'non_existing_dummy';
 	$req->set_output('nolabel')->render(array($submit, $create_plus, 'cancel', 'id'));
-	echo '</div></form>';		
+	echo '</div></form>';
 }	
 
 if (!$req->get('id') && !($new || $edit || $delete)){

@@ -174,6 +174,14 @@ function getUserClass($user){
 	}	
 }
 
+function dateFormatTransform($in, $reverse = false){
+	if ($reverse){
+		$datetime = DateTime::createFromFormat('d-m-Y', $in);
+		return $datetime->format('Y-m-d H:i:s');
+	}	
+	return date('d-m-Y', strtotime($in));	
+}
+
 function getLocalLetscode($letscode){	
 	list($letscode) = explode(' ', trim($letscode));
 	list($letscode) = explode('/', trim($letscode));	

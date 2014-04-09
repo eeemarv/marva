@@ -49,36 +49,58 @@ $req->setEntityTranslation('Gebruiker')
 	->add('cdate', date('Y-m-d H:i:s'), 'post')
 	->add('mdate', date('Y-m-d H:i:s'), 'post')	
 	->add('adate', date('Y-m-d H:i:s'), 'post')	
-	->add('name', '', 'post', array('type' => 'text', 'size' => 50, 'maxlength' => 50, 'label' => 'Gebruikersnaam', 'admin' => true), array('not_empty' => true, 'unique' => true))
-	->add('fullname', '', 'post', array('type' => 'text', 'size' => 50, 'maxlength' => 100, 'label' => 'Voor- en Achternaam', 'admin' => true), array('not_empty' => true))
-	->add('letscode', '', 'post', array('type' => 'text', 'size' => 10, 'maxlength' => 8, 'label' => 'Letscode', 'admin' => true), array('not_empty' => true, 'unique' => true))
-	->add('postcode', '', 'post', array('type' => 'text', 'size' => 10, 'maxlength' => 8, 'label' => 'Postcode', 'admin' => true), array('not_empty' => true))
-	->add('birthday', '', 'post', array('type' => 'text', 'label' => 'Geboortedatum', 'placeholder' => 'jjjj-mm-dd', 'size' => 10, 'admin' => true), array('not_empty' => true, 'date' => true))
+	->add('name', '', 'post', array('type' => 'text', 'size' => 50, 'maxlength' => 50, 'label' => 'Gebruikersnaam', 'admin' => true), 
+		array('not_empty' => true, 'unique' => true))
+	->add('fullname', '', 'post', array('type' => 'text', 'size' => 50, 'maxlength' => 100, 'label' => 'Voor- en Achternaam', 'admin' => true), 
+		array('not_empty' => true))
+	->add('letscode', '', 'post', array('type' => 'text', 'size' => 10, 'maxlength' => 8, 'label' => 'Letscode', 'admin' => true), 
+		array('not_empty' => true, 'unique' => true))
+	->add('postcode', '', 'post', array('type' => 'text', 'size' => 10, 'maxlength' => 8, 'label' => 'Postcode', 'admin' => true), 
+		array('not_empty' => true))
+	->add('birthday', '', 'post', 
+		array('type' => 'text', 'label' => 'Geboortedatum', 'placeholder' => 'dd-mm-jjjj', 'size' => 10, 'admin' => true, 
+			'data-provide' => 'datepicker', 'data-date-format' => 'dd-mm-yyyy', 'data-date-week-start' => '1', 
+			'data-date-view-mode' => '2', 'data-date-start-view' => '2', 'data-date-language' => 'nl'), 
+		array('not_empty' => true, 'date' => true))
 	->add('hobbies', '', 'post', array('type' => 'textarea', 'cols' => 50, 'rows' => 7, 'label' => 'Hobbies/Interesses'))
 	->add('comments', '', 'post', array('type' => 'text', 'size' => 50, 'maxlength' => 100, 'label' => 'Commentaar'))	
 	->add('admincomment', '', 'post', array('type' => 'text', 'size' => 50, 'maxlength' => 200, 'label' => 'Commentaar vd admin', 'admin' => true))	
 	->add('login', sha1(uniqid().microtime()), 'post')
-	->add('accountrole', 'user', 'post', array('type' => 'select', 'label' => 'Rechten', 'options' => $accountrole_options, 'admin' => true), array('not_empty' => true))
-	->add('status', 'new', 'post', array('type' => 'select', 'label' => 'Status', 'options' => $status_options, 'admin' => true), array('not_empty' => true))
+	->add('accountrole', 'user', 'post', array('type' => 'select', 'label' => 'Rechten', 'options' => $accountrole_options, 'admin' => true), 
+		array('not_empty' => true))
+	->add('status', 'new', 'post', array('type' => 'select', 'label' => 'Status', 'options' => $status_options, 'admin' => true), 
+		array('not_empty' => true))
 //	->add('minlimit', , 'post', array('type' => 'text', 'label' => 'Min limiet', 'size' => 10, 'admin' => true), array())
-	->add('maxlimit', $parameters['default_limit'], 'post', array('type' => 'text', 'label' => 'Limiet +/-', 'size' => 10, 'admin' => true), array('match' => 'positive_or_zero'))
+	->add('maxlimit', $parameters['default_limit'], 'post', array('type' => 'text', 'label' => 'Limiet +/-', 'size' => 10, 'admin' => true), 
+		array('match' => 'positive_or_zero'))
 	->add('mail', '', 'post', array('type' => 'text', 'label' => 'E-mail', 'size' => 50, 'maxlength' => 100), array('not_empty' => true, 'email' => true))
-	->add('adr', '', 'post', array('type' => 'text', 'label' => 'Adres', 'size' => 50, 'maxlength' => 100, 'placeholder' => 'Voorbeeldstraat 86, 4572 Voorbeeldplaatsnaam'), array('not_empty' => true))
+	->add('adr', '', 'post', array('type' => 'text', 'label' => 'Adres', 'size' => 50, 'maxlength' => 100, 'placeholder' => 'Voorbeeldstraat 86, 4572 Voorbeeldplaatsnaam'), 
+		array('not_empty' => true))
 	->add('tel', '', 'post', array('type' => 'text', 'label' => 'Telefoon', 'size' => 50, 'maxlength' => 20))
 	->add('gsm', '', 'post', array('type' => 'text', 'label' => 'Gsm', 'size' => 50, 'maxlength' => 20))
 	->add('web', '', 'post', array('type' => 'text', 'label' => 'Website', 'size' => 50, 'maxlength' => 100, 'placeholder' => 'http://voorbeeld.com'))
 	->add('presharedkey', '', 'post', array('type' => 'text', 'label' => 'Preshared Key', 'size' => 50, 'maxlength' => 80, 'admin' => true, 'placeholder' => 'enkel voor interlets groepen'))
 	->add('creator', $req->getSid(), 'post')
 	->add('password', '', 'post')
+	
 	->add('mail_body', '', 'post', array('type' => 'textarea', 'cols' => 60, 'rows' => 8), array('not_empty' => true, 'min_length' => 15))
 	->add('mail_cc', 'checked', 'post', array('type' => 'checkbox', 'label' => 'Stuur een kopie naar mezelf'))
 	->add('mail_send', '', 'post', array('type' => 'submit', 'label' => 'Versturen', 'class' => 'btn btn-primary'))	
+	
 	->add('image_file', '', 'post', array('type' => 'file', 'label' => 'Foto formaat .jpg of .jpeg max. 300kB', 'class' => 'btn btn-default'))
 	->add('image_send', '', 'post', array('type' => 'submit', 'label' => 'Foto toevoegen', 'class' => 'btn btn-success'))
 	->add('image_delete', '', 'post', array('type' => 'submit', 'label' => 'Foto verwijderen', 'class' => 'btn btn-danger'))
-	->addSubmitButtons()
 	
+	->add('interlets_file', '', 'post', array('type' => 'file', 'label' => 'File formaat .yml', 'class' => 'btn btn-default'))
+	->add('interlets_import', '', 'post', array('type' => 'submit', 'label' => 'Importeer', 'class' => 'btn btn-primary'))
+	->add('interlets_export', '', 'post', array('type' => 'submit', 'label' => 'Exporteer', 'class' => 'btn btn-primary'))
+
+	->addSubmitButtons()
 	->cancel()
+	->setDataTransform('birthday', function ($in, $reverse = false){
+			return dateFormatTransform($in, $reverse);
+		})	
+
 	->setOwnerParam('id')
 	->query();
 
@@ -89,13 +111,13 @@ if ($req->get('mode') == 'new'){
 }
 
 if ($req->get('id')){
-	$transactions = $db->fetchAll('select id from transactions where id_from = ? or id_to = ?', array($req->get('id'), $req->get('id')));
+	$transaction_num = $db->fetchColumn('select count(id) from transactions where id_from = ? or id_to = ?', array($req->get('id'), $req->get('id')));
 }
 
 $user = $req->getItem();
 
 if ($req->get('delete') && $req->get('id') && $req->isAdmin()){
-	if (sizeof($transactions)){
+	if ($transaction_num){
 		setstatus('Een gebruiker die reeds transacties gedaan heeft, kan niet worden verwijderd.', 'danger');
 		
 	} else {	
@@ -126,7 +148,7 @@ if ($req->get('delete') && $req->get('id') && $req->isAdmin()){
 	$new = $req->errors(array_merge($params, $contact_params));
 	
 	if (!$new){
-		$db->transactionBegin();
+		$db->beginTransaction();
 		try{
 			$db->insert('users', $req->get($params));
 			foreach($contact_params as $param => $value){
@@ -134,7 +156,7 @@ if ($req->get('delete') && $req->get('id') && $req->isAdmin()){
 					continue;
 				}
 				$type_id = $db->fetchColumn('select id from type_contact where abbrev = \'?\'', array($param));
-				$db->insert('contact', array('id_type_conact' => $type_id, 'value' => $value));
+				$db->insert('contact', array('id_type_contact' => $type_id, 'value' => $value));
 			}
 			$req->setSuccess();
 					
@@ -243,8 +265,9 @@ if ($req->isSuccess()){
 include 'includes/header.php';
 
 
-if ($req->isAdmin() && !$req->get('mode')){			
-	echo '<a href="./users.php?mode=new" class="btn btn-success pull-right">[admin] Toevoegen</a>';
+if ($req->isAdmin() && !$req->get('mode')){	
+	echo '<a href="users.php?mode=interlets" class="btn btn-success pull-right">[admin] Interlets</a>';			
+	echo '<a href="users.php?mode=new" class="btn btn-success pull-right">[admin] Toevoegen</a>';
 }
 
 
@@ -295,20 +318,33 @@ if ($image_delete && $req->isOwnerOrAdmin()){
 	echo '</div></form>';		
 }
 
+$interlets = ($req->get('mode') == 'interlets') ? true : false;
 
-if (!($new || $edit || $delete || $image_delete)){
+if ($interlets && $req->isAdmin()){
+	echo '<h2>[admin]</h2>';
+	echo '<h1>Interlets importeren</h1>';
+	echo '<form method="post" class="trans form-horizontal" role="form">';
+	$req->set_output('formgroup')->render('interlets_file');
+	$req->set_output('nolabel')->render(array('interlets_import', 'cancel', 'mode'));
+	echo '</form>';
+	echo '<h1>Interlets exporteren</h1>';
+	echo '<form method="post" class="trans form-horizontal" role="form">';
+
+	$req->set_output('nolabel')->render(array('interlets_export', 'cancel', 'mode'));
+	echo '</form>';			
+}
+
+
+if (!($new || $edit || $delete || $image_delete || $interlets)){
 	echo '<form method="GET" class="trans form-horizontal" role="form">';
 	$req->set_output('formgroup')->render(array('q', 'postcode_filter'));
 	echo '<div>';
 	$req->set_output('nolabel')->render('filter', 'show');
-	echo '</div></form>';
-	
-	
-		
+	echo '</div></form>';		
 }
 
 
-if (!$req->get('id') && !($new || $edit || $delete || $image_delete)){
+if (!$req->get('id') && !($new || $edit || $delete || $image_delete || $interlets)){
 	
 	$tabs = array(
 		'active' => array('text' => 'Alle', 'class' => 'bg-white', 
@@ -461,7 +497,7 @@ if (!$req->get('id') && !($new || $edit || $delete || $image_delete)){
 	if (sizeof($users) == 1){
 		$req->set('id', $users[0]['id'])
 			->query();
-		$transactions = $db->fetchAll('select id from transactions where id_from = ? or id_to = ?', array($req->get('id'), $req->get('id')));	
+		$transaction_num = $db->fetchColumn('select count(id) from transactions where id_from = ? or id_to = ?', array($req->get('id'), $req->get('id')));	
 	}	
 }
 	
@@ -486,7 +522,7 @@ if ($req->get('id') && !($edit || $delete || $new || $image_delete)){
 	
 			
 	if ($req->isAdmin()){
-		$disabled = (sizeof($transactions)) ? ' disabled="disabled"' : '';
+		$disabled = ($transaction_num) ? ' disabled="disabled"' : '';
 		echo '<a href="users.php?mode=delete&id='.$req->get('id').'" class="btn btn-danger pull-right"'.$disabled.'>'.$req->getAdminLabel().'Verwijderen</a>';
 	}
 	if ($req->isOwnerOrAdmin()){			
@@ -527,8 +563,11 @@ if ($req->get('id') && !($edit || $delete || $new || $image_delete)){
 	
 	echo '<div class="col-md-4">';
 	echo '<div class="panel panel-default"><div class="panel-heading">Saldo</div>';
-	echo '<div class="panel-body"><a href="transactions.php?userid='.$req->get('id').'">';
-	echo getCurrencyText($user['saldo']).'</a> (limiet : +/-'.getCurrencyText($user['maxlimit']).')</div></div>';
+	echo '<div class="panel-body"><p><a href="transactions.php?userid='.$req->get('id').'">';
+	echo getCurrencyText($user['saldo']).'</a></p>';
+	echo '<p>limiet: +/-'.getCurrencyText($user['maxlimit']).'</p>';
+//	echo '<p>transacties: <a href="transactions.php?userid='.$req->get('id').'">'.$transaction_num.'</a></p>';
+	echo '</div></div>';
 	
 	echo '<div class="panel panel-default"><div class="panel-heading">';
 	echo '<a href="messages.php?userid='.$req->get('id').'">';

@@ -33,8 +33,8 @@ echo '<script type="text/javascript" src="js/table_sum.js"></script>
 	<script src="'.$jquery.'"></script>
 	<script src="'.$bootstrap.'/js/bootstrap.min.js"></script>
 	<script src="'.$typeahead.'/typeahead.bundle.min.js"></script>
-	<script scr="'.$datepicker.'/js/bootstrap-datepicker.js"></script>
-	<script scr="'.$datepicker.'/js/locales/bootstrap-datepicker.nl-BE.js"></script>
+	<script src="'.$datepicker.'/js/bootstrap-datepicker.js"></script>
+	<script src="'.$datepicker.'/js/locales/bootstrap-datepicker.nl.js"></script>
 	
 </head>
 <body>

@@ -25,7 +25,7 @@ $new = $edit = $delete = false;
 if ($req->get('delete') && $req->get('id')){
 	if ($db->fetchColumn('select id from messages where id_category = ?', array($req->get('id')))){
 		setstatus('De categorie kan niet worden verwijderd want ze bevat berichten.', 'danger');
-	} else if ($db->fetchColumn('select id from categories where id_parent = ?', array($req->get('id'))){
+	} else if ($db->fetchColumn('select id from categories where id_parent = ?', array($req->get('id')))){
 		setstatus('De categorie kan niet worden verwijderd want ze bevat subcategorieën.', 'danger');
 	} else {
 		$req->delete();
@@ -119,17 +119,23 @@ if (!$req->get('id') && !($new || $edit || $delete)){
 			'href_id' => 'id',
 			'href_static_param' => '&mode=edit'))
 		->add_column('msg_num', array(
-			'title' => 'Vraag & Aanbod', 
-			'href_base' => 'messages.php', 
-			'href_param' => 'catid', 
-			'href_id' => 'id',
-			'show_when' => 'msg_num'))
+			'title' => 'Vraag & Aanbod',
+			'func' => function ($row) {
+				if ($row['msg_num']){
+					return '<a href="messages.php?catid='.$row['id'].'">'.$row['msg_num'].'</a>';
+				}
+				return '';
+			},
+			))
 		->add_column('delete', array(
 			'title' => 'Verwijderen', 
-			'text' => 'Verwijderen', 
-			'href_id' => 'id', 
-			'href_static_param' => '&mode=delete',
-			'not_show_when' => 'msg_num'))
+			'func' => function ($row){
+				if ($row['msg_num'] || $row['children_num']){
+					return '';
+				}
+				return '<a href="categories.php?mode=delete&id='.$row['id'].'">Verwijderen</a>';
+			},	
+			))
 		->render();
 
 }

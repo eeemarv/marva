@@ -122,28 +122,43 @@ class request {
 	}
 	
 	public function setDataTransform($param, $transform){
-		if (!is_array($transform)){
-				return $this;
-		}
 		$this->data_transformers[$param] = $transform;		
 		return $this;
 	}
 	
 	public function dataTransform(){
+		
+		
 		if (!is_array($this->item)){
 			return $this;
 		}		
 		foreach($this->data_transformers as $param => $transform){
-			if (array_key_exists($param, $this->item) && array_key_exists($this->item[$param], $transform)){
-				$this->item[$param] = $transform[$this->item[$param]];
+			if (!array_key_exists($param, $this->item)){
+				continue;
 			}
+			if (is_array($transform) && array_key_exists($this->item[$param], $transform)){
+				$this->item[$param] = $transform[$this->item[$param]];
+				continue;
+			}	
+				
+			if (is_callable($transform)){
+				$this->item[$param] = call_user_func($transform, $this->item[$param], false);
+			}
+
 		}
 		return $this;
 	}
 	
 	public function dataReverseTransform($params){
 		foreach($this->data_transformers as $param => $transform){
-			if (array_key_exists($param, $params) && in_array($params[$param], $transform)){
+			if (!array_key_exists($param, $params)){
+				continue;
+			}
+			if (is_callable($transform)){
+				$params[$param] = call_user_func($transform, $params[$param], true);
+				continue;
+			}
+			if (is_array($transform) && in_array($params[$param], $transform)){
 				$params[$param] = array_search($params[$param], $transform);
 			}
 		}
@@ -363,6 +378,10 @@ class request {
 		foreach($rendering as $key => $val){
 			if (in_array($key, $this->render_keys)){
 				$this->parameters[$name][$key] = $val;
+				continue;
+			}
+			if (strpos($key, 'data-') === 0){      //bootstrap data options
+				$this->parameters[$name]['data'][$key] = $val;
 			}
 		}
 		foreach($validators as $key => $val){
@@ -604,6 +623,11 @@ class request {
 					continue;
 				}
 				$out .= ' '.$val.'="'.$parameter[$val].'"';
+			}
+			if (is_array($parameter['data'])){
+				foreach ($parameter['data'] as $key => $val){
+					$out .= ' '.$key.'="'.$val.'"';
+				}
 			}
 			$out .= '>';
 		}	
@@ -847,17 +871,18 @@ class request {
 	
 	private function isUnique($param_name){
 		global $db;
-		$val = $parameter['value'];
 		$qb = $db->createQueryBuilder();
 		$qb->select('count(id)')
-			->from($this->entity, 'x')
+			->from($this->entity, 'a')
 			->where($qb->expr()->eq($param_name, '\''.$this->parameters[$param_name]['value'].'\''));
-		return ($db->fetchColumn($qb) == 0) ? true : false;		
+			echo $qb;
+			var_dump($db->fetchColumn($qb));
+		return ($db->fetchColumn($qb)) ? false : true;		
 	}
 
 	function isDate($date){
-		if(preg_match("/^(\d{4})-(\d{2})-(\d{2})$/", $date, $matches)){
-			if(checkdate($matches[2], $matches[3], $matches[1])){
+		if(preg_match("/^(\d{2})-(\d{2})-(\d{4})$/", $date, $matches)){
+			if(checkdate($matches[2], $matches[1], $matches[3])){
 				return true;
 			}
 		}

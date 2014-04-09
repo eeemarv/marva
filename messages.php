@@ -37,29 +37,40 @@ $req->setEntityTranslation('Bericht')
 	->add('filter', '', 'get', array('type' => 'submit', 'label' => 'Toon'))
 	->add('id', 0, 'get|post', array('type' => 'hidden'))		
 	->add('mode', '', 'get|post', array('type' => 'hidden'))
-	->add('msg_type', 'ow', 'post', array('type' => 'select', 'label' => 'Vraag-Aanbod', 'options' => $offer_want_options), array('not_empty' => true, 'match' => array('o', 'w')))
-	->add('id_user', $req->getSid(), 'post', array('type' => 'select', 'label' => $req->getAdminLabel().'Van', 'option_set' => 'active_users'), array('not_empty' => true, 'match' => 'active_user'))
-	->add('id_category', 0, 'post', array('type' => 'select', 'label' => 'Categorie', 'option_set' => 'subcategories'), array('not_empty' => true, 'match' => 'subcategory'))
+	->add('msg_type', 'ow', 'post', array('type' => 'select', 'label' => 'Vraag-Aanbod', 'options' => $offer_want_options), 
+		array('not_empty' => true, 'match' => array('o', 'w')))
+	->add('id_user', $req->getSid(), 'post', array('type' => 'select', 'label' => $req->getAdminLabel().'Van', 'option_set' => 'active_users'), 
+		array('not_empty' => true, 'match' => 'active_user'))
+	->add('id_category', 0, 'post', array('type' => 'select', 'label' => 'Categorie', 'option_set' => 'subcategories'), 
+		array('not_empty' => true, 'match' => 'subcategory'))
 	->add('content', '', 'post', array('type' => 'text', 'size' => 40, 'label' => 'Titel'), array('not_empty' => true))
-	->add('description', '', 'post', array('type' => 'textarea', 'cols' => 60, 'rows' => 15, 'label' => 'Inhoud'), array('not_empty' => true))	
-	->add('amount', 0, 'post', array('type' => 'text', 'size' => 4, 'maxlength' => 3, 'label' => 'Richtprijs ('.$currency.')'), array('match' => 'positive'))
+	->add('description', '', 'post', array('type' => 'textarea', 'cols' => 60, 'rows' => 15, 'label' => 'Inhoud'), 
+		array('not_empty' => true))	
+	->add('amount', 0, 'post', array('type' => 'text', 'size' => 4, 'maxlength' => 3, 'label' => 'Richtprijs ('.$currency.')'), 
+		array('match' => 'positive'))
 	->add('cdate', date('Y-m-d H:i:s'), 'post')
 	->add('mdate', date('Y-m-d H:i:s'), 'post')
+	
 	->add('mail_body', '', 'post', array('type' => 'textarea', 'cols' => 60, 'rows' => 8), array('not_empty' => true, 'min_length' => 15))
 	->add('mail_cc', 'checked', 'post', array('type' => 'checkbox', 'label' => 'Stuur een kopie naar mezelf'))
 	->add('mail_send', '', 'post', array('type' => 'submit', 'label' => 'Versturen', 'class' => 'btn btn-primary'))	
+	
 	->add('image_file', '', 'post', array('type' => 'file', 'label' => 'Foto formaat .jpg of .jpeg max. 300kB', 'class' => 'btn btn-default'))
 	->add('image_send', '', 'post', array('type' => 'submit', 'label' => 'Toevoegen', 'class' => 'btn btn-success'))
 	->add('image_delete', '', 'post', array('type' => 'submit', 'label' => 'Verwijderen', 'class' => 'btn btn-danger'))
 	->add('image_id', 0, 'get|post', array('type' => 'hidden'))
+	
 	->addSubmitButtons()
 	->cancel()
+	
+	->setDataTransform('msg_type', array(0 => 'w', 1 => 'o'))	
+	
 	->setOwnerParam('id_user')
 	->query()
 	->queryOwner()
-	->renameItemParams(array('Description' => 'description'))
-	->setDataTransform('msg_type', array(0 => 'w', 1 => 'o'))
-	->dataTransform();
+	->renameItemParams(array('Description' => 'description'));
+
+//	->dataTransform();
 
 $images = array();
 if ($req->get('image_id')){
@@ -351,8 +362,8 @@ if (!$req->get('id') && !($new || $edit || $delete || $image_delete)){
 		$req->set('id', $messages[0]['mid'])
 			->query()
 			->queryOwner()
-			->renameItemParams(array('Description' => 'description'))
-			->dataTransform();
+			->renameItemParams(array('Description' => 'description'));
+//			->dataTransform();
 	}
 }
 
