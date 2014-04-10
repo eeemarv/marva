@@ -30,14 +30,17 @@ $req->setEntityTranslation('Transactie')
 
 	->add('show', 'all', 'get', array('type' => 'hidden'))
 	
-	->add('mode', '', 'get')
-	->add('id_from', $req->getSid(), 'post', array('type' => 'select', 'label' => 'Van', 'option_set' => 'active_users_without_interlets', 'admin' => true), array('not_empty' => true))
+	->add('mode', '', 'get|post', array('type' => 'hidden'))
+	->add('id_from', $req->getSid(), 'post', array('type' => 'select', 'label' => 'Van', 'option_set' => 'active_users_without_interlets', 'admin' => true), 
+		array('not_empty' => true))
 	->add('creator', $req->getSid(), 'post')
 	->add('id_to', 0, 'post')
 	->add('date', date('Y-m-d'), 'post')
 	->add('cdate', date('Y-m-d H:i:s'), 'post')
-	->add('letscode_to', '', 'post', array('type' => 'text', 'size' => 40, 'maxlength' => 10, 'label' => 'Aan LetsCode', 'autocomplete' => 'off', 'class' => 'typeahead-users'), array('not_empty' => true, 'match' => 'active_letscode'))
-	->add('amount', '', 'post', array('type' => 'text', 'size' => 10, 'maxlength' => 6, 'label' => 'Aantal '.$parameters['currency_plural'] , 'autocomplete' => 'off'), array('not_empty' => true))
+	->add('letscode_to', '', 'post', array('type' => 'text', 'size' => 40, 'maxlength' => 10, 'label' => 'Aan LetsCode', 'autocomplete' => 'off', 'class' => 'typeahead-users'), 
+		array('not_empty' => true, 'match' => 'active_letscode'))
+	->add('amount', '', 'post', array('type' => 'text', 'size' => 10, 'maxlength' => 6, 'label' => 'Aantal '.$parameters['currency_plural'] , 'autocomplete' => 'off'), 
+		array('not_empty' => true))
 	->add('description', '', 'post', array('type' => 'text', 'size' => 40, 'maxlength' => 60, 'label' => 'Omschrijving', 'autocomplete' => 'off'), array('not_empty' => true))
 	->add('transid', generateUniqueId(), 'post', array('type' => 'hidden'))
 			
@@ -64,7 +67,7 @@ if (($req->get('create') || $req->get('create_plus')) && $req->isUser()){
 			Saldo: '.$user_from['saldo'].', limiet: '.$user_from['maxlimit'] , 'danger');	
 		
 	} else if (!$user_to){
-		setstatus('Bestemmeling niet gevonden. (ongeldig letscode)', 'danger');
+		setstatus('Bestemmeling niet gevonden. (ongeldige letscode)', 'danger');
 			
 	} else if ($user_to['id'] == $user_from['id']){
 		setstatus('Uitschrijver en bestemmeling kunnen niet dezelfde zijn.', 'danger');
@@ -180,7 +183,7 @@ if ($new && $req->isUser())
 	$from_user_id = ($req->isAdmin()) ? 'id_from' : 'non_existing_dummy';
 	$req->set_output('formgroup')->render(array($from_user_id, 'letscode_to',  'amount', 'description', 'confirm_password', 'transid'));
 	echo '<div>';
-	$req->set_output('nolabel')->render(array('create', 'create_plus', 'cancel'));
+	$req->set_output('nolabel')->render(array('create', 'create_plus', 'cancel', 'mode'));
 	echo '</div></form>';
 	
 	echo '<script type="text/javascript" src="js/typeahead_users.js"></script>';

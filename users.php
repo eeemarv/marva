@@ -106,7 +106,7 @@ $req->setEntityTranslation('Gebruiker')
 
 $new = $edit = $delete = false;
 
-if ($req->get('mode') == 'new'){
+if ($req->get('mode') == 'new' || $req->get('mode') == 'interlets'){
 	$req->setSecurityLevel('admin');	
 }
 
@@ -142,61 +142,53 @@ if ($req->get('delete') && $req->get('id') && $req->isAdmin()){
 	
 } else if (($req->get('create') || $req->get('create_plus')) && $req->isAdmin()){
 	$params = array('cdate', 'mdate', 'creator', 'comments', 'hobbies', 'name', 'birthday', 
-			'letscode', 'postcode', 'login', 'accountrole', 'status', 'minlimit', 'maxlimit', 'fullname', 'admincomment',
+			'letscode', 'postcode', 'accountrole', 'status', 'maxlimit', 'fullname', 'admincomment',
 			'adate');
 	$contact_params = array('mail', 'tel', 'gsm', 'adr', 'web');
+	
 	$new = $req->errors(array_merge($params, $contact_params));
 	
-	if (!$new){
+	if (!$new){ 
+		
+		$type_contact_ids = array();
+		$stmt = $db->prepare('select abbrev, id from type_contact');
+		$stmt->execute();
+		while ($row = $stmt->fetch(PDO::FETCH_ASSOC)){
+			$type_contact_ids[$row['abbrev']] = $row['id'];
+		}
+		
 		$db->beginTransaction();
+		
 		try{
-			$db->insert('users', $req->get($params));
+			$db->insert('users', $req->dataReverseTransform($req->get($params)));
+			$user_id = $db->lastInsertId();
+			
+			$contact_params = $req->get($contact_params);
+
 			foreach($contact_params as $param => $value){
 				if (!$value){
 					continue;
 				}
-				$type_id = $db->fetchColumn('select id from type_contact where abbrev = \'?\'', array($param));
-				$db->insert('contact', array('id_type_contact' => $type_id, 'value' => $value));
+				if (!$type_contact_ids[$param]){
+					throw new Exception('Contact type '.$param.' bestaat niet.');
+				}
+				$db->insert('contact', array('id_type_contact' => $type_contact_ids[$param], 'value' => $value, 'id_user' => $user_id));
 			}
 			$req->setSuccess();
 					
 		} catch (Exception $e) {
 			$db->rollback();
-			throw $e;
+			setstatus('De verrichting werd afgebroken met vermelding: '.$e->getMessage(), 'danger');
 		}
-		$req->renderStatusMessage('create');	
-			
-	}
 		
-		
-/*		$req->create(array('cdate', 'mdate', 'creator', 'comments', 'hobbies', 'name', 'birthday', 
-			'letscode', 'postcode', 'login', 'accountrole', 'status', 'minlimit', 'maxlimit', 'fullname', 'admincomment',
-			'adate'));
-		if ($req->get('id')){ 
-			
-			$req->create_contact(array('mail', 'tel', 'gsm', 'adr'));
-				
-			$mail_id = $db->GetRow('select id from type_contact where abbrev = \'mail\'');
-			$tel_id = $db->GetRow('select id from type_contact where abbrev = \'tel\'');
-			$gsm_id = $db->GetRow('select id from type_contact where abbrev = \'gsm\'');
-			$adr_id = $db->GetRow('select id from type_contact where abbrev = \'adr\'');
-		
-/////////////////////////////////////////			
-			
-			
-			$db->execute('insert into contacts set id = ');
-		}
+		$req->renderStatusMessage('create');		
 	}	
-	
-*/
-		
-	
 	
 } else if ($req->get('edit') && $req->get('id') && $req->isAdmin()){
 	
 	$edit = $req->errorsUpdate(array('mdate', 'comments', 'hobbies', 'name', 'birthday', 
-		'letscode', 'postcode', 'login', 'accountrole', 'status', 'minlimit', 'maxlimit', 'fullname', 'admincomment',
-		'presharedkey', 'adate'));
+		'letscode', 'postcode', 'login', 'accountrole', 'status', 'maxlimit', 'fullname', 'admincomment',
+		'adate'));
 		
 } else if ($req->get('edit') && $req->get('id') && $req->isOwner()){
 	
@@ -273,6 +265,7 @@ if ($req->isAdmin() && !$req->get('mode')){
 
 echo '<h1><a href="users.php">Gebruikers</a></h1>';
 
+		  
 $new = ($req->get('mode') == 'new') ? true : $new;
 $edit = ($req->get('mode') == 'edit') ? true : $edit;
 $delete = ($req->get('mode') == 'delete') ? true : $delete;

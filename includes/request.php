@@ -875,8 +875,9 @@ class request {
 		$qb->select('count(id)')
 			->from($this->entity, 'a')
 			->where($qb->expr()->eq($param_name, '\''.$this->parameters[$param_name]['value'].'\''));
-			echo $qb;
-			var_dump($db->fetchColumn($qb));
+		if ($this->get('id')){
+			$qb->andWhere($qb->expr()->neq('id', $this->get('id')));
+		}
 		return ($db->fetchColumn($qb)) ? false : true;		
 	}
 

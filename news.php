@@ -83,7 +83,7 @@ if($req->isUser() && !$req->get('mode')){
 	echo '<a href="./news.php?mode=new" class="btn btn-success pull-right">Toevoegen</a>';
 } 
 
-echo '<h1><a href="news.php">Nieuwsberichten / Agendapunten</a></h1>';	
+echo '<h1><a href="news.php">Nieuws / Agenda</a></h1>';	
 
 $new = ($req->get('mode') == 'new') ? true : $new;
 $edit = ($req->get('mode') == 'edit') ? true : $edit;

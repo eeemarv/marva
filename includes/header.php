@@ -58,7 +58,7 @@ if ($req->isGuest()){
 		'messages' => 'Vraag & Aanbod',
 		'users'	=> 'Gebruikers',
 		'transactions' => 'Transacties',
-		'news' => 'Nieuws',
+		'news' => 'Agenda',
 		);
 
 	foreach($menu as $entity => $label){
