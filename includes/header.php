@@ -5,7 +5,7 @@ $jquery = ($parameters['cdn']) ? 'http://code.jquery.com/jquery-1.11.0.min.js' :
 $font_awesome = ($parameters['cdn']) ? '//netdna.bootstrapcdn.com/font-awesome/4.0.3' : $rootpath.'vendor/font-awesome';
 $datepicker = ($parameters['cdn']) ? '//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0' : $rootpath.'vendor/eternicode/bootstrap-datepicker';
 $typeahead = ($parameters['cdn']) ? '//cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.10.2' : $rootpath.'vendor/twitter/typeahead.js/dist';
-
+$handlebars = ($parameters['cdn']) ? '//cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0-alpha.2' : $rootpath.'vendor/components/handlebars.js';
 
 echo '
 <!DOCTYPE html>
@@ -33,6 +33,7 @@ echo '<script type="text/javascript" src="js/table_sum.js"></script>
 	<script src="'.$jquery.'"></script>
 	<script src="'.$bootstrap.'/js/bootstrap.min.js"></script>
 	<script src="'.$typeahead.'/typeahead.bundle.min.js"></script>
+	<script src="'.$handlebars.'/handlebars.min.js"></script>	
 	<script src="'.$datepicker.'/js/bootstrap-datepicker.js"></script>
 	<script src="'.$datepicker.'/js/locales/bootstrap-datepicker.nl.js"></script>
 	

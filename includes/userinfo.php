@@ -39,7 +39,7 @@ function getTypeAheadUsers($include_interlets = true){
 
 	foreach ($typeahead_users as &$row){
 		$row['a'] = ($row['a'] > $newUserTime) ? 1 : 0;
-		$row['le'] = ($row['le'] == 2) ? 1 : 0;
+		$row['le'] = ($row['status'] == 2) ? 1 : 0;
 		$row['s'] = ($row['status'] == 4) ? 1 : 0;
 		$row['e'] = ($row['status'] == 7) ? 1 : 0;
 	//	$row['c'] .= ($row['e']) ? '/' : '';

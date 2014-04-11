@@ -2,7 +2,8 @@
 ob_start();
 require_once 'includes/default.php';
 
-require_once 'includes/inc_userinfo.php'; 
+require_once 'includes/userinfo.php'; 
+require_once 'includes/passwords.php'; 
 require_once 'includes/mail.php'; 
 
 
@@ -97,9 +98,19 @@ $req->setEntityTranslation('Gebruiker')
 
 	->addSubmitButtons()
 	->cancel()
+	->setDataTransform('status', array(
+		0 => 'inactive', 
+		1 => 'active', 
+		2 => 'leaving', 
+		3 => 'new', 
+		4 => 'system', 
+		5 => 'info', 
+		6 => 'infomoment',
+		7 => 'interlets',
+	))
 	->setDataTransform('birthday', function ($in, $reverse = false){
 			return dateFormatTransform($in, $reverse);
-		})	
+	})	
 
 	->setOwnerParam('id')
 	->query();
@@ -512,7 +523,6 @@ if ($req->get('id') && !($edit || $delete || $new || $image_delete)){
 
 	$req->setItemValue('unix', strtotime($req->getItemValue('adate')));
 	$user = $req->getItem();
-	
 			
 	if ($req->isAdmin()){
 		$disabled = ($transaction_num) ? ' disabled="disabled"' : '';
@@ -522,7 +532,7 @@ if ($req->get('id') && !($edit || $delete || $new || $image_delete)){
 		echo '<a href="users.php?mode=edit&id='.$req->get('id').'" class="btn btn-primary pull-right">'.$req->getAdminLabel().'Aanpassen</a>';
 	}	
 
-	$class = getUserClass($user);
+	$class = getUserClass($req->dataReverseTransform($user));
 	$class = ($class) ? ' class="bg-'.$class.'"' : '';
 	echo '<div'.$class.'>';
 	echo '<h1>'.trim($user['letscode']).'&nbsp;'.htmlspecialchars($user['fullname'],ENT_QUOTES).'</h1>';

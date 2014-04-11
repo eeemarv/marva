@@ -87,7 +87,7 @@ nav.affix{
 div.success{
 	background-color: #dff0d8;
 }
-div.error{
+div.danger{
 	background-color: #f2dede;
 }
 div.warning{
@@ -167,15 +167,15 @@ tr.ajax-loader td div{
 }
 
 
-
 /*
+
 .twitter-typeahead .tt-query,
 .twitter-typeahead .tt-hint {
   margin-bottom: 0;
   padding-top: 6px;
   padding-left: 9px;
 }
-
+*/
 .tt-dropdown-menu {
   min-width: 300px;
   margin-top: 2px;
@@ -231,7 +231,7 @@ margin-bottom: 10px;
 	background-color: #dff0d8;;
 }
 
-div.tt-suggestion p.error {
+div.tt-suggestion p.danger {
 	background-color: #f2dede;
 }
 div.tt-suggestion p.warning {
@@ -253,6 +253,11 @@ div.tt-is-under-cursor p.inactive
 	background-color: transparent;
 } 
 
+div.tt-suggestion p:hover{
+	background-color: blue;
+	color: white;
+	cursor: pointer;
+}
 
 
 

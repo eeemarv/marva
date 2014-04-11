@@ -58,7 +58,15 @@ foreach ($transactions AS $key => $value){
 		$client = new nusoap_client($mysoapurl, true);
 		$err = $client->getError();
 		if (!$err) {
-			$result = $client->call('dopayment', array('apikey' => "$myapikey", 'from' => "$from", 'real_from' => "$real_from", 'to' => "$letscode_to", 'description' => "$description", 'amount' => $amount, 'transid' => "$transid", 'signature' => "$signature"));
+			$result = $client->call('dopayment', 
+				array('apikey' => $myapikey, 
+				'from' => $from, 
+				'real_from' => $real_from, 
+				'to' => $letscode_to, 
+				'description' => $description, 
+				'amount' => $amount,
+				'transid' => $transid, 
+				'signature' => $signature));
 			$err = $client->getError();
     			if (!$err) {
 				echo $result;

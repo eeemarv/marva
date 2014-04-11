@@ -6,7 +6,7 @@ require_once $rootpath.'includes/default.php';
 
 require_once $rootpath.'includes/request.php';
 
-require_once $rootpath.'includes/inc_userinfo.php';
+require_once $rootpath.'includes/userinfo.php';
 
 $req = new request('user');
 

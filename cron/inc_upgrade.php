@@ -10,18 +10,18 @@ function doupgrade($version){
 	switch($version){
 		case 2100:
 			$query = "INSERT INTO `config` (`category`,`setting`,`value`,`description`,`default`) VALUES('cron',
- 'msgcleanupenabled', '1', 'V/A automatisch opruimen', 1)";
+					'msgcleanupenabled', '1', 'V/A automatisch opruimen', 1)";
 			executequery($query);
 			
 			$ran = 1;
 			break;
 		case 2190:
-			$query = "INSERT INTO `config` (`category`,`setting`,`value`,`description`,`default`) VALUES('system
-', 'share_enabled', '0', 'Sharing enabled', 1)";
+			$query = "INSERT INTO `config` (`category`,`setting`,`value`,`description`,`default`) VALUES('system', 
+				'share_enabled', '0', 'Sharing enabled', 1)";
 			executequery($query);
 			
 			$query = "INSERT INTO `config` (`category`,`setting`,`value`,`description`,`default`) VALUES('mail',
- 'news_announce', '', 'Announce news to this address', 1)";
+				'news_announce', '', 'Announce news to this address', 1)";
 			executequery($query);
 			
 			$query = "ALTER TABLE  `news` ADD  `published` TINYINT( 1 ) NULL AFTER  `approved`";
@@ -239,12 +239,103 @@ PRIMARY KEY (  `key` ) ) CHARACTER SET utf8 COLLATE utf8_general_ci";
 
             break;
             
-        case 2207:
+            
+            
+         case 2207:
+			# Create the locout parameter for ESM integration
 			$query = "INSERT INTO `parameters` (`parameter`, `value`) VALUES ('lockout','0')";
 			executequery($query);
             $ran = 1;
 
             break;
+ 
+///////////////////////////////////////// -> for marva schemaversion is assumed to be at least 2206 
+ 
+            
+        case 2208:
+			# Create the subscription table
+			$query = "CREATE TABLE `listsubscriptions` (`listname` VARCHAR(25) NOT NULL, `user_id` INT(11) NOT NULL, PRIMARY KEY(`listname`,`user_id`))";
+			executequery($query);
+            $ran = 1;
+
+            break;
+            
+        case 2209:
+			# MailQ is removed before final
+			
+			#$query = "CREATE TABLE `mailq` (`msgid` VARCHAR(25) NOT NULL, `listname` VARCHAR(25) NOT NULL, `from` VARCHAR(25) NOT NULL, `message` TEXT NOT NULL,  `sent` BOOL NULL DEFAULT  '0', PRIMARY KEY(`msgid`), INDEX (`sent`))";
+			#executequery($query);
+            $ran = 1;
+
+            break;
+            
+        case 2210:
+			# MailQ is removed before final
+			# Add subject field to mailq!
+			#$query = "ALTER TABLE `mailq` ADD `subject` VARCHAR(200) NULL";
+			#executequery($query);
+            $ran = 1;
+
+            break;
+            
+        case 2211:
+			# Add uuid field to messages
+			$query = "ALTER TABLE `messages` ADD `uuid` VARCHAR(30) NULL, ADD INDEX ( `uuid` )";
+			executequery($query);
+            $ran = 1;
+
+            break;
+            
+        case 2212:
+			# Add a setting to toggle the use of mailing lists, on by default
+			$query = "INSERT INTO `config` (`category`,`setting`,`value`,`description`,`default`) VALUES('mail','mailinglists_enabled','1', 'Enable mailing list functionality', 0)";
+            executequery($query);
+			
+			$ran = 1;
+			break;
+        
+        case 2213:
+			$query = "ALTER TABLE `messages` ADD `noannounce` BOOL NULL DEFAULT  '0', ADD INDEX ( `noannounce` )";
+			executequery($query);
+            $ran = 1;
+
+            break;
+        case 2214:
+			$systemtag = readconfigfromdb("systemtag");
+			$uuid = uniqid($systemtag. "_", true);
+			
+			$query = "INSERT INTO `parameters` (`parameter`, `value`) VALUES ('uuid','" .$uuid ."')";
+			executequery($query);
+            $ran = 1;
+
+            break;
+        case 2215:
+			$query = "ALTER TABLE `lists` ADD `moderation` BOOL NULL DEFAULT  '0', ADD INDEX ( `moderation` )";
+			executequery($query);
+            $ran = 1;
+            
+			break;
+			
+		case 2216:
+			$query = "ALTER TABLE `lists` ADD `moderatormail` VARCHAR(70)";
+			executequery($query);
+            $ran = 1;
+            
+		case 2217:
+			$query = "UPDATE `config` SET value = 0 WHERE setting = 'mailinglists_enabled'"; 
+			executequery($query);
+            $ran = 1;
+            
+        case 2219:
+			// FIXME: We need to repeat 2205 and 2206 to fix imported transactions after those updates
+			break;           
+            
+            
+            
+            
+            
+            
+            
 	}
 	
 	// Finay, update the schema version
@@ -274,14 +365,13 @@ function executequery($query) {
 			$mailto = readconfigfromdb("admin");
 			$mailfrom = readconfigfromdb("admin");
 			// Include redmine in each report
-			$mailto .= ", support@taurix.net";
+
 			$mailsubject = "[eLAS " . $configuration["system"]["systemtag"] ."] DB Update FAILED";
 			
 			$mailcontent = "A query failed during the upgrade of your eLAS database!\n  This report has been copied to the eLAS developers.";
 			$mailcontent .= "\nFailed query: $query\n";
 			$mailcontent .= "\r\n";
 			$mailcontent .= "eLAS versie: " .$elas->version ."-" .$elas->branch ."-r" .$elas->revision ."\r\n";
-			//$mailcontent .= "eLAS version: " .$elasversion ."\r\n";
 			
 			$mailcontent .= "De eLAS update robot";
 			

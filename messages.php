@@ -4,7 +4,7 @@ ob_start();
 
 require_once 'includes/default.php';
 
-require_once 'includes/inc_userinfo.php'; 
+require_once 'includes/userinfo.php'; 
 require_once 'includes/mail.php'; 
 
 require_once 'includes/request.php';

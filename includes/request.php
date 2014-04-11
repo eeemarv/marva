@@ -605,6 +605,8 @@ class request {
 		$parameter['checked'] = ($parameter['type'] == 'checkbox' && $parameter['value']) ? 'checked' : null;
 		if ($parameter['type'] == 'recaptcha'){
 			$out .= recaptcha_get_html($parameters['recaptcha_public']);
+			
+			
 		} elseif ($parameter['type'] == 'select'){
 			$out .= '<select name="'.$name.'">';
 			$out .= $this->getSelectOptionsString($name);

@@ -3,12 +3,12 @@ ob_start();
 
 $rootpath = './';
 
-require_once($rootpath.'includes/default.php');
+require_once 'includes/default.php';
 
 
-require_once($rootpath.'includes/inc_userinfo.php');
+require_once 'includes/userinfo.php';
 
-require_once($rootpath.'includes/request.php');
+require_once 'includes/request.php';
 
 $req = new request('anonymous', true);
 
@@ -115,7 +115,7 @@ if($parameters['maintenance']){
 	setstatus('Marva is niet beschikbaar wegens onderhoud.  Enkel admin gebruikers kunnen inloggen', 'warning');
 }
 
-require_once($rootpath.'includes/header.php');
+require_once 'includes/header.php';
 
 echo '<h1><a href="login.php">Inloggen</a></h1>';
 
@@ -129,11 +129,11 @@ if(!$req->get('token')){
 	echo '<div>';
 	$req->set_output('nolabel')->render(array('submit_login', 'cancel', 'location'));
 	echo '</div></form>';
-	echo '<ul><li><a href="'.$rootpath.'passwordlost.php">Passwoord vergeten</a></li></ul>';			
+	echo '<ul><li><a href="passwordlost.php">Passwoord vergeten</a></li></ul>';			
 }
 
 
-include($rootpath.'includes/footer.php');
+include 'includes/footer.php';
 
 
 

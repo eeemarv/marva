@@ -11,7 +11,7 @@ require_once($rootpath."includes/request.php");
 
 $req = new request('admin');
 
-include($rootpath."includes/inc_header.php");
+include($rootpath.'includes/inc_header.php');
 
 
 if(isset($s_id) && ($s_accountrole == "admin")){

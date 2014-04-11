@@ -3,8 +3,8 @@
 ob_start();
 require 'includes/default.php';
 
-require_once 'includes/inc_transactions.php';
-require_once 'includes/inc_userinfo.php'; 
+require_once 'includes/transactions.php';
+require_once 'includes/userinfo.php'; 
 require_once 'includes/mail.php'; 
 
 require 'includes/request.php';

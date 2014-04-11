@@ -10,7 +10,7 @@ require_once($rootpath."cron/inc_cron.php");
 require_once($rootpath."cron/inc_upgrade.php");
 
 require_once($rootpath."includes/inc_userinfo.php");
-require_once($rootpath."includes/inc_saldofunctions.php");
+
 
 session_start();
 
@@ -18,11 +18,9 @@ header('Content-type: text/plain');
 
 
 
-# Upgrade the DB first if required
-/*			
-$query = "SELECT * FROM `parameters` WHERE `parameter`= 'schemaversion'";
-$qresult = $db->GetRow($query) ;
-$dbversion = $qresult["value"];
+// Upgrade the DB first if required
+/*		
+$dbversion = $db->fetchColummn('select value from `parameters` WHERE `parameter`= \'schemaversion\'') ;
 $currentversion = $dbversion;
 $doneversion = $currentversion;
 while($currentversion < $schemaversion){
@@ -32,8 +30,8 @@ while($currentversion < $schemaversion){
 	}
 }
 echo "Upgraded database from schema version $dbversion to $doneversion\n\n";
-
 */
+
 
 echo ' *** Cron system running [' .$parameters['letsgroup_code'].'] ***\n\n';
 
