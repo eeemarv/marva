@@ -289,7 +289,7 @@ if (($req->get('mode') == 'edit') || $delete){
 
 if (($new && $req->isAdmin()) || (($edit && $req->isOwnerOrAdmin()) || ($delete && $req->isAdmin())))
 {
-	echo '<h1>'.(($new) ? 'Toevoegen' : (($edit) ? 'Aanpassen' : 'Verwijderen?')).'</h1>';
+	echo '<h1>'.(($new) ? 'Toevoegen' : (($edit) ? 'Aanpassen: '.$user['letscode'].' '.$user['name'] : 'Verwijderen?')).'</h1>';
 	echo '<form method="post" class="trans form-horizontal" role="form">';
 	if ($delete){
 		echo '<h2><a href="users.php?id='.$req->get('id').'">'.$req->get('letscode').' '.$req->get('name').'</h2>';

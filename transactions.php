@@ -165,7 +165,7 @@ include 'includes/header.php';
 echo '<div class="row"><div class="col-md-12">';
 
 if ($req->isAdmin() && !$req->get('mode')){
-	echo '<a href="transactions/many_to_one.php" class="btn btn-success pull-right">[admin] Massa-Transactie</a>';	
+	echo '<a href="many_to_one.php" class="btn btn-success pull-right">[admin] Massa-Transactie</a>';	
 }
 if ($req->isUser() && !$req->get('mode')){	
 	echo '<a href="transactions.php?mode=new"  class="btn btn-success pull-right">Toevoegen</a>';
