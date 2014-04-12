@@ -42,7 +42,7 @@ function getTypeAheadUsers($include_interlets = true){
 		$row['le'] = ($row['status'] == 2) ? 1 : 0;
 		$row['s'] = ($row['status'] == 4) ? 1 : 0;
 		$row['e'] = ($row['status'] == 7) ? 1 : 0;
-	//	$row['c'] .= ($row['e']) ? '/' : '';
+		$row['c'] .= ($row['e']) ? '/' : '';
 		unset($row['status']);						
 	}	
 	return $typeahead_users;

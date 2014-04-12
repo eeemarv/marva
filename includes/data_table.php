@@ -100,7 +100,7 @@ class data_table{
 		foreach($this->columns as $val) { 
 			$text = ($val['footer_text']) ? $val['footer_text'] : ' ';
 			$text = ($val['footer'] == 'sum') ? $val['count'] : htmlspecialchars($text, ENT_QUOTES);
-			$bgcolor = ($val['input']) ? ' bgcolor="darkblue" id="table_total"' : '';
+			$bgcolor = ($val['input']) ? ' bgcolor="lightblue" id="table_total"' : '';
 			echo '<td'.$bgcolor.'><strong>'.$text.'</strong></td>';
 		}
 		echo '</tr>';

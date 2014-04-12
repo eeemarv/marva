@@ -106,12 +106,8 @@ if ($req->getEntity() == 'index'){
 		echo '<p>'.$parameters['site_slogan'].'</p></div></div>';
 	}		
 }	
-
-
 	
 echo '<div class="container-fluid">';
-
-
 
 $status_array = (is_array($_SESSION['status'])) ? $_SESSION['status'] : array();
 $_SESSION["status"] = array();
