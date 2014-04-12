@@ -179,6 +179,8 @@ class request {
 		return $this;
 	}
 	
+
+	
 	public function delete(){
 		global $db;
 		if ($this->get('id') && $this->entity){
@@ -268,6 +270,11 @@ class request {
 		echo '<a href="users.php?id='.$this->owner['id'].'">';
 		echo trim($this->owner['letscode']).' '.htmlspecialchars($this->owner['name'],ENT_QUOTES).'</a>';
 	}	
+
+	public function getOwnerLink(){
+		return '<a href="users.php?id='.$this->owner['id'].'">'.$this->owner['letscode'].' '.$this->owner['name'].'</a>';
+	}	
+
 
 	public function isOwner($object_user_id = 0){
 		return (($this->s_id == $this->item[$this->owner_param])
@@ -507,10 +514,11 @@ class request {
 
 
 	public function resetFromDb($name = null)
-	{
+	{	
 		if (!$this->item){
 			return $this;
 		}
+
 		if (is_array($name)){
 			foreach ($name as $param_name){
 				$this->parameters[$param_name]['value'] = $this->item[$param_name];

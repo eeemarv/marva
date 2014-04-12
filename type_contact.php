@@ -26,7 +26,7 @@ $req->setUrl('type_contact.php')
 $new = $delete = false;
 
 if ($req->get('delete') && $req->get('id')){
-	if ($db->fetchColumn('select id from contacts where id_type_contact = ?', array($req->get('id')))){
+	if ($db->fetchColumn('select id from contact where id_type_contact = ?', array($req->get('id')))){
 		setstatus('Het contact type kon niet verwijderd worden want ze bevat contacten.', 'danger');
 	} else {
 		$req->delete();

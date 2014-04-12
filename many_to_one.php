@@ -95,7 +95,7 @@ if ($req->get('create') && !$req->errors() && $system_user){
 	} catch (Exception $e) {
 		$db->rollback();
 		setstatus($e->getMessage(), 'danger');
-		log_event('', 'trans', 'failed mass-transaction');						
+		log_event('', 'Trans', 'failed mass-transaction.');						
 	}
 	
 	if ($req->isSuccess()){

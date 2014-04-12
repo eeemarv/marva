@@ -95,6 +95,14 @@ $req->setEntityTranslation('Gebruiker')
 	->add('interlets_file', '', 'post', array('type' => 'file', 'label' => 'File formaat .yml', 'class' => 'btn btn-default'))
 	->add('interlets_import', '', 'post', array('type' => 'submit', 'label' => 'Importeer', 'class' => 'btn btn-primary'))
 	->add('interlets_export', '', 'post', array('type' => 'submit', 'label' => 'Exporteer', 'class' => 'btn btn-primary'))
+	
+	->add('password', '', 'post', array('type' => 'password', 'label' => 'Nieuw paswoord', 'size' => 50, 
+		'maxlength' => 50, 'autocomplete' => false), 
+		array('not_empty' => true, 'min_length' => 5))	
+	->add('password_confirm', '', 'post', array('type' => 'password', 'label' => 'Paswoord bevestigen', 'size' => 50, 
+		'maxlength' => 50, 'autocomplete' => false),
+		array('not_empty' => true, 'min_length' => 5))	
+	->add('password_send', '', 'post', array('type' => 'submit', 'label' => 'Aanpassen', 'class' => 'btn btn-primary'))	
 
 	->addSubmitButtons()
 	->cancel()
@@ -113,7 +121,8 @@ $req->setEntityTranslation('Gebruiker')
 	})	
 
 	->setOwnerParam('id')
-	->query();
+	->query()	
+	->queryOwner();
 
 $new = $edit = $delete = false;
 
@@ -255,7 +264,27 @@ if ($req->get('delete') && $req->get('id') && $req->isAdmin()){
 		setstatus('Fout bij het verwijderen.', 'danger');
 	}	
 	$req->setSuccess();
-}
+	
+} else if ($req->get('password_send') && $req->get('id') && $req->isOwnerOrAdmin()){
+
+	
+	if ($req->get('password') == $req->get('password_confirm')){
+		
+		$change_password = $req->errors(array('password_confirm', 'password'));		
+		
+		if (!$change_password){
+			$req->set('password', hash('sha512', $req->get('password')));
+			$req->update(array('password', 'mdate'));
+			
+		//mail				
+		}
+
+	} else {
+		setstatus('De twee velden zijn niet identiek.', 'danger');
+		$req->set('password', '');
+		$req->set('password_confirm', '');
+	} 
+} 
 
 if ($req->isSuccess()){
 	$param = ($req->get('id'))? '?id='.$req->get('id') : ''; 
@@ -283,13 +312,15 @@ $delete = ($req->get('mode') == 'delete') ? true : $delete;
 
 if (($req->get('mode') == 'edit') || $delete){
 	$req->resetFromDb(array('letscode', 'name', 'fullname', 'postcode', 'birthday', 'hobbies', 'comments', 'accountrole',
-	'status', 'maxlimit', 'admincomment', 'presharedkey'));
+		'status', 'maxlimit', 'admincomment'));
+	
+	
 }
 
 
 if (($new && $req->isAdmin()) || (($edit && $req->isOwnerOrAdmin()) || ($delete && $req->isAdmin())))
 {
-	echo '<h1>'.(($new) ? 'Toevoegen' : (($edit) ? 'Aanpassen: '.$user['letscode'].' '.$user['name'] : 'Verwijderen?')).'</h1>';
+	echo '<h1>'.(($new) ? 'Toevoegen' : (($edit) ? $req->getOwnerLink().': Aanpassen' : 'Verwijderen?')).'</h1>';
 	echo '<form method="post" class="trans form-horizontal" role="form">';
 	if ($delete){
 		echo '<h2><a href="users.php?id='.$req->get('id').'">'.$req->get('letscode').' '.$req->get('name').'</h2>';
@@ -312,7 +343,7 @@ $image_delete = ($req->get('mode') == 'image_delete') ? true : false;
 
 if ($image_delete && $req->isOwnerOrAdmin()){
 	$plural = (sizeof($images) > 1) ? '\'s' : '';
-	echo '<h1>Foto verwijderen?</h1>';
+	echo '<h1>'.$req->getOwnerLink().': Foto verwijderen?</h1>';
 	echo '<form method="post" class="trans form-horizontal" role="form">';
 	echo '<div class="row">';			
 	echo '<div class="col-md-4"><div class="thumbnail">';
@@ -329,17 +360,29 @@ if ($interlets && $req->isAdmin()){
 	echo '<h1>Interlets importeren</h1>';
 	echo '<form method="post" class="trans form-horizontal" role="form">';
 	$req->set_output('formgroup')->render('interlets_file');
-	$req->set_output('nolabel')->render(array('interlets_import', 'cancel', 'mode'));
+	$req->set_output('nolabel')->render(array('interlets_import', 'cancel', 'mode', 'id'));
 	echo '</form>';
 	echo '<h1>Interlets exporteren</h1>';
 	echo '<form method="post" class="trans form-horizontal" role="form">';
 
-	$req->set_output('nolabel')->render(array('interlets_export', 'cancel', 'mode'));
+	$req->set_output('nolabel')->render(array('interlets_export', 'cancel', 'mode', 'id'));
+	echo '</form>';			
+}
+
+$change_password = ($req->get('mode') == 'change_password') ? true : false;
+
+if ($change_password && $req->isOwnerOrAdmin() && $req->get('id')){
+	echo '<h1>'.$req->getOwnerLink().': Paswoord wijzigen</h1>';
+	echo '<form method="post" class="trans form-horizontal" role="form">';
+	$req->set_output('formgroup')->render(array('password', 'password_confirm'));
+	$req->set_output('nolabel')->render(array('password_send', 'cancel', 'mode', 'id'));
 	echo '</form>';			
 }
 
 
-if (!($new || $edit || $delete || $image_delete || $interlets)){
+$form = ($new || $edit || $delete || $image_delete || $interlets || $change_password) ? true : false;
+
+if (!$form){
 	echo '<form method="GET" class="trans form-horizontal" role="form">';
 	$req->set_output('formgroup')->render(array('q', 'postcode_filter'));
 	echo '<div>';
@@ -348,7 +391,7 @@ if (!($new || $edit || $delete || $image_delete || $interlets)){
 }
 
 
-if (!$req->get('id') && !($new || $edit || $delete || $image_delete || $interlets)){
+if (!$req->get('id') && !$form){
 	
 	$tabs = array(
 		'active' => array('text' => 'Alle', 'class' => 'bg-white', 
@@ -505,7 +548,7 @@ if (!$req->get('id') && !($new || $edit || $delete || $image_delete || $interlet
 	}	
 }
 	
-if ($req->get('id') && !($edit || $delete || $new || $image_delete)){
+if ($req->get('id') && !$form){
 
 
 	$id = $req->get('id');
@@ -528,7 +571,8 @@ if ($req->get('id') && !($edit || $delete || $new || $image_delete)){
 		$disabled = ($transaction_num) ? ' disabled="disabled"' : '';
 		echo '<a href="users.php?mode=delete&id='.$req->get('id').'" class="btn btn-danger pull-right"'.$disabled.'>'.$req->getAdminLabel().'Verwijderen</a>';
 	}
-	if ($req->isOwnerOrAdmin()){			
+	if ($req->isOwnerOrAdmin()){				
+		echo '<a href="users.php?mode=change_password&id='.$req->get('id').'" class="btn btn-primary pull-right">'.$req->getAdminLabel().'Paswoord wijzigen</a>';
 		echo '<a href="users.php?mode=edit&id='.$req->get('id').'" class="btn btn-primary pull-right">'.$req->getAdminLabel().'Aanpassen</a>';
 	}	
 
