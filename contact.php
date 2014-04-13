@@ -14,7 +14,7 @@ $req = new request('anonymous', true);
 $req->setEntity('contact')
 	->add('email', '', 'post', array('type' => 'text', 'label' => 'Email adres', 'size' => 50, 'maxlength' => 50), array('not_empty' => true, 'email' => true))
 	->add('subject', '', 'post', array('type' => 'text', 'label' => 'Onderwerp', 'size' => 50, 'maxlength' => 60), array('not_empty' => true))
-	->add('content', '', 'post', array('type' => 'textarea', 'label' => 'Bericht', 'cols' => 50, 'rows' => 7), array('not_empty' => true))
+	->add('content', '', 'post', array('type' => 'textarea', 'label' => 'Bericht', 'rows' => 7), array('not_empty' => true))
 	->add('mailcc', 'checked', 'post', array('type' => 'checkbox', 'label' => 'Stuur een kopie naar mezelf'))
 	->add('recaptcha', '', 'post', array('type' => 'recaptcha', 'label' => 'Recaptcha'), array( 'match' => 'recaptcha', 'not_empty' => true))
 	->addSubmitButtons();
@@ -64,10 +64,6 @@ require_once 'includes/footer.php';
 		HelpMail($posted_list,$rootpath);
         }
 */
-
-
-
-
 
 
 function checkmailaddress($email){

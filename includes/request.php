@@ -621,11 +621,12 @@ class request {
 			$out .= $this->getSelectOptionsString($name);
 			$out .=  '</select>';
 		} elseif ($parameter['type'] == 'textarea'){
-			$cols = ($parameter['cols']) ? ' cols="'.$parameter['cols'].'"' : '';
-			$rows = ($parameter['rows']) ? ' rows="'.$parameter['rows'].'"' : '';
-			$disabled = ($parameter['disabled']) ? ' disabled="'.$parameter['disabled'].'"' : '';
-			$out .= '<textarea name="'.$name.'" '.$cols.$rows.$disabled.'>';
-			$out .= $parameter['value'].'</textarea>';
+			$out .= '<textarea name="'.$name.'"';
+			$out .= ($parameter['cols']) ? ' cols="'.$parameter['cols'].'"' : '';
+			$out .= ($parameter['rows']) ? ' rows="'.$parameter['rows'].'"' : '';
+			$out .= ($parameter['class']) ? ' class="'.$parameter['class'].'"' : '';
+			$out .= ($parameter['disabled']) ? ' disabled="'.$parameter['disabled'].'"' : '';
+			$out .= '>'.$parameter['value'].'</textarea>';
 		} else {						
 			$out .= '<input name="'.$name.'"';
 			$out .= ($parameter['type'] == 'submit' && $parameter['label']) ? ' value="'.$parameter['label'].'"' : '';	
