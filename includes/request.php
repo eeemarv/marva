@@ -608,7 +608,7 @@ class request {
 		echo '<div class="form-group">';
 		echo '<label class="col-sm-2 control-label">'.$parameter['label'].'</label>';
 		echo '<div class="col-sm-10"><div class="input-group"><span class="input-group-btn">';
-		echo '<span class="btn btn-primary btn-file">Blader…';
+		echo '<span class="btn btn-primary btn-file">Bladeren…';
 		echo '<input type="file" name="'.$name.'"></span></span>';
 		echo '<input class="form-control" type="text" readonly="readonly"></div>';
 		if ($parameter['help']){

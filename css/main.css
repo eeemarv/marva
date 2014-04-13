@@ -99,14 +99,6 @@ div.info{
 div.inactive{
 	background-color: #ddd;	
 }
-
-/** ajax **/
-/*
-tr.ajax-loader td div{
-	height: 50px;
-	background: url(../images/ajax-loader.gif) no-repeat center center;
-}*/
-
    
 /** typeahead fix **/ 
 
@@ -262,7 +254,7 @@ div.tt-suggestion p:hover{
 
 
 
-/** elas **/
+/** form **/
 
 
 
@@ -282,30 +274,6 @@ form.trans div{
 
 }
 
-
-
-/* Column 1: Navigation */
-/*	
-td.nav
-{
-padding-top: 30px;
-padding-bottom: 30px;
-font: bold 16px Helvetica, Verdana, Arial, sans-serif;
-color: #120044;
-padding-left: 10px;
-padding-right: 10px;
-border-right: 1px dashed #9974ff;
-background-color: #c1c3e3;
-}
-*/
-/* title navigation blocks */
-/*
-div.nav span.nav
-{
-padding-left: 40px;
-text-decoration: none;
-}
-*/
 
 	
 /* Data table */
@@ -367,32 +335,7 @@ ul.pagination li a{
 	
 	
 	
-/* Mootools CSS */
-/*
-	#log_res {
-	width: 80%;
-	}
- 
-	div.ajax-loading {
-	padding: 10px 0;
-	background: url('/gfx/spinner.gif') no-repeat;
-	}
 
-        div.errormsg {
-	font-style: italic;
-        font-weight:bold;
-        font-size: 10px;
-	color: white;
-        }
-	
-	div.msg {
-	font-style: italic;
-        font-weight:bold;
-        font-size: 10px;
-        color: black;
-        }
-
-*/
 
 /* inactive table rows */
 

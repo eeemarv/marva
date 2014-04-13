@@ -102,7 +102,8 @@ if (($new && $req->isUser()) || (($edit || $delete) && $req->isOwnerOrAdmin()))
 		echo $req->get('headline').'</a></h2>';
 		echo '<p>'.$req->get('newsitem').'</p>';
 	} else {		
-		$req->set_output('formgroup')->render(array('itemdate', 'headline', 'newsitem', 'sticky'));
+		$req->set_output('formgroup')->render(array('itemdate', 'headline', 'newsitem'));
+		$req->set_output('formgroupcheckbox')->render('sticky');
 	}
 	echo '<div>';
 	$submit = ($new) ? 'create' : (($edit) ? 'edit' : 'delete');
