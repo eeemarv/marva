@@ -91,11 +91,12 @@ $req->setEntityTranslation('Gebruiker')
 	->add('mail_cc', 'checked', 'post', array('type' => 'checkbox', 'label' => 'Stuur een kopie naar mezelf'))
 	->add('mail_send', '', 'post', array('type' => 'submit', 'label' => 'Versturen', 'class' => 'btn btn-primary'))	
 	
-	->add('image_file', '', 'post', array('type' => 'file', 'label' => 'Foto formaat .jpg of .jpeg max. 300kB', 'class' => 'btn btn-default'))
+	->add('image_file', '', 'post', array('type' => 'file', 'label' => 'Foto bestand', 'help' => 'Formaat .jpg of .jpeg maximaal. 300kB'))
 	->add('image_send', '', 'post', array('type' => 'submit', 'label' => 'Foto toevoegen', 'class' => 'btn btn-success'))
 	->add('image_delete', '', 'post', array('type' => 'submit', 'label' => 'Foto verwijderen', 'class' => 'btn btn-danger'))
 	
-	->add('interlets_file', '', 'post', array('type' => 'file', 'label' => 'File formaat .yml', 'class' => 'btn btn-default'))
+	->add('interlets_file', '', 'post', array('type' => 'file', 'label' => 'Interlets groep bestand', 
+		'help' => 'Formaat .yml. Dit bestand werd geëxporteerd bij de andere groep en dient om de gegevens over te brengen en een interlets verbinding tot stand te brengen.'))
 	->add('interlets_import', '', 'post', array('type' => 'submit', 'label' => 'Importeer', 'class' => 'btn btn-primary'))
 	->add('interlets_export', '', 'post', array('type' => 'submit', 'label' => 'Exporteer', 'class' => 'btn btn-primary'))
 	
@@ -364,7 +365,7 @@ if ($interlets && $req->isAdmin()){
 	echo '<h2>[admin]</h2>';
 	echo '<h1>Interlets importeren</h1>';
 	echo '<form method="post" class="trans form-horizontal" role="form">';
-	$req->set_output('formgroup')->render('interlets_file');
+	$req->set_output('formgroupfile')->render('interlets_file');
 	$req->set_output('nolabel')->render(array('interlets_import', 'cancel', 'mode', 'id'));
 	echo '</form>';
 	echo '<h1>Interlets exporteren</h1>';
@@ -589,7 +590,7 @@ if ($req->get('id') && !$form){
 	echo '<div class="row"><div class="col-md-4">';
 	if ($user['PictureFile']){
 		echo '<div class="thumbnail">';
-		echo '<img src="site/images/users/'.$user['PictureFile'].'" alt="foto">';
+		echo '<img src="site/images/users/'.$user['PictureFile'].'" alt="foto" width="100%">';
 		if ($req->isOwnerOrAdmin()){
 			echo '<div class="caption"><p>';		
 			echo '<a href="users.php?mode=image_delete&id='.$req->get('id').'" class="btn btn-danger">';
@@ -603,7 +604,7 @@ if ($req->get('id') && !$form){
 			$req->setLabel('image_send', $req->getAdminLabel().$label);
 		}		
 		echo '<form method="post" class="trans form-horizontal" role="form" enctype="multipart/form-data">';
-		$req->set_output('formgroup')->render('image_file');
+		$req->set_output('formgroupfile')->render('image_file');
 		$req->set_output('nolabel')->render(array('image_send', 'id'));
 		echo '</form>';			
 	}

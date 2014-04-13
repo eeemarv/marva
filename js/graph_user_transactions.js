@@ -1,6 +1,6 @@
 //  graph_user_transactions.js 
 
-$.noConflict();
+//$.noConflict();
 
 jQuery(document).ready(function($){
 	$.ajax({

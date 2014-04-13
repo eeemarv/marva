@@ -55,7 +55,7 @@ $req->setEntityTranslation('Bericht')
 	->add('mail_cc', 'checked', 'post', array('type' => 'checkbox', 'label' => 'Stuur een kopie naar mezelf'))
 	->add('mail_send', '', 'post', array('type' => 'submit', 'label' => 'Versturen', 'class' => 'btn btn-primary'))	
 	
-	->add('image_file', '', 'post', array('type' => 'file', 'label' => 'Foto formaat .jpg of .jpeg max. 300kB', 'class' => 'btn btn-default'))
+	->add('image_file', '', 'post', array('type' => 'file', 'label' => 'Foto bestand', 'help' => 'formaat .jpg of .jpeg maximaal 300kB'))
 	->add('image_send', '', 'post', array('type' => 'submit', 'label' => 'Toevoegen', 'class' => 'btn btn-success'))
 	->add('image_delete', '', 'post', array('type' => 'submit', 'label' => 'Verwijderen', 'class' => 'btn btn-danger'))
 	->add('image_id', 0, 'get|post', array('type' => 'hidden'))
@@ -471,7 +471,7 @@ if ($req->get('id') && !($edit || $delete || $new || $image_delete)){
 			$req->setLabel('image_send', $req->getAdminLabel().$req->getLabel('image_send'));
 		}		
 		echo '<form method="post" class="trans form-horizontal" role="form" enctype="multipart/form-data">';
-		$req->set_output('formgroup')->render('image_file');
+		$req->set_output('formgroupfile')->render('image_file');
 		$req->set_output('nolabel')->render(array('image_send', 'id'));
 		echo '</form></div></div>';	
 	}

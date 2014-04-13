@@ -23,7 +23,7 @@ class request {
 	private $parameters = array();
 	private $render_keys = array('type', 'value', 'size', 'maxlength', 'style', 
 		'label', 'checked', 'onchange', 'onkeyup', 'autocomplete', 'options', 'option_set', 
-		'disabled', 'cols', 'rows', 'admin', 'placeholder', 'class');
+		'disabled', 'cols', 'rows', 'admin', 'placeholder', 'class', 'help');
 	private $validation_keys = array('not_empty', 'match', 'min_length', 'max_length', 
 		'unique', 'email', 'url', 'date', 'recaptcha');
 	
@@ -601,6 +601,20 @@ class request {
 		echo '<div class="formgroup"><div class="col-sm-offset-2 col-sm-10">';
 		echo '<div class="checkbox"><label><input type="checkbox" name="'.$name.'">';
 		echo $this->parameters[$name]['label'].'</label></div></div></div>';
+	}
+	
+	private function render_formgroupfile($name){
+		$parameter = $this->parameters[$name];
+		echo '<div class="form-group">';
+		echo '<label class="col-sm-2 control-label">'.$parameter['label'].'</label>';
+		echo '<div class="col-sm-10"><div class="input-group"><span class="input-group-btn">';
+		echo '<span class="btn btn-primary btn-file">Blader…';
+		echo '<input type="file" name="'.$name.'"></span></span>';
+		echo '<input class="form-control" type="text" readonly="readonly"></div>';
+		if ($parameter['help']){
+			echo '<span class="help-block">'.$parameter['help'].'</span>';
+		}
+		echo '</div></div>';
 	}	
 
 	public function getLabelString($name, $tag = ''){

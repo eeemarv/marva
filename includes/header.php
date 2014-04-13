@@ -28,15 +28,15 @@ if (file_exists('site/site.css')){
 	echo '<link type="text/css" rel="stylesheet" href="site/site.css">';
 }
 	
-echo '<script type="text/javascript" src="js/table_sum.js"></script>
-			
+echo '	
 	<script src="'.$jquery.'"></script>
+	<script src="js/forms.js"></script>	
 	<script src="'.$bootstrap.'/js/bootstrap.min.js"></script>
 	<script src="'.$typeahead.'/typeahead.bundle.min.js"></script>
 	<script src="'.$handlebars.'/handlebars.min.js"></script>	
 	<script src="'.$datepicker.'/js/bootstrap-datepicker.js"></script>
 	<script src="'.$datepicker.'/js/locales/bootstrap-datepicker.nl.js"></script>
-	
+
 </head>
 <body>
 
