@@ -595,6 +595,12 @@ class request {
 		echo '<div class="form-group"><label class="col-sm-2 control-label">';
 		echo $this->getLabelString($name).'</label><div class="col-sm-10">';
 		echo $this->getInputString($name).'</div></div>';
+	}
+	
+	private function render_formgroupcheckbox($name){
+		echo '<div class="formgroup"><div class="col-sm-offset-2 col-sm-10">';
+		echo '<div class="checkbox"><label><input type="checkbox" name="'.$name.'">';
+		echo $this->parameters[$name]['label'].'</label></div></div></div>';
 	}	
 
 	public function getLabelString($name, $tag = ''){

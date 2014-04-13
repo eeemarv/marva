@@ -483,7 +483,8 @@ if ($req->get('id') && !($edit || $delete || $new || $image_delete)){
 	$req->setLabel('mail_body', 'Je reactie naar '.$owner['letscode'].' '.$owner['name']);	
 	
 	echo '<form method="post" class="trans form-horizontal" role="form">';
-	$req->set_output('formgroup')->render(array('mail_body', 'mail_cc'));
+	$req->set_output('formgroup')->render('mail_body');
+	$req->set_output('formgroupcheckbox')->render('mail_cc');
 	echo '<div>';
 	$req->set_output('nolabel')->render(array('mail_send', 'id'));
 	echo '</div></form>';	

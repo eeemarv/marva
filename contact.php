@@ -49,7 +49,8 @@ if (file_exists('site/'.$include.'_content.html')){
 echo '<form method="post" class="trans form-horizontal" role="form">';
 $email = ($req->getSid()) ? 'non_existing_dummy_1' : 'email';
 $recaptcha = ($req->getSid()) ? 'non_existing_dummy_2' : 'recaptcha';
-$req->set_output('formgroup')->render(array($email, 'subject', 'content', 'mailcc', $recaptcha));
+$req->set_output('formgroup')->render(array($email, 'subject', 'content', $recaptcha));
+$req->set_output('formgroupcheckbox')->render('mailcc');
 echo '<div>';
 $req->set_output('nolabel')->render(array('send', 'cancel'));
 echo '</div></form>';
