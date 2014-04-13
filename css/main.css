@@ -101,11 +101,11 @@ div.inactive{
 }
 
 /** ajax **/
-
+/*
 tr.ajax-loader td div{
 	height: 50px;
 	background: url(../images/ajax-loader.gif) no-repeat center center;
-}
+}*/
 
    
 /** typeahead fix **/ 
@@ -222,9 +222,10 @@ tr.ajax-loader td div{
   width: 100%;
 }
 
+
 .twitter-typeahead {
-width: 100%;
-margin-bottom: 10px;
+	width: 100%;
+	margin-bottom: -5px; 
 }
 
 .tt-suggestion p.success {

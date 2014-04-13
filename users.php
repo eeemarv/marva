@@ -39,8 +39,8 @@ $req->setEntityTranslation('Gebruiker')
 	->add('limit', 25, 'get')
 	->add('start', 0, 'get')	
 
-	->add('q', '', 'get', array('type' => 'text', 'size' => 25, 'maxlength' => 20, 'label' => 'Code of Naam'))
-	->add('postcode_filter', '', 'get', array('type' => 'text', 'size' => 25, 'maxlength' => 8, 'label' => 'Postcode' ))
+	->add('q', '', 'get', array('type' => 'text', 'maxlength' => 20, 'label' => 'Code of Naam'))
+	->add('postcode_filter', '', 'get', array('type' => 'text', 'maxlength' => 8, 'label' => 'Postcode'))
 	
 	->add('show', 'active', 'get', array('type' => 'hidden'))
 	->add('view', 'account', 'get')
@@ -74,6 +74,9 @@ $req->setEntityTranslation('Gebruiker')
 //	->add('minlimit', , 'post', array('type' => 'text', 'label' => 'Min limiet', 'size' => 10, 'admin' => true), array())
 	->add('maxlimit', $parameters['default_limit'], 'post', array('type' => 'text', 'label' => 'Limiet +/-', 'size' => 10, 'admin' => true), 
 		array('match' => 'positive_or_zero'))
+	
+	->add('contacts', array(), 'post')	
+		
 	->add('mail', '', 'post', array('type' => 'text', 'label' => 'E-mail', 'size' => 50, 'maxlength' => 100), array('not_empty' => true, 'email' => true))
 	->add('adr', '', 'post', array('type' => 'text', 'label' => 'Adres', 'size' => 50, 'maxlength' => 100, 'placeholder' => 'Voorbeeldstraat 86, 4572 Voorbeeldplaatsnaam'), 
 		array('not_empty' => true))
@@ -97,10 +100,10 @@ $req->setEntityTranslation('Gebruiker')
 	->add('interlets_export', '', 'post', array('type' => 'submit', 'label' => 'Exporteer', 'class' => 'btn btn-primary'))
 	
 	->add('password', '', 'post', array('type' => 'password', 'label' => 'Nieuw paswoord', 'size' => 50, 
-		'maxlength' => 50, 'autocomplete' => false), 
+		'maxlength' => 50, 'autocomplete' => 'off'), 
 		array('not_empty' => true, 'min_length' => 5))	
 	->add('password_confirm', '', 'post', array('type' => 'password', 'label' => 'Paswoord bevestigen', 'size' => 50, 
-		'maxlength' => 50, 'autocomplete' => false),
+		'maxlength' => 50, 'autocomplete' => 'off'),
 		array('not_empty' => true, 'min_length' => 5))	
 	->add('password_send', '', 'post', array('type' => 'submit', 'label' => 'Aanpassen', 'class' => 'btn btn-primary'))	
 
@@ -328,8 +331,10 @@ if (($new && $req->isAdmin()) || (($edit && $req->isOwnerOrAdmin()) || ($delete 
 		$id_user = ($req->isAdmin()) ? 'id_user' : 'non_existing_dummy';
 		$req->set_output('formgroup')->render(array($id_user, 'name', 'fullname', 
 			'letscode', 'postcode', 'birthday', 'hobbies',  'comments', 
-			'accountrole', 'status', 'maxlimit', 'admincomment', 
-			'mail', 'adr', 'tel', 'gsm', 'web'));
+			'accountrole', 'status', 'maxlimit', 'admincomment'));
+		echo '<h3>Contacten</h3><hr/>';	
+			 
+		$req->render(array('mail', 'adr', 'tel', 'gsm', 'web'));
 	}
 	echo '<div>';
 	$submit = ($new) ? 'create' : (($edit) ? 'edit' : 'delete');

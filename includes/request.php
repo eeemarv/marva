@@ -591,6 +591,7 @@ class request {
 	}	
 
 	private function render_formgroup($name){
+		$this->parameters[$name]['class'] .= ($this->parameters[$name]['class']) ? ' form-control' : 'form-control';				
 		echo '<div class="form-group"><label class="col-sm-2 control-label">';
 		echo $this->getLabelString($name).'</label><div class="col-sm-10">';
 		echo $this->getInputString($name).'</div></div>';
