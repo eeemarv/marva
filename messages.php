@@ -46,7 +46,7 @@ $req->setEntityTranslation('Bericht')
 	->add('content', '', 'post', array('type' => 'text', 'size' => 40, 'label' => 'Titel'), array('not_empty' => true))
 	->add('description', '', 'post', array('type' => 'textarea', 'cols' => 60, 'rows' => 15, 'label' => 'Inhoud'), 
 		array('not_empty' => true))	
-	->add('amount', 0, 'post', array('type' => 'text', 'size' => 4, 'maxlength' => 3, 'label' => 'Richtprijs ('.$currency.')'), 
+	->add('amount', 0, 'post', array('type' => 'number', 'size' => 4, 'maxlength' => 3, 'label' => 'Richtprijs ('.$currency.')'), 
 		array('match' => 'positive'))
 	->add('cdate', date('Y-m-d H:i:s'), 'post')
 	->add('mdate', date('Y-m-d H:i:s'), 'post')

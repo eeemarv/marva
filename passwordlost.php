@@ -3,8 +3,8 @@ ob_start();
 $rootpath = "./";
 require_once 'includes/default.php';
 
-require_once 'includes/inc_userinfo.php';
-require_once 'includes/inc_passwords.php';
+require_once 'includes/userinfo.php';
+require_once 'includes/passwords.php';
 
 
 

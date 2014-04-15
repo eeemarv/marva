@@ -20,13 +20,12 @@ require_once($rootpath.'includes/data_table.php');
 //status 7: extern
 
 $req = new request('admin');
-$req->add('fixed', 10, 'post', array('type' => 'text', 'size' => 4, 'maxlength' => 3, 'label' => 'Vast bedrag'), array('match' => 'positive'))
-	->add('percentage', 0, 'post', array('type' => 'text', 'size' => 4, 'maxlength' => 4, 'label' => 'Percentage'))
-	->add('percentage_base', 0, 'post', array('type' => 'text', 'size' => 4, 'maxlength' => 4, 'label' => 'Percentage saldo-basis'))
+$req->add('fixed', 10, 'post', array('type' => 'number', 'size' => 4, 'maxlength' => 3, 'label' => 'Vast bedrag'), array('match' => 'positive'))
+	->add('percentage', 0, 'post', array('type' => 'number', 'size' => 4, 'maxlength' => 4, 'label' => 'Percentage'))
+	->add('percentage_base', 0, 'post', array('type' => 'number', 'size' => 4, 'maxlength' => 4, 'label' => 'Percentage saldo-basis'))
 	->add('fill_in', '', 'post', array('type' => 'submit', 'label' => 'Vul in'))
 	->add('no_newcomers', '', 'post', array('type' => 'checkbox', 'label' => 'Geen instappers.'), array())
 	->add('no_leavers', '', 'post', array('type' => 'checkbox', 'label' => 'Geen uitstappers.'), array())
-	->add('no_max_limit', '', 'post', array('type' => 'checkbox', 'label' => 'Geen saldo\'s boven de maximum limiet'), array())
 	->add('letscode_from', '', 'post', array('type' => 'text', 'size' => 5, 'maxlength' => 10, 'label' => 'Van LetsCode', 'autocomplete' => 'off'), array('not_empty' => true, 'match' => 'active_letscode'))
 	->add('description', '', 'post', array('type' => 'text', 'size' => 40, 'maxlength' => 60, 'label' => 'Omschrijving', 'autocomplete' => 'off'), array('not_empty' => true))
 	->add('confirm_password', '', 'post', array('type' => 'password', 'size' => 10, 'maxlength' => 20, 'label' => 'Paswoord (extra veiligheid)', 'autocomplete' => 'off'), array('not_empty' => true, 'match' => 'password'))
@@ -48,7 +47,7 @@ $letscode_from = $req->get('letscode_from');
 $from_user_id = null;
 
 foreach($active_users as $user){
-	$req->add('amount-'.$user['id'], 0, 'post', array('type' => 'text', 'size' => 3, 'maxlength' => 3, 'onkeyup' => 'recalc_table_sum(this);'), array('match' => 'positive'));
+	$req->add('amount-'.$user['id'], 0, 'post', array('type' => 'number', 'size' => 3, 'maxlength' => 3, 'onkeyup' => 'recalc_table_sum(this);'), array('match' => 'positive'));
 	if ($letscode_from && $user['letscode'] == $letscode_from){
 		$from_user_id = $user['id'];
 		$from_user_fullname = $user['fullname'];
@@ -102,7 +101,7 @@ if ($req->get('fill_in') && ($fixed || $percentage)){
 		if ($user['letscode'] == $req->get('letscode_from') 
 			|| (check_newcomer($user['adate']) && $req->get('no_newcomers')) 
 			|| ($user['status'] == 2 && $req->get('no_leavers'))
-			|| ($user['saldo'] > $user['maxlimit'] && $req->get('no_max_limit'))){
+			|| ($user['saldo'] > $user['maxlimit'])){ ///
 			$req->set('amount-'.$user['id'], 0);	
 		} else {
 			if ($percentage){

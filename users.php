@@ -71,8 +71,8 @@ $req->setEntityTranslation('Gebruiker')
 		array('not_empty' => true))
 	->add('status', 'new', 'post', array('type' => 'select', 'label' => 'Status', 'options' => $status_options, 'admin' => true), 
 		array('not_empty' => true))
-//	->add('minlimit', , 'post', array('type' => 'text', 'label' => 'Min limiet', 'size' => 10, 'admin' => true), array())
-	->add('maxlimit', $parameters['default_limit'], 'post', array('type' => 'text', 'label' => 'Limiet +/-', 'size' => 10, 'admin' => true), 
+
+	->add('maxlimit', $parameters['default_limit'], 'post', array('type' => 'number', 'label' => 'Limiet +/-', 'size' => 10, 'admin' => true), 
 		array('match' => 'positive_or_zero'))
 	
 	->add('contacts', array(), 'post')	
@@ -411,9 +411,9 @@ if (!$req->get('id') && !$form){
 		'interlets' => array('text' => 'Interlets', 'class' => 'bg-warning',
 			'where' => 'status = 7'),
 		'inactive' => array('text' => '[admin] Inactief', 'class' => 'bg-inactive', 'admin' => true,
-			'tabs' => array(
-				
-			)),
+			'tabs' => array(),
+			'where' => 'status in (0, 3, 5, 6, 8, 9)'	
+			),
 		);
 
 	echo'<ul class="nav nav-tabs">';

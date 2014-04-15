@@ -39,7 +39,7 @@ $req->setEntityTranslation('Transactie')
 	->add('cdate', date('Y-m-d H:i:s'), 'post')
 	->add('letscode_to', '', 'post', array('type' => 'text', 'size' => 40, 'maxlength' => 10, 'label' => 'Aan LetsCode', 'autocomplete' => 'off', 'class' => 'typeahead-users'), 
 		array('not_empty' => true, 'match' => 'active_letscode'))
-	->add('amount', '', 'post', array('type' => 'text', 'size' => 10, 'maxlength' => 6, 'label' => 'Aantal '.$parameters['currency_plural'] , 'autocomplete' => 'off'), 
+	->add('amount', '', 'post', array('type' => 'number', 'size' => 10, 'maxlength' => 6, 'label' => 'Aantal '.$parameters['currency_plural'] , 'autocomplete' => 'off'), 
 		array('not_empty' => true))
 	->add('description', '', 'post', array('type' => 'text', 'size' => 40, 'maxlength' => 60, 'label' => 'Omschrijving', 'autocomplete' => 'off'), array('not_empty' => true))
 	->add('transid', generateUniqueId(), 'post', array('type' => 'hidden'))

@@ -20,11 +20,10 @@ require_once 'includes/data_table.php';
 //status 7: external
 
 $req = new request('admin');
-$req->add('fixed', 10, 'get', array('type' => 'text', 'size' => 4, 'maxlength' => 3, 'label' => 'Vast bedrag'), array('match' => 'positive'))
-	->add('percentage', 0, 'get', array('type' => 'text', 'size' => 4, 'maxlength' => 4, 'label' => 'Percentage'))
-	->add('percentage_base', 0, 'get', array('type' => 'text', 'size' => 4, 'maxlength' => 4, 'label' => 'Percentage saldo-basis'))
-	->add('percentage', 0, 'get', array('type' => 'text', 'size' => 4, 'maxlength' => 4, 'label' => 'Percentage'))
-	->add('percentage_base', 0, 'get', array('type' => 'text', 'size' => 4, 'maxlength' => 4, 'label' => 'Percentage saldo-basis'))
+$req->add('fixed', 10, 'get', array('type' => 'number', 'size' => 4, 'maxlength' => 3, 'label' => 'Vast bedrag'), array('match' => 'positive'))
+	->add('percentage', 0, 'get', array('type' => 'number', 'size' => 4, 'maxlength' => 4, 'label' => 'Percentage'))
+
+	->add('percentage_base', 0, 'get', array('type' => 'number', 'size' => 4, 'maxlength' => 4, 'label' => 'Percentage saldo-basis'))
 	->add('fill_in', '', 'get', array('type' => 'submit', 'label' => 'Vul in', 'class' => 'btn btn-default'))
 	->add('no_newcomers', '', 'get', array('type' => 'checkbox', 'label' => 'Geen instappers.'), array())
 	->add('no_leavers', '', 'get', array('type' => 'checkbox', 'label' => 'Geen uitstappers.'), array())
@@ -54,7 +53,7 @@ if (!$system_user){
 }
 
 foreach($active_users as $user){
-	$req->add('amount-'.$user['id'], 0, 'post', array('type' => 'text', 'size' => 3, 'maxlength' => 3, 'onkeyup' => 'recalc_table_sum(this);'), array('match' => 'positive'));
+	$req->add('amount-'.$user['id'], 0, 'post', array('type' => 'number', 'size' => 3, 'maxlength' => 3, 'onkeyup' => 'recalc_table_sum(this);'), array('match' => 'positive'));
 }
 
 if ($req->get('create') && !$req->errors() && $system_user){
