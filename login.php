@@ -14,8 +14,8 @@ $req = new request('anonymous', true);
 
 $req->setEntity('login')
 	->setUrl('login.php')
-	->add('letscode', '', 'post', array('type' => 'text', 'size' => 50, 'maxlength' => 50, 'label' => 'Letscode'), array('not_empty' => true, 'active_letscode' => true))
-	->add('password', '', 'post', array('type' => 'password', 'size' => 50, 'maxlength' => 50, 'label' => 'Paswoord'), array('not_empty' => true))
+	->add('letscode', '', 'post', array('type' => 'text', 'size' => 50, 'maxlength' => 50, 'label' => 'Letscode'), array('required' => true, 'active_letscode' => true))
+	->add('password', '', 'post', array('type' => 'password', 'size' => 50, 'maxlength' => 50, 'label' => 'Paswoord'), array('required' => true))
 	->add('submit_login', '', 'post', array('type' => 'submit', 'label' => 'Login', 'class' => 'btn btn-primary'))
 	->add('cancel', '', 'post', array('type' => 'submit', 'label' => 'Annuleren', 'class' => 'btn btn-default'))
 	->add('token', '', 'get')

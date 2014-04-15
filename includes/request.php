@@ -24,7 +24,7 @@ class request {
 	private $render_keys = array('type', 'value', 'size', 'maxlength', 'style', 
 		'label', 'checked', 'onchange', 'onkeyup', 'autocomplete', 'options', 'option_set', 
 		'disabled', 'cols', 'rows', 'admin', 'placeholder', 'class', 'help');
-	private $validation_keys = array('not_empty', 'match', 'min_length', 'max_length', 
+	private $validation_keys = array('required', 'match', 'min_length', 'max_length', 
 		'unique', 'email', 'url', 'date', 'recaptcha');
 	
 	private $output = 'tr';
@@ -622,7 +622,7 @@ class request {
 		$close_tag = ($tag) ? '</'.$tag.'>' : '';
 		$parameter = $this->parameters[$name];
 		$admin = ($parameter['admin']) ? '[admin] ' : '';
-		$required = ($parameter['not_empty']) ? '*' : '';	
+		$required = ($parameter['required']) ? '*' : '';	
 		return ($parameter['type'] != 'submit' && $parameter['label']) ? $open_tag.$admin.$parameter['label'].$required.$close_tag : '';		
 	}
 
@@ -735,7 +735,7 @@ class request {
 				continue;
 			}
 			
-			if($parameter['not_empty'] && empty($parameter['value'])){
+			if($parameter['required'] && empty($parameter['value'])){
 				$parameter['error'] = $this->error_messages['empty'];
 				
 			} else if ($parameter['unique'] && !$this->isUnique($param_name)){

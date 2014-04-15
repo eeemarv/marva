@@ -51,35 +51,35 @@ $req->setEntityTranslation('Gebruiker')
 	->add('mdate', date('Y-m-d H:i:s'), 'post')	
 	->add('adate', date('Y-m-d H:i:s'), 'post')	
 	->add('name', '', 'post', array('type' => 'text', 'size' => 50, 'maxlength' => 50, 'label' => 'Gebruikersnaam', 'admin' => true), 
-		array('not_empty' => true, 'unique' => true))
+		array('required' => true, 'unique' => true))
 	->add('fullname', '', 'post', array('type' => 'text', 'size' => 50, 'maxlength' => 100, 'label' => 'Voor- en Achternaam', 'admin' => true), 
-		array('not_empty' => true))
+		array('required' => true))
 	->add('letscode', '', 'post', array('type' => 'text', 'size' => 10, 'maxlength' => 8, 'label' => 'Letscode', 'admin' => true), 
-		array('not_empty' => true, 'unique' => true))
+		array('required' => true, 'unique' => true))
 	->add('postcode', '', 'post', array('type' => 'text', 'size' => 10, 'maxlength' => 8, 'label' => 'Postcode', 'admin' => true), 
-		array('not_empty' => true))
+		array('required' => true))
 	->add('birthday', '', 'post', 
 		array('type' => 'text', 'label' => 'Geboortedatum', 'placeholder' => 'dd-mm-jjjj', 'size' => 10, 'admin' => true, 
 			'data-provide' => 'datepicker', 'data-date-format' => 'dd-mm-yyyy', 'data-date-week-start' => '1', 
 			'data-date-view-mode' => '2', 'data-date-start-view' => '2', 'data-date-language' => 'nl'), 
-		array('not_empty' => true, 'date' => true))
+		array('required' => true, 'date' => true))
 	->add('hobbies', '', 'post', array('type' => 'textarea', 'cols' => 50, 'rows' => 7, 'label' => 'Hobbies/Interesses'))
 	->add('comments', '', 'post', array('type' => 'text', 'size' => 50, 'maxlength' => 100, 'label' => 'Commentaar'))	
 	->add('admincomment', '', 'post', array('type' => 'text', 'size' => 50, 'maxlength' => 200, 'label' => 'Commentaar vd admin', 'admin' => true))	
 	->add('login', sha1(uniqid().microtime()), 'post')
 	->add('accountrole', 'user', 'post', array('type' => 'select', 'label' => 'Rechten', 'options' => $accountrole_options, 'admin' => true), 
-		array('not_empty' => true))
+		array('required' => true))
 	->add('status', 'new', 'post', array('type' => 'select', 'label' => 'Status', 'options' => $status_options, 'admin' => true), 
-		array('not_empty' => true))
+		array('required' => true))
 
 	->add('maxlimit', $parameters['default_limit'], 'post', array('type' => 'number', 'label' => 'Limiet +/-', 'size' => 10, 'admin' => true), 
 		array('match' => 'positive_or_zero'))
 	
 	->add('contacts', array(), 'post')	
 		
-	->add('mail', '', 'post', array('type' => 'text', 'label' => 'E-mail', 'size' => 50, 'maxlength' => 100), array('not_empty' => true, 'email' => true))
+	->add('mail', '', 'post', array('type' => 'text', 'label' => 'E-mail', 'size' => 50, 'maxlength' => 100), array('required' => true, 'email' => true))
 	->add('adr', '', 'post', array('type' => 'text', 'label' => 'Adres', 'size' => 50, 'maxlength' => 100, 'placeholder' => 'Voorbeeldstraat 86, 4572 Voorbeeldplaatsnaam'), 
-		array('not_empty' => true))
+		array('required' => true))
 	->add('tel', '', 'post', array('type' => 'text', 'label' => 'Telefoon', 'size' => 50, 'maxlength' => 20))
 	->add('gsm', '', 'post', array('type' => 'text', 'label' => 'Gsm', 'size' => 50, 'maxlength' => 20))
 	->add('web', '', 'post', array('type' => 'text', 'label' => 'Website', 'size' => 50, 'maxlength' => 100, 'placeholder' => 'http://voorbeeld.com'))
@@ -87,7 +87,7 @@ $req->setEntityTranslation('Gebruiker')
 	->add('creator', $req->getSid(), 'post')
 	->add('password', '', 'post')
 	
-	->add('mail_body', '', 'post', array('type' => 'textarea', 'cols' => 60, 'rows' => 8), array('not_empty' => true, 'min_length' => 15))
+	->add('mail_body', '', 'post', array('type' => 'textarea', 'cols' => 60, 'rows' => 8), array('required' => true, 'min_length' => 15))
 	->add('mail_cc', 'checked', 'post', array('type' => 'checkbox', 'label' => 'Stuur een kopie naar mezelf'))
 	->add('mail_send', '', 'post', array('type' => 'submit', 'label' => 'Versturen', 'class' => 'btn btn-primary'))	
 	
@@ -102,10 +102,10 @@ $req->setEntityTranslation('Gebruiker')
 	
 	->add('password', '', 'post', array('type' => 'password', 'label' => 'Nieuw paswoord', 'size' => 50, 
 		'maxlength' => 50, 'autocomplete' => 'off'), 
-		array('not_empty' => true, 'min_length' => 5))	
+		array('required' => true, 'min_length' => 5))	
 	->add('password_confirm', '', 'post', array('type' => 'password', 'label' => 'Paswoord bevestigen', 'size' => 50, 
 		'maxlength' => 50, 'autocomplete' => 'off'),
-		array('not_empty' => true, 'min_length' => 5))	
+		array('required' => true, 'min_length' => 5))	
 	->add('password_send', '', 'post', array('type' => 'submit', 'label' => 'Aanpassen', 'class' => 'btn btn-primary'))	
 
 	->addSubmitButtons()

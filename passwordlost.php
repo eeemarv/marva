@@ -16,7 +16,7 @@ require_once 'includes/request.php';
 $req = new request('anonymous', true);
 
 
-$req->add('email', '', 'post', array('type' => 'text', 'label' => 'Email adres', 'size' => 50, 'maxlength' => 50), array('not_empty' => true, 'email' => true, 'match' => 'email_active_user'))
+$req->add('email', '', 'post', array('type' => 'text', 'label' => 'Email adres', 'size' => 50, 'maxlength' => 50), array('required' => true, 'email' => true, 'match' => 'email_active_user'))
 	->add('send', '', 'post', array('type' => 'submit', 'label' => 'Reset Paswoord', 'class' => 'btn btn-primary'))
 	->add('cancel', '', 'post', array('type' => 'submit', 'label' => 'Annuleren', 'class' => 'btn btn-default'));
 

@@ -23,13 +23,13 @@ $req->setEntityTranslation('Nieuwsbericht')
 		array('type' => 'text', 'label' => 'Datum', 'size' => 10, 'placeholder' => 'dd-mm-jjjj', 
 			'data-provide'=> 'datepicker', 'data-date-format' => 'dd-mm-yyyy', 'data-date-week-start' => '1',
 			'data-date-language' => 'nl'), 
-		array('not_empty' => true, 'date' => true))
+		array('required' => true, 'date' => true))
 	->add('headline', '', 'post', 
 		array('type' => 'text', 'size' => 40, 'label' => 'Titel'), 
-		array('not_empty' => true))
+		array('required' => true))
 	->add('newsitem', '', 'post', 
 		array('type' => 'textarea', 'cols' => 60, 'rows' => 15, 'label' => 'Inhoud'), 
-		array('not_empty' => true))
+		array('required' => true))
 	->add('sticky', '', 'post', array('type' => 'checkbox', 'label' => 'Niet vervallen'))
 	->set('sticky', ($req->get('sticky')) ? 1 : 0)
 	->add('cdate', date('Y-m-d H:i:s'), 'post')

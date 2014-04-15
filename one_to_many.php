@@ -26,9 +26,9 @@ $req->add('fixed', 10, 'post', array('type' => 'number', 'size' => 4, 'maxlength
 	->add('fill_in', '', 'post', array('type' => 'submit', 'label' => 'Vul in'))
 	->add('no_newcomers', '', 'post', array('type' => 'checkbox', 'label' => 'Geen instappers.'), array())
 	->add('no_leavers', '', 'post', array('type' => 'checkbox', 'label' => 'Geen uitstappers.'), array())
-	->add('letscode_from', '', 'post', array('type' => 'text', 'size' => 5, 'maxlength' => 10, 'label' => 'Van LetsCode', 'autocomplete' => 'off'), array('not_empty' => true, 'match' => 'active_letscode'))
-	->add('description', '', 'post', array('type' => 'text', 'size' => 40, 'maxlength' => 60, 'label' => 'Omschrijving', 'autocomplete' => 'off'), array('not_empty' => true))
-	->add('confirm_password', '', 'post', array('type' => 'password', 'size' => 10, 'maxlength' => 20, 'label' => 'Paswoord (extra veiligheid)', 'autocomplete' => 'off'), array('not_empty' => true, 'match' => 'password'))
+	->add('letscode_from', '', 'post', array('type' => 'text', 'size' => 5, 'maxlength' => 10, 'label' => 'Van LetsCode', 'autocomplete' => 'off'), array('required' => true, 'match' => 'active_letscode'))
+	->add('description', '', 'post', array('type' => 'text', 'size' => 40, 'maxlength' => 60, 'label' => 'Omschrijving', 'autocomplete' => 'off'), array('required' => true))
+	->add('confirm_password', '', 'post', array('type' => 'password', 'size' => 10, 'maxlength' => 20, 'label' => 'Paswoord (extra veiligheid)', 'autocomplete' => 'off'), array('required' => true, 'match' => 'password'))
 	->add('create', '', 'post', array('type' => 'submit', 'label' => 'Voer alle transacties uit'))
 	->add('transid', generateUniqueId(), 'post', array('type' => 'hidden'));
 

@@ -27,9 +27,9 @@ $req->add('fixed', 10, 'get', array('type' => 'number', 'size' => 4, 'maxlength'
 	->add('fill_in', '', 'get', array('type' => 'submit', 'label' => 'Vul in', 'class' => 'btn btn-default'))
 	->add('no_newcomers', '', 'get', array('type' => 'checkbox', 'label' => 'Geen instappers.'), array())
 	->add('no_leavers', '', 'get', array('type' => 'checkbox', 'label' => 'Geen uitstappers.'), array())
-	->add('letscode_to', '', 'post', array('type' => 'text', 'size' => 5, 'maxlength' => 10, 'label' => 'Aan LetsCode', 'autocomplete' => 'off'), array('not_empty' => true, 'match' => 'active_letscode'))
-	->add('description', '', 'post', array('type' => 'text', 'size' => 40, 'maxlength' => 60, 'label' => 'Omschrijving', 'autocomplete' => 'off'), array('not_empty' => true))
-	->add('confirm_password', '', 'post', array('type' => 'password', 'size' => 10, 'maxlength' => 20, 'label' => 'Paswoord (extra veiligheid)', 'autocomplete' => 'off'), array('not_empty' => true, 'match' => 'password'))
+	->add('letscode_to', '', 'post', array('type' => 'text', 'size' => 5, 'maxlength' => 10, 'label' => 'Aan LetsCode', 'autocomplete' => 'off'), array('required' => true, 'match' => 'active_letscode'))
+	->add('description', '', 'post', array('type' => 'text', 'size' => 40, 'maxlength' => 60, 'label' => 'Omschrijving', 'autocomplete' => 'off'), array('required' => true))
+	->add('confirm_password', '', 'post', array('type' => 'password', 'size' => 10, 'maxlength' => 20, 'label' => 'Paswoord (extra veiligheid)', 'autocomplete' => 'off'), array('required' => true, 'match' => 'password'))
 	->add('transid', generateUniqueId(), 'post', array('type' => 'hidden'))
 	->addSubmitButtons();
 

@@ -38,20 +38,20 @@ $req->setEntityTranslation('Bericht')
 	->add('id', 0, 'get|post', array('type' => 'hidden'))		
 	->add('mode', '', 'get|post', array('type' => 'hidden'))
 	->add('msg_type', 'ow', 'post', array('type' => 'select', 'label' => 'Vraag-Aanbod', 'options' => $offer_want_options), 
-		array('not_empty' => true, 'match' => array('o', 'w')))
+		array('required' => true, 'match' => array('o', 'w')))
 	->add('id_user', $req->getSid(), 'post', array('type' => 'select', 'label' => $req->getAdminLabel().'Van', 'option_set' => 'active_users'), 
-		array('not_empty' => true, 'match' => 'active_user'))
+		array('required' => true, 'match' => 'active_user'))
 	->add('id_category', 0, 'post', array('type' => 'select', 'label' => 'Categorie', 'option_set' => 'subcategories'), 
-		array('not_empty' => true, 'match' => 'subcategory'))
-	->add('content', '', 'post', array('type' => 'text', 'size' => 40, 'label' => 'Titel'), array('not_empty' => true))
+		array('required' => true, 'match' => 'subcategory'))
+	->add('content', '', 'post', array('type' => 'text', 'size' => 40, 'label' => 'Titel'), array('required' => true))
 	->add('description', '', 'post', array('type' => 'textarea', 'cols' => 60, 'rows' => 15, 'label' => 'Inhoud'), 
-		array('not_empty' => true))	
+		array('required' => true))	
 	->add('amount', 0, 'post', array('type' => 'number', 'size' => 4, 'maxlength' => 3, 'label' => 'Richtprijs ('.$currency.')'), 
 		array('match' => 'positive'))
 	->add('cdate', date('Y-m-d H:i:s'), 'post')
 	->add('mdate', date('Y-m-d H:i:s'), 'post')
 	
-	->add('mail_body', '', 'post', array('type' => 'textarea', 'cols' => 60, 'rows' => 8), array('not_empty' => true, 'min_length' => 15))
+	->add('mail_body', '', 'post', array('type' => 'textarea', 'cols' => 60, 'rows' => 8), array('required' => true, 'min_length' => 15))
 	->add('mail_cc', 'checked', 'post', array('type' => 'checkbox', 'label' => 'Stuur een kopie naar mezelf'))
 	->add('mail_send', '', 'post', array('type' => 'submit', 'label' => 'Versturen', 'class' => 'btn btn-primary'))	
 	

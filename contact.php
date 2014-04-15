@@ -12,11 +12,11 @@ require_once 'includes/request.php';
 $req = new request('anonymous', true);
 
 $req->setEntity('contact')
-	->add('email', '', 'post', array('type' => 'text', 'label' => 'Email adres', 'size' => 50, 'maxlength' => 50), array('not_empty' => true, 'email' => true))
-	->add('subject', '', 'post', array('type' => 'text', 'label' => 'Onderwerp', 'size' => 50, 'maxlength' => 60), array('not_empty' => true))
-	->add('content', '', 'post', array('type' => 'textarea', 'label' => 'Bericht', 'rows' => 7), array('not_empty' => true))
+	->add('email', '', 'post', array('type' => 'text', 'label' => 'Email adres', 'size' => 50, 'maxlength' => 50), array('required' => true, 'email' => true))
+	->add('subject', '', 'post', array('type' => 'text', 'label' => 'Onderwerp', 'size' => 50, 'maxlength' => 60), array('required' => true))
+	->add('content', '', 'post', array('type' => 'textarea', 'label' => 'Bericht', 'rows' => 7), array('required' => true))
 	->add('mailcc', 'checked', 'post', array('type' => 'checkbox', 'label' => 'Stuur een kopie naar mezelf'))
-	->add('recaptcha', '', 'post', array('type' => 'recaptcha', 'label' => 'Recaptcha'), array( 'match' => 'recaptcha', 'not_empty' => true))
+	->add('recaptcha', '', 'post', array('type' => 'recaptcha', 'label' => 'Recaptcha'), array( 'match' => 'recaptcha', 'required' => true))
 	->addSubmitButtons();
 
 if ($req->get('cancel')){

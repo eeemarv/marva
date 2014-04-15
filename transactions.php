@@ -32,16 +32,16 @@ $req->setEntityTranslation('Transactie')
 	
 	->add('mode', '', 'get|post', array('type' => 'hidden'))
 	->add('id_from', $req->getSid(), 'post', array('type' => 'select', 'label' => 'Van', 'option_set' => 'active_users_without_interlets', 'admin' => true), 
-		array('not_empty' => true))
+		array('required' => true))
 	->add('creator', $req->getSid(), 'post')
 	->add('id_to', 0, 'post')
 	->add('date', date('Y-m-d'), 'post')
 	->add('cdate', date('Y-m-d H:i:s'), 'post')
 	->add('letscode_to', '', 'post', array('type' => 'text', 'size' => 40, 'maxlength' => 10, 'label' => 'Aan LetsCode', 'autocomplete' => 'off', 'class' => 'typeahead-users'), 
-		array('not_empty' => true, 'match' => 'active_letscode'))
+		array('required' => true, 'match' => 'active_letscode'))
 	->add('amount', '', 'post', array('type' => 'number', 'size' => 10, 'maxlength' => 6, 'label' => 'Aantal '.$parameters['currency_plural'] , 'autocomplete' => 'off'), 
-		array('not_empty' => true))
-	->add('description', '', 'post', array('type' => 'text', 'size' => 40, 'maxlength' => 60, 'label' => 'Omschrijving', 'autocomplete' => 'off'), array('not_empty' => true))
+		array('required' => true))
+	->add('description', '', 'post', array('type' => 'text', 'size' => 40, 'maxlength' => 60, 'label' => 'Omschrijving', 'autocomplete' => 'off'), array('required' => true))
 	->add('transid', generateUniqueId(), 'post', array('type' => 'hidden'))
 			
 	->addSubmitButtons()
