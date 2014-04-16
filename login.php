@@ -129,7 +129,7 @@ if(!$req->get('token')){
 	echo '<div>';
 	$req->set_output('nolabel')->render(array('submit_login', 'cancel', 'location'));
 	echo '</div></form>';
-	echo '<ul><li><a href="passwordlost.php">Passwoord vergeten</a></li></ul>';			
+	echo '<ul><li><a href="passwordlost.php">Paswoord vergeten</a></li></ul>';			
 }
 
 

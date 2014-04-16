@@ -28,15 +28,19 @@ $req->setEntityTranslation('Bericht')
 	->add('orderby', 'cdate', 'get')
 	->add('asc', 0, 'get')
 	->add('limit', 25, 'get')
-	->add('start', 0, 'get')	
+	->add('start', 0, 'get')
+		
 	->add('q', '', 'get', array('type' => 'text', 'label' => 'Trefwoord', 'size' => 25, 'maxlength' => 25))
 	->add('ow', 'ow', 'get', array('type' => 'select', 'label' => 'Vraag-Aanbod', 'options' => $offer_want_options))
 	->add('userid', 0, 'get', array('type' => 'select', 'label' => 'Gebruiker', 'option_set' => 'active_users'))
 	->add('catid', 0, 'get', array('type' => 'select', 'label' => 'Categorie', 'option_set' => 'categories'))
 	->add('postcode', '', 'get', array('type' => 'text', 'size' => 25, 'maxlength' => 8, 'label' => 'Postcode' ))
 	->add('filter', '', 'get', array('type' => 'submit', 'label' => 'Toon'))
+	->add('show', 'all', 'get', array('type' => 'hidden'))
+	
 	->add('id', 0, 'get|post', array('type' => 'hidden'))		
 	->add('mode', '', 'get|post', array('type' => 'hidden'))
+	
 	->add('msg_type', 'ow', 'post', array('type' => 'select', 'label' => 'Vraag-Aanbod', 'options' => $offer_want_options), 
 		array('required' => true, 'match' => array('o', 'w')))
 	->add('id_user', $req->getSid(), 'post', array('type' => 'select', 'label' => $req->getAdminLabel().'Van', 'option_set' => 'active_users'), 
@@ -59,6 +63,9 @@ $req->setEntityTranslation('Bericht')
 	->add('image_send', '', 'post', array('type' => 'submit', 'label' => 'Toevoegen', 'class' => 'btn btn-success'))
 	->add('image_delete', '', 'post', array('type' => 'submit', 'label' => 'Verwijderen', 'class' => 'btn btn-danger'))
 	->add('image_id', 0, 'get|post', array('type' => 'hidden'))
+	
+	->add('revalidate', '', 'post', array('type' => 'submit', 'label' => 'xxx', 'class' => 'btn btn-primary'))
+	->add('invalidate', '', 'post', array('type' => 'submit', 'label' => 'xxx', 'class' => 'btn btn-primary'))
 	
 	->addSubmitButtons()
 	->cancel()
@@ -194,6 +201,25 @@ if ($req->get('delete') && $req->get('id') && $req->isOwnerOrAdmin()){
 		setstatus('Geen foto gevonden', 'danger');
 	}	
 	$req->setSuccess();
+	
+} else if ($req->get('invalidate') && $req->get('id') && $req->isOwnerOrAdmin()){
+	$cleanup_days = ($parameters['message_cleanup_days']) ? $parameters['message_cleanup_days'] : 30;
+	$cleanup = date('Y-m-d H:i:s', time() + 86400 * $cleanup_days);
+	$result = $db->update('messages', array('validity' => $cleanup), array('id' => $req->get('id')));
+	if ($result){
+		setstatus('Bericht als vervallen gemarkeerd.', 'success');
+	} else {
+		setstatus('Fout: het bericht kon niet als vervallen gemarkeerd worden', 'danger');
+	}
+	$req->setSuccess();	
+} else if ($req->get('revalidate') && $req->get('id') && $req->isOwnerOrAdmin()){
+	$result = $db->update('messages', array('validity' => null), array('id' => $req->get('id')));
+	if ($result){
+		setstatus('Bericht terug als geldig gemarkeerd.', 'success');
+	} else {
+		setstatus('Fout: het bericht kon niet terug als geldig gemarkeerd worden', 'danger');
+	}
+	$req->setSuccess();
 }	 
 
 
@@ -269,17 +295,36 @@ if (!($new || $edit || $delete || $image_delete)){
 
 if (!$req->get('id') && !($new || $edit || $delete || $image_delete)){
 
+
+	$tabs = array(
+		'all' => array('text' => 'Alle', 'class' => 'bg-white'),
+		'valid' => array('text' => 'Geldig', 'class' => 'bg-white'),	
+		'invalid' => array('text' => 'Vervallen', 'class' => 'bg-danger'),
+		);
+
+	echo'<ul class="nav nav-tabs">';
+	foreach ($tabs as $key => $filter){
+		if ($filter['admin'] && !$req->isAdmin()){
+			continue;
+		}
+		$class = ($req->get('show') == $key) ? 'active '.$filter['class'] : $filter['class'];
+		$class = ($class) ? ' class="'.$class.'"' : '';
+		echo '<li'.$class.'><a href="messages.php?show='.$key.'">'.$filter['text'].'</a></li>';
+	}		
+	echo '</ul><p></p>';	
+
 	$userid = $req->get('userid');
 	$catid = $req->get('catid');
 	$q = $req->get('q');
 	$ow = $req->get('ow');
 	$postcode = $req->get('postcode');
-
+	$show = $req->get('show');
+	
 	$pagination = new Pagination($req);
 
 	$qb = $db->createQueryBuilder();
 	
-	$qb->select('m.msg_type', 'm.content', 'm.cdate', 'm.id', 
+	$qb->select('m.msg_type', 'm.content', 'm.cdate', 'm.id', 'm.validity',
 		'date_format(m.cdate,\'%d-%m-%Y\') as date', 
 		'u.name as username', 'u.id as userid', 'u.letscode')
 		->from('messages', 'm')
@@ -306,6 +351,12 @@ if (!$req->get('id') && !($new || $edit || $delete || $image_delete)){
 			$qb->expr()->eq('c.id_parent', $catid)
 			));
 	}
+	if ($show == 'valid'){
+		$qb->andWhere($qb->expr()->isNull('validity'));		
+	} else if ($show == 'invalid'){
+		$qb->andWhere($qb->expr()->isNotNull('validity'));
+	}
+	
 
 	$pagination->setQuery($qb);
 		
@@ -354,6 +405,10 @@ if (!$req->get('id') && !($new || $edit || $delete || $image_delete)){
 		$table->add_column($key, $data);
 	}
 
+	$table->setRenderRowOptions(function ($row){	
+		return ($row['validity']) ? ' class="danger"' : '';
+	});
+
 	$pagination->render();
 	$table->render();
 	$pagination->render();
@@ -372,9 +427,12 @@ if ($req->get('id') && !($edit || $delete || $new || $image_delete)){
 	$owner = $req->getOwner();
 	$category = $db->fetchAssoc('select name from categories where id = ?', array($message['id_category']));
 	
-	if ($req->isOwnerOrAdmin()){
+	if ($req->isAdmin()){
 		echo '<a href="messages.php?mode=delete&id='.$req->get('id').'" class="btn btn-danger pull-right">'.$req->getAdminLabel().'Verwijderen</a>';
-		echo '<a href="messages.php?mode=edit&id='.$req->get('id').'" class="btn btn-primary pull-right">'.$req->getAdminLabel().'Aanpassen</a>';
+	}
+	if ($req->isOwnerOrAdmin()){
+		$disabled = ($message['validity'] && !$req->isAdmin()) ? 'disabled="disabled"' : '';
+		echo '<a href="messages.php?mode=edit&id='.$req->get('id').'" class="btn btn-primary pull-right" '.$disabled.'>'.$req->getAdminLabel().'Aanpassen</a>';
 	}
 		
 	$title = $message["content"];
@@ -383,7 +441,30 @@ if ($req->get('id') && !($edit || $delete || $new || $image_delete)){
 	
 	$emailOwner = getEmailAddressFromUserId($owner['id']);
 
+	$class = ($message['validity']) ? ' class="bg-danger"' : '';
+	echo '<div'.$class.'>';
+
+	
 	echo '<h1>'.(($message['msg_type'] == 'o') ? 'Aanbod' : 'Vraag').': '.htmlspecialchars($message['content']).'</h1>';
+	
+	if ($req->isOwnerOrAdmin()){
+		echo '<div class="row"><div class="col-md-12">';
+		echo '<form method="post" class="trans form-horizontal" role="form">';
+		$message_type_label = ($message['msg_type'] == 'o') ? 'dit aanbod' : 'deze vraag';
+		if ($message['validity']){
+			echo '<p>Dit vervallen bericht zal definitief verwijderd worden op '.dateFormatTransform($message['validity']).
+				' indien het niet weer geldig wordt gemaakt.</p>';
+			$label = $req->getAdminLabel().'Markeer '.$message_type_label.' weer als geldig';
+			$req->setLabel('revalidate', $label);
+			$req->set_output('nolabel')->render(array('revalidate', 'id'));				
+		} else {
+			$label = $req->getAdminLabel().'Markeer '.$message_type_label.' als vervallen';
+			$req->setLabel('invalidate', $label);
+			$req->set_output('nolabel')->render(array('invalidate', 'id'));			
+		}	
+		echo '</form></div></div>';		
+	}
+
 	echo '<p>Ingegeven door: '; 
 	$req->renderOwnerLink();
 	echo '- <i> saldo: <a href="'.$rootpath.'transactions.php?userid='.$owner['id'].'">' .$owner['saldo'];
@@ -463,19 +544,18 @@ if ($req->get('id') && !($edit || $delete || $new || $image_delete)){
 
 
 	if ($req->isOwnerOrAdmin()){
-		if (sizeof($images) > 5){
+		if (sizeof($images) > 5 || $message['validity']){
 			$req->setDisabled(array('image_file', 'image_send'));
 		}
 		echo '<div class="row"><div class="col-md-12">';
-		if ($req->isAdmin()){
-			$req->setLabel('image_send', $req->getAdminLabel().$req->getLabel('image_send'));
-		}		
+		$req->setLabel('image_send', $req->getAdminLabel().$req->getLabel('image_send'));
 		echo '<form method="post" class="trans form-horizontal" role="form" enctype="multipart/form-data">';
 		$req->set_output('formgroupfile')->render('image_file');
 		$req->set_output('nolabel')->render(array('image_send', 'id'));
 		echo '</form></div></div>';	
 	}
-	
+
+
 
 	if (empty($emailOwner) || !$req->isUser() || $req->isOwner()){
 		$req->setDisabled(array('mail_send', 'mail_body', 'mail_cc'));
@@ -487,7 +567,9 @@ if ($req->get('id') && !($edit || $delete || $new || $image_delete)){
 	$req->set_output('formgroupcheckbox')->render('mail_cc');
 	echo '<div>';
 	$req->set_output('nolabel')->render(array('mail_send', 'id'));
-	echo '</div></form>';	
+	echo '</div></form>';
+	
+	echo '</div>';	
 	
 }
 

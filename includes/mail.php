@@ -11,8 +11,16 @@
 
 function sendemail($from, $to, $subject, $content, $receipt = null){
 	global $parameters;
+
+	$mail_parameters = ($parameters['debug']) ? $parameters['debug_mail'] : $parameters['mail'];
 	
-	if($parameters['mail_disabled']){
+	if ($mail_parameters['transport'] == 'gmail'){	
+		$mail_parameters['host'] = 'smtp.gmail.com';
+		$mail_parameters['encryption'] = 'ssl';
+		$mail_parameters['port'] = 465;
+	}
+
+	if($mail_parameters['disable_delivery']){
 		
 		setstatus('Mail functies zijn uitgeschakeld', 'warning');
 		log_event('', 'mail', 'Mail '.$subject.' not sent, mail functions are disabled');		
@@ -34,22 +42,16 @@ function sendemail($from, $to, $subject, $content, $receipt = null){
 		
 	}
 	
-	$transport_parameters = ($parameters['debug']) ? $parameters['debug_mail'] : $parameters['mail'];
-	
-	if ($transport_parameters['transport'] == 'gmail'){	
-		$transport_parameters['host'] = 'smtp.gmail.com';
-		$transport_parameters['encryption'] = 'ssl';
-		$transport_parameters['port'] = 465;
-	}
+
 	
 	if ($transport_parameters['transport'] == 'sendmail'){
 		$transport = Swift_SendmailTransport::newInstance();	
 	} else {
-		$transport = Swift_SmtpTransport::newInstance($transport_parameters['host'], 
-			$transport_parameters['port'], 
+		$transport = Swift_SmtpTransport::newInstance($mail_parameters['host'], 
+			$mail_parameters['port'], 
 			$transport_parameters['encryption'])
-			->setUsername($transport_parameters['username'])
-			->setPassword($transport_parameters['password']);	
+			->setUsername($mail_parameters['username'])
+			->setPassword($mail_parameters['password']);	
 	}
 
 	$mailer = Swift_Mailer::newInstance($transport);
@@ -57,11 +59,11 @@ function sendemail($from, $to, $subject, $content, $receipt = null){
 	$message = Swift_Message::newInstance();
 	$message->setSubject($subject);
 
-	$from = ($transport_parameters['from']) ? $transport_parameters['from'] : $from; 
+	$from = ($mail_parameters['from']) ? $mail_parameters['from'] : $from; 
 
 	$from = getEmailAddress($from);
 	if (!$from){
-		setstatus('Mail niet verstuurd. Ongeldig adres van de Afzender.', 'danger');
+		setstatus('Mail niet verstuurd. Ongeldig adres van de Afzender. ('.$from.')', 'danger');
 		return;
 	}	
 	
@@ -78,7 +80,7 @@ function sendemail($from, $to, $subject, $content, $receipt = null){
 	
 	$content .= ($transport_parameters['delivery_address']) ? '\r\n Original delivery address: '.$to.'\r\n' : '';
 		
-	$to = ($transport_parameters['delivery_address']) ? $transport_parameters['delivery_address'] : $to;
+	$to = ($mail_parameters['delivery_address']) ? $mail_parameters['delivery_address'] : $to;
 	
 	if (is_array($to)){	
 		$to_array = $to;

@@ -141,8 +141,8 @@ $req->set('confirm_password', '');
 
 $table = new data_table();
 $table->set_data($active_users)->set_input($req)
-	->add_column('letscode', array('title' => 'Van LetsCode'))
-	->add_column('fullname', array('title' => 'Naam'))
+	->add_column('letscode', array('title' => 'Van LetsCode', 'href_id' => 'id', 'href_base' => 'users.php'))
+	->add_column('fullname', array('title' => 'Naam', 'href_id' => 'id', 'href_base' => 'users.php'))
 	->add_column('accountrole', array('title' => 'Rol', 'footer_text' => 'TOTAAL'))
 	->add_column('saldo', array('title' => 'Saldo', 'footer' => 'sum'))
 	->add_column('amount', array('title' => 'Bedrag', 'input' => 'id', 'footer' => 'sum'))

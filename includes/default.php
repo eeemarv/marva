@@ -114,9 +114,6 @@ $configuration["mail"]["from_address_transactions"] = readconfigfromdb("from_add
 */
 
 
-//require_once $dir.'/inc_config.php';
-
-
 // removed release.xml version was eLAS 2.5.16
 // What schema version to expect  
 //$schemaversion =  2207;
@@ -208,9 +205,7 @@ function log_event($id,$type,$event){
 	
 	if($mytype != "debug" && $elasdebug != 0){
 		$db->insert('eventlog', 
-			array('userid' => $id, 'type' => $mytype, 'timestamp' => $ts, 'event' => $event, 'ip' => $ip),
-			array(\PDO::PARAM_INT, \PDO::PARAM_STR, 'datetime', \PDO::PARAM_STR, \PDO::PARAM_STR)
-		); //
+			array('userid' => $id, 'type' => $mytype, 'timestamp' => $ts, 'event' => $event, 'ip' => $ip)); //
 	}
 }
 
