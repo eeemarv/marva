@@ -16,7 +16,7 @@ $req->setEntity('contact')
 	->add('subject', '', 'post', array('type' => 'text', 'label' => 'Onderwerp', 'size' => 50, 'maxlength' => 60), array('required' => true))
 	->add('content', '', 'post', array('type' => 'textarea', 'label' => 'Bericht', 'rows' => 7), array('required' => true))
 	->add('mailcc', 'checked', 'post', array('type' => 'checkbox', 'label' => 'Stuur een kopie naar mezelf'))
-	->add('recaptcha', '', 'post', array('type' => 'recaptcha', 'label' => 'Recaptcha'), array( 'match' => 'recaptcha', 'required' => true))
+	->add('recaptcha', '', 'post', array('type' => 'recaptcha', 'label' => 'Recaptcha'), array('recaptcha' => true))
 	->addSubmitButtons();
 
 if ($req->get('cancel')){

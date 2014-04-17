@@ -633,8 +633,10 @@ class request {
 		$out = '';
 		$parameter['checked'] = ($parameter['type'] == 'checkbox' && $parameter['value']) ? 'checked' : null;
 		if ($parameter['type'] == 'recaptcha'){
-			$out .= recaptcha_get_html($parameters['recaptcha_public']);
-			
+			$captcha = new Captcha\Captcha();
+			$captcha->setPublicKey($parameters['recaptcha_public']);
+			$captcha->setPrivateKey($parameters['recaptcha_private']);
+			$out .= $captcha->html();
 			
 		} elseif ($parameter['type'] == 'select'){
 			$out .= '<select name="'.$name.'">';
@@ -729,6 +731,7 @@ class request {
 
 
 	public function errors($params = false){
+		global $parameters;
 		$error = false;
 		foreach($this->parameters as $param_name => &$parameter){
 			if (is_array($params) && !in_array($param_name, $params)){
@@ -754,7 +757,13 @@ class request {
 				$parameter['error'] = sprintf($this->error_messages['too_short'], $parameter['min_length']);
 				
 			} else if ($parameter['max_length'] && (strlen($parameter['value']) > $parameter['max_length'])){
-				$parameter['error'] = sprintf($this->error_messages['too_long'], $paramter['max_length']);	
+				$parameter['error'] = sprintf($this->error_messages['too_long'], $parameter['max_length']);	
+
+			} else if ($parameter['max'] && (($parameter['value']) > $parameter['max'])){
+				$parameter['error'] = sprintf($this->error_messages['too_high'], $paramter['max']);	
+
+			} else if ($parameter['min'] && (($parameter['value']) < $parameter['min'])){
+				$parameter['error'] = sprintf($this->error_messages['too_high'], $paramter['min']);
 						
 			} else if ($parameter['match']){		 
 				$mismatch = false;
@@ -805,9 +814,13 @@ class request {
 				if ($mismatch){								
 					$parameter['error'] = $this->error_messages['mismatch'];					
 				}
+				
 			} else if ($parameter['recaptcha']){
-				$resp = recaptcha_check_answer ($privatekey, $_SERVER['REMOTE_ADDR'], $_POST['recaptcha_challenge_field'], $_POST['recaptcha_response_field']);
-				if (!$resp->is_valid){
+				$captcha = new Captcha\Captcha();
+				$captcha->setPublicKey($parameters['recaptcha_public']);
+				$captcha->setPrivateKey($parameters['recaptcha_private']);				
+				$response = $captcha->check();
+				if (!$response->isValid()){
 					$parameter['error'] = $this->error_messages['wrong_recaptcha'];						
 				}
 			}

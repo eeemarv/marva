@@ -5,7 +5,6 @@ $rootpath = './';
 
 require_once 'includes/default.php';
 
-
 require_once 'includes/userinfo.php';
 
 require_once 'includes/request.php';

@@ -26,14 +26,6 @@ if ($parameters['redirect']){
 	exit();
 }	 
 
-/*
-$con = $parameters['db'];
-$port = ($con['port']) ? ':'.$con['port'] : '';
-
-$db = NewADOConnection($con['driver']);
-$db->Connect($con['host'].$port, $con['user'], $con['password'], $con['dbname']); 
-$db->setFetchMode(ADODB_FETCH_ASSOC);
-*/
 
 $config = new \Doctrine\DBAL\Configuration();
 $connectionParams = array(
@@ -74,8 +66,6 @@ define(STATUS_INFOMOMENT, 512);
 */
 
 	
-
-
 
 
 $dbconfig = $db->fetchAll('SELECT * FROM config');  //
@@ -121,11 +111,11 @@ $configuration["mail"]["from_address_transactions"] = readconfigfromdb("from_add
 //$restversion = 1;
 
 
-//date_default_timezone_set($parameters['timezone']);
+date_default_timezone_set($parameters['timezone']);
 
 
 // flash-messages
-function setstatus($status, $type = "info"){
+function setstatus($status, $type = 'info'){
 	global $_SESSION;
 	$type = (in_array($type, array('info', 'warning', 'success', 'danger'))) ? $type : 'info';
 	array_push($_SESSION["status"], array('message' => $status, 'type' => $type));
@@ -187,7 +177,7 @@ function getLocalLetscode($letscode){
 
 
 
-function log_event($id,$type,$event){
+function log_event($id, $type, $event){
     global $db, $elasdebug, $dirbase, $rootpath;
 	
 	$ip = $_SERVER['REMOTE_ADDR'];
@@ -198,14 +188,15 @@ function log_event($id,$type,$event){
         $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
     }
     
-   	$ts = new \DateTime();
-	$mytype = strtolower($type);	
+   	$datetime = new \DateTime();
+   	$ts = $datetime->format('Y-m-d H:i:s');
+	$type = strtolower($type);	
 
 	$id = ($id) ? $id : 0;
 	
-	if($mytype != "debug" && $elasdebug != 0){
+	if($type != "debug" && $elasdebug != 0){
 		$db->insert('eventlog', 
-			array('userid' => $id, 'type' => $mytype, 'timestamp' => $ts, 'event' => $event, 'ip' => $ip)); //
+			array('userid' => $id, 'type' => $type, 'timestamp' => $ts, 'event' => $event, 'ip' => $ip)); //
 	}
 }
 
