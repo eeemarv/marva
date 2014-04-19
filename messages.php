@@ -163,14 +163,19 @@ if ($req->get('delete') && $req->get('id') && $req->isOwnerOrAdmin()){
 	$tmp_name = $_FILES['image_file']['tmp_name'];	
 	if (!$filename){
 		setstatus('Selecteer eerst een foto-bestand alvorens op te laden.', 'danger');
+		
 	} elseif (!in_array($ext, array('jpg', 'JPG', 'jpeg', 'JPEG'))){
 		setstatus('Ongeldige bestands-extensie. De bestands-extensie moet jpg of jpeg zijn.', 'danger');
+		
 	} elseif (!in_array($type, array('image/jpeg', 'image/jpg', 'image/pjpeg'))) {
 		setstatus('Ongeldig bestands-type.', 'danger');
+		
 	} elseif ($size > 300){
 		setstatus('Te groot bestand. De maximum grootte is 300 kB.', 'danger');
+		
 	} elseif ($error) { 
 		setstatus('Bestands-fout: '.$error, 'danger');
+		
 	} else {
 		$filename = generateUniqueId().'-'.$req->get('id').'.'.strtolower($ext);			
 		if (move_uploaded_file($tmp_name, $_SERVER[DOCUMENT_ROOT].'/site/images/messages/'.$filename)){
@@ -186,6 +191,7 @@ if ($req->get('delete') && $req->get('id') && $req->isOwnerOrAdmin()){
 } else if ($req->get('image_delete') && $req->get('id') && $req->isOwnerOrAdmin()){
 	if ($req->get('image_id')){
         $result = $db->delete('msgpictures', array('id' => $req->get('image_id')));
+        
 	} else {
 		$result = $db->delete('msgpictures', array('msgid' => $req->get('id')));
 	}
