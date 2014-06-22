@@ -1,4 +1,4 @@
 marva
 =====
 
-open source software for LETS groups
+discontinued fork of eLAS
